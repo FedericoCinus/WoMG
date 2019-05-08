@@ -133,26 +133,26 @@ and specify the output folder path:
 5.  ``actives`` percentage of active nodes with respect to the total number of nodes in the intial configuration (before diffusion) for each doc.
 
 ##### Node2Vec
-6.``dimensions``        Number of dimensions for node2vec. Default 128
-7.``walk-length``       length of walk per source. Default 80
-8.``num-walks``       number of walks per source. Default 10
-9.``window-size``      context size for optimization. Default 10
-10.``iter``           number of epochs in SGD
-11.``workers``     number of parallel workers. Default 8
-12.``p``                manually set BFS parameter; else: it is set by H
-13.``q``                 manually set DFS parameter; else: it is set by H
+6.	``dimensions``        Number of dimensions for node2vec. Default 128
+7.	``walk-length``       length of walk per source. Default 80
+8.	``num-walks``       number of walks per source. Default 10
+9.	``window-size``      context size for optimization. Default 10
+10.	``iter``           number of epochs in SGD
+11.	``workers``     number of parallel workers. Default 8
+12.	``p``                manually set BFS parameter; else: it is set by H
+13.	``q``                 manually set DFS parameter; else: it is set by H
 
 ##### Input and Output
-14.``graph``       Input path of the graph edgelist
-15.``weighted``            boolean specifying (un)weighted. Default unweighted
-16.``unweighted``
-17.``directed``            graph is (un)directed. Default undirected
-18.``undirected``
-19.``docs-folder``  Input path of the documents folder
-20.``output``       Outputs path
-21.``format``       Outputs format
+14.	``graph``       Input path of the graph edgelist
+15.	``weighted``            boolean specifying (un)weighted. Default unweighted
+16.	``unweighted``
+17.	``directed``            graph is (un)directed. Default undirected
+18.	``undirected``
+19.	``docs-folder``  Input path of the documents folder
+20.	``output``       Outputs path
+21.	``format``       Outputs format
   
-22.``seed``         Seed (int) for random distribution extraction
+22.	``seed``         Seed (int) for random distribution extraction
 
 
 ### Citing
