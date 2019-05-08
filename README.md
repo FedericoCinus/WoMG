@@ -15,14 +15,14 @@ Diffusion process is guided by the nodes underlying preferences. Please check th
 #### Example
 To run *WoMG* on Les Miserables network, execute the following command from the project home directory:<br/>
 
-	``python main.py``
+``python main.py``
 
 notice that it will generates 100 documents to be spread over the default network (Les Miserables).
 
 #### Options
 You can check out the other options available to use with *WoMG* using:<br/>
 
-	``python main.py --help``
+``python main.py --help``
 
 #### Input
 1. [Network] The supported input format is an edgelist (txt extension):
@@ -53,7 +53,7 @@ There are outputs for each class (or model)
 2. [Network] files:
   [info] dict: 
   
-      {'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}
+	{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}
       
   [graph] dict: 
   
