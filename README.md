@@ -87,9 +87,11 @@ There are outputs for each class (or model)
   [info] dict: 
   
 	{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'} 
+	
   [graph] dict: 
   
       {(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}
+      
   Key: link-tuple. Value: weight vector
 
   [interests and influence vectors] dict:
