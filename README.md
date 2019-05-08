@@ -7,7 +7,7 @@ This repository provides a reference implementation of *WoMG* as described in th
 > <Insert paper link>
 
 The *WoMG* software generates synthetic datasets of documents cascades on network. 
-It starts with any (un)directed, (un)weighted graph and a collection of documents and outputs the propagation DAGs of the docs through the network. 
+It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network. 
 Diffusion process is guided by the nodes underlying preferences. Please check the [project page]() for more details. 
 
 ## Basic Usage
@@ -27,7 +27,7 @@ You can check out the other options available to use with *WoMG* using:<br/>
 ### Input
 1. [Network] The supported input format is an edgelist (txt extension):
 	
-	node1_id_int node2_id_int <weight_float, optional>
+		node1_id_int node2_id_int <weight_float, optional>
 		
 You can specify the edgelist path using the *graph* argument:
 
@@ -39,7 +39,7 @@ If no path is given the default network is *Les Miserables* network.
 
  ``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
  
-If no documents folder path is given, WoMG will be set to generative mode.
+If no documents folder path is given, *WoMG* will be set to generative mode.
   
 ### Output
 Diffusion output file is in a dict format: 
@@ -58,7 +58,7 @@ You can specify the output folder path:
 ### Input
 1. [Network] The supported input format is an edgelist (txt extension):
 	
-	node1_id_int node2_id_int <weight_float, optional>
+		node1_id_int node2_id_int <weight_float, optional>
 		
 The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You can specify the edgelist path using the *graph* argument):
 
@@ -92,7 +92,8 @@ There are outputs for each class (or model)
   Key: link-tuple. Value: weight vector
 
   [interests and influence vectors] dict:
-      {(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}
+  
+	{(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}
 
 3. [Topic] files:
   [topic distributions] dict:
