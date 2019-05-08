@@ -28,9 +28,11 @@ You can check out the other options available to use with *WoMG* using:<br/>
 	node1_id_int node2_id_int <weight_float, optional>
 		
 The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You have to specify the edgelist path using the *graph* argument:
+
 	``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
+
   	``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
 
   
@@ -40,37 +42,25 @@ There are outputs for each class (or model)
 1. [Diffusion] file could be in two formats:
 
   list (default): 
-
-	  time doc activating_node
-
+	  ``time doc activating_node``
   dict : 
-
-    { time: { doc: [activating nodes] } } 
+    ``{ time: { doc: [activating nodes] } }``
 
 2. [Network] files:
-
   [info] dict: 
-
-      {'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}
-
+      ``{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}``
   [graph] dict: 
-
-      {(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}
+      ``{(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}``
   Key: link-tuple. Value: weight vector
 
   [interests and influence vectors] dict:
-
-      {(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}
+      ``{(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}``
 
 3. [Topic] files:
-
   [topic distributions] dict:
-  
-      {doc: [topic distribution]}
-      
+      ``{doc: [topic distribution]}``    
   [viralities] dict:
-  
-      {doc: virality}
+      ``{doc: virality}``
 
 One can modify the outputs formats extension with the *format* argument:
   ``python main.py --format pickle``
