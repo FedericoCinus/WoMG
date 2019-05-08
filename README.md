@@ -54,6 +54,7 @@ You can specify the output folder path:
 
 
 ## Usage for researchers
+*WoMG* is an open source reasearch project. More details of the software are reported below:
 
 ### Input
 1. [Network] The supported input format is an edgelist (txt extension):
@@ -96,6 +97,7 @@ There are outputs for each class (or model)
 	{(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}
 
 3. [Topic] files:
+
   [topic distributions] dict:
   
       {doc: [topic distribution]}
@@ -112,6 +114,13 @@ One can modify the outputs formats extension with the *format* argument:
 and specify the output folder path:
 
   ``python main.py --output /this/is/an/example/path/Output_Folder``
+
+
+### Options
+# Graph
+# Documents
+# Diffusion
+# Node2Vec
 
 ### Citing
 
