@@ -10,35 +10,35 @@ The *WoMG* software generates synthetic datasets of documentss propagation on ne
 It starts with any (un)directed, (un)weighted graph and a collection of documents and outputs the propagation DAGs of the docs through the network. 
 Diffusion process is guided by the nodes underlying preferences. Please check the [project page]() for more details. 
 
-### Basic Usage
+## Basic Usage
 
-#### Example
+### Example
 To run *WoMG* on Les Miserables network, execute the following command from the project home directory:<br/>
 
 ``python main.py``
 
 notice that it will generates 100 documents to be spread over the default network (Les Miserables).
 
-#### Options
+### Options
 You can check out the other options available to use with *WoMG* using:<br/>
 
 ``python main.py --help``
 
-#### Input
+### Input
 1. [Network] The supported input format is an edgelist (txt extension):
 	
 	node1_id_int node2_id_int <weight_float, optional>
 		
 The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You have to specify the edgelist path using the *graph* argument:
 
-	``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
-  	``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
+ ``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
 
   
-#### Output
+### Output
 There are outputs for each class (or model)
 
 1. [Diffusion] file could be in two formats:
@@ -84,7 +84,7 @@ and specify the output folder path:
 
 
 
-### Usage for researchers
+## Usage for researchers
 
 
 ### Citing
