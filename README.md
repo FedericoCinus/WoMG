@@ -29,14 +29,44 @@ You can check out the other options available to use with *WoMG* using:<br/>
 	
 	node1_id_int node2_id_int <weight_float, optional>
 		
-The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You have to specify the edgelist path using the *graph* argument:
+You can specify the edgelist path using the *graph* argument):
 
 ``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+If no path is given the default network is *Les Miserables* network (http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
  ``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
+If no documents folder path is given, WoMG will be set to generative mode.
+  
+### Output
+Diffusion output file is in a dict format: 
 
+	{ time: { doc: [activating nodes] } }
+
+You can specify the output folder path:
+
+  ``python main.py --output /this/is/an/example/path/Output_Folder``
+
+
+
+
+## Usage for researchers
+
+### Input
+1. [Network] The supported input format is an edgelist (txt extension):
+	
+	node1_id_int node2_id_int <weight_float, optional>
+		
+The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You can specify the edgelist path using the *graph* argument):
+
+``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+If no path is given the default network is *Les Miserables* network (http://konect.uni-koblenz.de/networks/moreno_lesmis).
+
+2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
+
+ ``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
+If no documents folder path is given, WoMG will be set to generative mode.
   
 ### Output
 There are outputs for each class (or model)
@@ -53,8 +83,7 @@ There are outputs for each class (or model)
 2. [Network] files:
   [info] dict: 
   
-	{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}
-      
+	{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'} 
   [graph] dict: 
   
       {(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}
@@ -80,12 +109,6 @@ One can modify the outputs formats extension with the *format* argument:
 and specify the output folder path:
 
   ``python main.py --output /this/is/an/example/path/Output_Folder``
-
-
-
-
-## Usage for researchers
-
 
 ### Citing
 
