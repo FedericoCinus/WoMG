@@ -234,10 +234,11 @@ class TLT(DiffusionModel):
         '''
         Stops the run method if inactive set is empty
         '''
-        return self.Hidden_inactive_nodes == set(), ' beacause all nodes are active'
+        return self.Hidden_inactive_nodes == set(), ' because all nodes are active'
 
     def stop_criterior_2(self, stall_steps=3):
         '''
+        BUG
         Stops the run if there are not new active nodes for given time step seq
         '''
         check = 0
@@ -248,6 +249,13 @@ class TLT(DiffusionModel):
 
     @staticmethod
     def list_format(dictio):
+        '''
+        Static method for converting the dict format of the propagations
+        into a list format:
+
+            'doc; activating_node \n'
+        
+        '''
         lista = ''
         for key in dictio.keys():
             for node in dictio[key]:

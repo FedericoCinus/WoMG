@@ -12,6 +12,7 @@ from network.tlt_network_model import TLTNetworkModel
 from utilities.utility_functions import read_edgelist
 
 
+
 class TN(TLTNetworkModel):
     '''
     Implementation of interest-influence model
@@ -108,7 +109,7 @@ class TN(TLTNetworkModel):
             self.graph = self.gformat(self.Hidden_nx_obj, directed=self.Hidden_directed)
             self.set_info()
         else:
-            print('Not a networkx object')
+            print('Not a networkx readable object')
 
 
     def set_info(self):

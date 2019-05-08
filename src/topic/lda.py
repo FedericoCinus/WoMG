@@ -65,7 +65,8 @@ class LDA(TLTTopicModel):
 
         # setting lda input
         if mode == 'g':
-            print('Setting LDA in generative mode: K is set automatically to 15')
+            print('Setting LDA in generative mode. Number of topics is set to ', self.Hidden_numb_topics)
+            print('Training the LDA model ..')
             self.Hidden_input_path = None
             self.Hidden_training_path = pathlib.Path.cwd() / "Input" / "Docs" / "text"
         if mode == 'r':
