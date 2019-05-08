@@ -14,12 +14,14 @@ Diffusion process is guided by the nodes underlying preferences. Please check th
 
 #### Example
 To run *WoMG* on Les Miserables network, execute the following command from the project home directory:<br/>
+
 	``python main.py``
 
 notice that it will generates 100 documents to be spread over the default network (Les Miserables).
 
 #### Options
 You can check out the other options available to use with *WoMG* using:<br/>
+
 	``python main.py --help``
 
 #### Input
@@ -42,31 +44,41 @@ There are outputs for each class (or model)
 1. [Diffusion] file could be in two formats:
 
   list (default): 
-	  ``time doc activating_node``
+  
+	time doc activating_node
   dict : 
-    ``{ time: { doc: [activating nodes] } }``
+  
+  	{ time: { doc: [activating nodes] } }
 
 2. [Network] files:
   [info] dict: 
-      ``{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}``
+  
+      {'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}
+      
   [graph] dict: 
-      ``{(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}``
+  
+      {(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}
   Key: link-tuple. Value: weight vector
 
   [interests and influence vectors] dict:
-      ``{(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}``
+      {(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}
 
 3. [Topic] files:
   [topic distributions] dict:
-      ``{doc: [topic distribution]}``    
+  
+      {doc: [topic distribution]}
+      
   [viralities] dict:
-      ``{doc: virality}``
+  
+      {doc: virality}
 
 One can modify the outputs formats extension with the *format* argument:
+
   ``python main.py --format pickle``
   ``python main.py --format txt``
   
 and specify the output folder path:
+
   ``python main.py --output /this/is/an/example/path/Output_Folder``
 
 
