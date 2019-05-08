@@ -6,7 +6,7 @@ This repository provides a reference implementation of *WoMG* as described in th
 > M.Sc. Physics of Complex Systems, Università degli studi di Torino, Turin, 2017-2018.<br>
 > <Insert paper link>
 
-The *WoMG* software generates synthetic datasets of documentss propagation on network. 
+The *WoMG* software generates synthetic datasets of documents cascades on network. 
 It starts with any (un)directed, (un)weighted graph and a collection of documents and outputs the propagation DAGs of the docs through the network. 
 Diffusion process is guided by the nodes underlying preferences. Please check the [project page]() for more details. 
 
@@ -29,20 +29,22 @@ You can check out the other options available to use with *WoMG* using:<br/>
 	
 	node1_id_int node2_id_int <weight_float, optional>
 		
-You can specify the edgelist path using the *graph* argument):
+You can specify the edgelist path using the *graph* argument:
 
 ``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+
 If no path is given the default network is *Les Miserables* network.
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
  ``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
+ 
 If no documents folder path is given, WoMG will be set to generative mode.
   
 ### Output
 Diffusion output file is in a dict format: 
 
-	{ time: { doc: [activating nodes] } }
+	{time: {doc: [activating nodes]}}
 
 You can specify the output folder path:
 
@@ -61,7 +63,7 @@ You can specify the output folder path:
 The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You can specify the edgelist path using the *graph* argument):
 
 ``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
-If no path is given the default network is *Les Miserables* network (http://konect.uni-koblenz.de/networks/moreno_lesmis).
+If no path is given the default network is *Les Miserables* network.
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
