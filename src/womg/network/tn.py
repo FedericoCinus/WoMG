@@ -7,9 +7,9 @@ import networkx as nx
 import numpy as np
 from tqdm import tqdm
 from sklearn.decomposition import NMF
-from node2vec_git.src.node2vec_main import node2vec_main
-from network.tlt_network_model import TLTNetworkModel
-from utilities.utility_functions import read_edgelist
+from womg.node2vec_git.src.node2vec_main import node2vec_main
+from womg.network.tlt_network_model import TLTNetworkModel
+from womg.utils.utility_functions import read_edgelist
 
 
 
