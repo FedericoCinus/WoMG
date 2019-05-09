@@ -1,1 +1,0 @@
-{'type': 'DiGraph', 'numb_nodes': '15580', 'numb_edges': '199860', 'aver_degree': 'degree:', 'directed': 'Average'}
