@@ -49,7 +49,7 @@ class TopicModel(abc.ABC):
          All the attributes which start with "Hidden_" are NOT saved
         '''
         if path == None or path == '':
-            output_dir = pathlib.Path.cwd() / "Output"
+            output_dir = pathlib.Path.cwd().parent / "Output"
         else:
             output_dir = str(path)
 

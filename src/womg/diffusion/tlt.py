@@ -5,8 +5,8 @@ import pickle
 import numpy as np
 from tqdm import tqdm
 
-from utilities.distributions import random_initial_active_set
-from diffusion.diffusion_model import DiffusionModel
+from womg.utils.distributions import random_initial_active_set
+from womg.diffusion.diffusion_model import DiffusionModel
 
 
 class TLT(DiffusionModel):

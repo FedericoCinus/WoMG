@@ -14,7 +14,7 @@ from womg.utils.distributions import set_seed
 def parse_args():
     '''Parsing arguments
     '''
-    default_graph = pathlib.Path.cwd() / "Input" / "Graph" / "lesmiserables_edgelist.txt"
+    default_graph = pathlib.Path.cwd().parent / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
     parser = argparse.ArgumentParser(prog='main.py')
     parser.add_argument('-v', '--version', action='version',
                     version='%(prog)s 1.0', help="show program's version number and exit")

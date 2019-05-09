@@ -68,7 +68,7 @@ class LDA(TLTTopicModel):
             print('Setting LDA in generative mode. Number of topics is set to ', self.Hidden_numb_topics)
             print('Training the LDA model ..')
             self.Hidden_input_path = None
-            self.Hidden_training_path = pathlib.Path.cwd() / "Input" / "Docs" / "text"
+            self.Hidden_training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus"
         if mode == 'r':
             if path:
                 self.Hidden_input_path = pathlib.Path(path)
