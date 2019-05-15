@@ -55,17 +55,27 @@ class TN(TLTNetworkModel):
 
     '''
 
-    def __init__(self, numb_topics, homophily, weighted, directed, path_in=None, god_node=True, numb_docs=None, docs_path=None, args=None):
+    def __init__(self, numb_topics, homophily, weighted, directed, path_in_graph=None, 
+                 god_node=True, numb_docs=None, p=None,
+                 q=None, num_walks=None, walk_length=None, dimensions=None,
+                 window_size=None, workers=None, iiter=None):
         super().__init__()
         self.interests_influence = {}
         self.Hidden_numb_topics = numb_topics
         self.Hidden_homophily = homophily
         self.Hidden_weighted = weighted
         self.Hidden_directed = directed
-        self.Hidden_path_in = path_in
+        self.Hidden_path_in_graph = path_in_graph
         self.Hidden_godNode = {}
         self.Hidden_god_node = god_node
-        self.Hidden_args = args
+        self.Hidden_p = p 
+        self.Hidden_q = q 
+        self.Hidden_num_walks = num_walks
+        self.Hidden_walk_length = walk_length 
+        self.Hidden_dimensions = dimensions 
+        self.Hidden_window_size = window_size 
+        self.Hidden_workers = workers 
+        self.Hidden_iiter = iiter 
         self.network_setup()
         self.save_model_class()
 
@@ -83,13 +93,13 @@ class TN(TLTNetworkModel):
         -----
         See each method docstring for details
         '''
-        if self.Hidden_path_in == None:
+        if self.Hidden_path_in_graph == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self.Hidden_path_in = pathlib.Path.cwd() / "Input" / "Graph" / "lesmiserables_edgelist.txt"
-            self.Hidden_nx_obj = read_edgelist(self,path=self.Hidden_path_in, weighted=False, directed=False)
+            self.Hidden_path_in_graph = pathlib.Path.cwd() / "Input" / "Graph" / "lesmiserables_edgelist.txt"
+            self.Hidden_nx_obj = read_edgelist(self,path=self.Hidden_path_in_graph, weighted=False, directed=False)
         else:
-            self.Hidden_path_in = pathlib.Path(self.Hidden_path_in)
-            self.Hidden_nx_obj = read_edgelist(self, path=self.Hidden_path_in, weighted=self.Hidden_weighted, directed=self.Hidden_directed)
+            self.Hidden_path_in_graph = pathlib.Path(self.Hidden_path_in_graph)
+            self.Hidden_nx_obj = read_edgelist(self, path=self.Hidden_path_in_graph, weighted=self.Hidden_weighted, directed=self.Hidden_directed)
         self.set_graph()
 
         if self.Hidden_god_node:
@@ -235,11 +245,20 @@ class TN(TLTNetworkModel):
         # Node2Vec
 
         if self.Hidden_homophily <= 0.5:
-            self.Hidden_args.q = -6*self.Hidden_homophily + 4
+            self.Hidden_q = -6*self.Hidden_homophily + 4
         else:
-            self.Hidden_args.q = -3./2*self.Hidden_homophily + 7./4
-        self.Hidden_args.p = 1
-        interests_model = node2vec_main(self.Hidden_args)
+            self.Hidden_q = -3./2*self.Hidden_homophily + 7./4
+        self.Hidden_p = 1
+        interests_model = node2vec_main(weighted=self.Hidden_weighted, 
+                                        graph=self.Hidden_path_in_graph,
+                                        directed=self.Hidden_directed,
+                                        p=self.Hidden_p, q=self.Hidden_q, 
+                                        num_walks=self.Hidden_num_walks, 
+                                        walk_length=self.Hidden_walk_length,
+                                        dimensions=self.Hidden_dimensions, 
+                                        window_size=self.Hidden_window_size, 
+                                        workers=self.Hidden_workers, 
+                                        iiter=self.Hidden_iiter)
         #interests_model = node2vec.fit(window=10, min_count=1)
 
         # Translation
@@ -270,7 +289,7 @@ class TN(TLTNetworkModel):
                 M.append(self.interests_influence[int(node), 'int'])
 
         # NMF Reduction
-        print('Reducing dimensions from ', self.Hidden_args.dimensions,' to ', self.Hidden_numb_topics)
+        print('Reducing dimensions from ', self.Hidden_dimensions,' to ', self.Hidden_numb_topics)
         nmf = NMF(n_components=self.Hidden_numb_topics, random_state=42, max_iter=1000)
         right = nmf.fit(M).components_
         left = nmf.transform(M)

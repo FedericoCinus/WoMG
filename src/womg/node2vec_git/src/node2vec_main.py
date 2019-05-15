@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--window-size', type=int, default=10,
                         help='Context size for optimization. Default is 10.')
 
-    parser.add_argument('--iter', default=1, type=int,
+    parser.add_argument('--iiter', default=1, type=int,
                       help='Number of epochs in SGD')
 
     parser.add_argument('--workers', type=int, default=8,
@@ -67,6 +67,7 @@ def read_graph(weighted, graph, directed):
     '''
     Reads the input network in networkx.
     '''
+    print(graph)
     if weighted:
         G = nx.read_edgelist(graph, nodetype=int, data=(('weight',float),), create_using=nx.DiGraph())
     else:
@@ -79,25 +80,28 @@ def read_graph(weighted, graph, directed):
 
     return G
 
-def learn_embeddings(walks, dimensions, window_size, workers, iter):
+def learn_embeddings(walks, dimensions, window_size, workers, iiter):
     '''
     Learn embeddings by optimizing the Skipgram objective using SGD.
     '''
     walks = [list(map(str, walk)) for walk in walks]
-    model = Word2Vec(walks, size=dimensions, window=window_size, min_count=0, sg=1, workers=workers, iter=iter)
+    model = Word2Vec(walks, size=dimensions, window=window_size, min_count=0, 
+                     sg=1, workers=workers, iter=iiter)
     #model.wv.save_word2vec_format(args.output)
 
     return model.wv
 
-def node2vec_main(args):
+def node2vec_main(weighted, graph, directed, p, q, num_walks, walk_length,
+                  dimensions, window_size, workers, iiter):
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''
-    nx_G = read_graph(args.weighted, args.graph, args.directed)
-    G = Graph(nx_G, args.directed, args.p, args.q)
+    nx_G = read_graph(weighted, graph, directed)
+    G = Graph(nx_G, directed, p, q)
     G.preprocess_transition_probs()
-    walks = G.simulate_walks(args.num_walks, args.walk_length)
-    emb_model = learn_embeddings(walks, args.dimensions, args.window_size, args.workers, args.iter)
+    walks = G.simulate_walks(num_walks, walk_length)
+    emb_model = learn_embeddings(walks, dimensions, window_size,
+                                 workers, iiter)
 
     return emb_model
 

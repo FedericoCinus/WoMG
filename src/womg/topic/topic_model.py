@@ -51,7 +51,7 @@ class TopicModel(abc.ABC):
         if path == None or path == '':
             output_dir = pathlib.Path.cwd().parent / "Output"
         else:
-            output_dir = str(path)
+            output_dir = pathlib.Path(path)
 
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
         for attribute in self.__dict__.keys():
