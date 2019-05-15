@@ -13,16 +13,17 @@ Diffusion process is guided by the nodes underlying preferences. Please check th
 ## Basic Usage
 
 ### Example
+WoMG can be used both in command line and Jupyter notebook; check out the tutorial notebook in the **example** folder. 
 To run *WoMG* on a **demo** mode, execute the following command from the project home directory:<br/>
 
-``python main.py``
+``python womg_main.py``
 
 It will generates 100 documents to be spread over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
 ### Options
 You can check out the other options available to use with *WoMG* using:<br/>
 
-``python main.py --help``
+``python womg_main.py --help``
 
 ### Input
 1. [Network] The supported input format is an edgelist (txt extension):
@@ -37,7 +38,7 @@ If no path is given the default network is *Les Miserables* network.
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
- ``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
+ ``python womg_main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
  
 If no documents folder path is given, *WoMG* will be set to generative mode.
   
@@ -48,7 +49,7 @@ Diffusion output file is in a dict format:
 
 You can specify the output folder path:
 
-  ``python main.py --output /this/is/an/example/path/Output_Folder``
+  ``python womg_main.py --output /this/is/an/example/path/Output_Folder``
 
 
 
@@ -63,12 +64,14 @@ You can specify the output folder path:
 		
 The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You can specify the edgelist path using the *graph* argument):
 
-``python main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+``python womg_main.py --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+
 If no path is given the default network is *Les Miserables* network.
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
- ``python main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
+ ``python womg_main.py --docs_folder /this/is/an/example/path/Corpus_Folder``
+
 If no documents folder path is given, WoMG will be set to generative mode.
   
 ### Output
@@ -110,12 +113,12 @@ There are outputs for each class (or model)
 
 One can modify the outputs formats extension with the *format* argument:
 
-  ``python main.py --format pickle``
-  ``python main.py --format txt``
+  ``python womg_main.py --format pickle``
+  ``python womg_main.py --format txt``
   
 and specify the output folder path:
 
-  ``python main.py --output /this/is/an/example/path/Output_Folder``
+  ``python womg_main.py --output /this/is/an/example/path/Output_Folder``
 
 
 ### Options

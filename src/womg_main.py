@@ -52,7 +52,7 @@ def womg_main(numb_topics=15, numb_docs=None,
     '''
 
 
-    ----------------------------------------------------------------------------------
+    --------------------------------------------------------------------
     WoMG main function: 
 
     The *WoMG* software generates synthetic datasets of documents cascades on network. 
