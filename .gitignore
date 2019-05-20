@@ -108,7 +108,9 @@ img/*
 #ignore executables
 bin/*
 
+# Jupyter
 .DS_Store
+__pychache__
 
 tex/*.pdf
 ./*.tar.gz
