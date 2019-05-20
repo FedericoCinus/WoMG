@@ -143,13 +143,20 @@ class TLT(DiffusionModel):
         node_check = False
 
         if self.Hidden_network_model.Hidden_directed:
+            #print("directed")
             neighbors = [i[0] for i in list(self.Hidden_network_model.Hidden_nx_obj.in_edges(node))]
         else: 
-            neighbors = [i[0] for i in list(self.Hidden_network_model.Hidden_nx_obj.edges(node))]
+            #print("undirected")
+            neighbors = [i[1] for i in list(self.Hidden_network_model.Hidden_nx_obj.edges(node))]
+            #print(neighbors)
 
+
+        #print(node)
         for v in neighbors:
-
+            #print(v, node)
+            #print(v in self.Hidden_active_nodes[item])
             if v != node and  v in self.Hidden_active_nodes[item]:
+                
                 v_sum += np.array(self.Hidden_network_model.graph[(v, node)])
                 node_check = True
         if node_check:
@@ -158,6 +165,7 @@ class TLT(DiffusionModel):
             #print('threshold: ',threshold)
             return (1/(np.exp(- z_sum)+1)) >= threshold
         else:
+            #print("always false")
             return False
 
 

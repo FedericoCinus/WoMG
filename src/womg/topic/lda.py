@@ -131,7 +131,8 @@ class LDA(TLTTopicModel):
         else:
             docs = read_docs(self.Hidden_training_path)
             dict_corp_tuple = self.preprocess_texts(docs)
-            alpha = self.train_lda(dict_corp_tuple)
+            #alpha = self.train_lda(dict_corp_tuple)
+            alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
             self.topic_distrib = self.generates_topic_distrib(alpha)
 
 
@@ -279,12 +280,12 @@ class LDA(TLTTopicModel):
 
 
 
-    def generates_topic_distrib(self, alpha):
+    def generates_topic_distrib(self, alpha=0.):
         '''
         Generates topic distribution for each hypothetical document using
         pre-trained lda over 15 topics
         '''
-        #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
+        #alpha_pre = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
         gammas = {}
         for item in range(self.Hidden_numb_docs):
             gammas[item] = np.random.dirichlet(alpha)
