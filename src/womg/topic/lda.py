@@ -4,9 +4,9 @@ import pathlib
 import gensim
 import random
 import numpy as np
-from womg.topic.tlt_topic_model import TLTTopicModel
-from womg.utils.utility_functions import count_files, read_docs
-from womg.utils.distributions import random_viralities_vec
+from topic.tlt_topic_model import TLTTopicModel
+from utils.utility_functions import count_files, read_docs
+from utils.distributions import random_viralities_vec
 
 class LDA(TLTTopicModel):
     '''

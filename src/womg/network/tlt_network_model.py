@@ -1,7 +1,7 @@
 # /network/tlt_network_model.py
 # Abstract class defining the Network models
 import abc
-from womg.network.network_model import NetworkModel
+from network.network_model import NetworkModel
 
 class TLTNetworkModel(NetworkModel):
     '''

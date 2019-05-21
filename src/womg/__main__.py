@@ -1,26 +1,32 @@
 import os
 import pathlib
-src_path = pathlib.Path.cwd() / "src"
-os.sys.path.insert(0, str(src_path))
+
+'''
+if not str(pathlib.Path.cwd()).endswith('src'):
+  src_path = pathlib.Path.cwd() / "src"
+  os.sys.path.insert(0, str(src_path))
+'''
+
 import argparse
-from womg.network.tn import TN
-from womg.topic.lda import LDA
-from womg.diffusion.tlt import TLT
-from womg.utils.utility_functions import cleaning
-from womg.utils.distributions import set_seed
+from network.tn import TN
+from topic.lda import LDA
+from diffusion.tlt import TLT
+from utils.utility_functions import cleaning
+from utils.distributions import set_seed
 
 import click
 
 
-def graph_model(numb_topics, homophily, weighted, directed, path_in_graph, path_out, 
-                fformat, numb_docs, p, q, num_walks, walk_length,
+def graph_model(numb_topics, homophily, weighted, directed, path_in_graph,
+                method, path_out, 
+                fformat, p, q, num_walks, walk_length,
                 dimensions, window_size, workers, iiter):
     '''Reading graph with networkx
     '''
     print('Loading graph')
     network_model = TN(numb_topics=numb_topics, homophily=homophily, 
                        god_node=False, weighted=weighted, directed=directed,
-                       path_in_graph=path_in_graph, numb_docs=numb_docs,
+                       path_in_graph=path_in_graph, method=method,
                        p=p, q=q, num_walks=num_walks, walk_length=walk_length,
                        dimensions=dimensions, window_size=window_size,
                        workers=workers, iiter=iiter)
@@ -40,7 +46,8 @@ def diffusion_model(numb_steps, actives_perc, path_out, fformat):
 def womg_main(numb_topics=15, numb_docs=None, 
               numb_steps=100, homophily=0.5, 
               actives_perc=0.05, virality=1,
-              path_in_graph=pathlib.Path.cwd().parent / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt",
+              path_in_graph=None,
+              method='node2interests',
               weighted=False, directed=False, 
               god_node=False, docs_path=None,
               path_out=None, fformat='txt',
@@ -140,7 +147,7 @@ def womg_main(numb_topics=15, numb_docs=None,
         graph_model(numb_topics=numb_topics, homophily=homophily, 
                     weighted=weighted, directed=directed, 
                     path_in_graph=path_in_graph, path_out=path_out, 
-                    fformat=fformat, numb_docs=numb_docs, 
+                    fformat=fformat, method=method,
                     p=p, q=q, 
                     num_walks=num_walks, walk_length=walk_length,
                     dimensions=dimensions, window_size=window_size,
@@ -155,7 +162,7 @@ def womg_main(numb_topics=15, numb_docs=None,
 
 
 
-default_graph = pathlib.Path.cwd().parent / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+#default_graph = pathlib.Path.cwd().parent / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
 
 @click.command()
 @click.option('--topics', metavar='K', default=15,
@@ -177,8 +184,12 @@ default_graph = pathlib.Path.cwd().parent / "data" / "graph" / "lesmiserables" /
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
                     type=float)
 
-@click.option('--graph', default=str(default_graph), 
+@click.option('--graph', default=None, 
                     help='Input path of the graph edgelist', type=str)
+
+@click.option('--method', default='node2interests', 
+                    help='Defining the method for interests vectors generation. Default is node2interests, based on node2vec.',
+                    type=str)
 
 @click.option('--weighted', is_flag=True,
                     help='boolean specifying (un)weighted. Default  unweighted', default=False)
@@ -220,7 +231,7 @@ default_graph = pathlib.Path.cwd().parent / "data" / "graph" / "lesmiserables" /
 
 @click.option('--q', type=float, default=1,
                     help='manually set DFS parameter; else: it is set by H')
-def main_cli(topics, homophily, weighted, directed, graph, 
+def main_cli(topics, homophily, weighted, directed, graph, method,
              fformat, docs, docs_folder, output, p, q, num_walks, walk_length,
              dimensions, window_size, workers, iiter, 
              virality, steps, actives, seed):
@@ -237,7 +248,7 @@ def main_cli(topics, homophily, weighted, directed, graph,
     womg_main(numb_topics=topics, numb_docs=docs,
               numb_steps=steps, homophily=homophily,
               actives_perc=actives, virality=virality,
-              path_in_graph=graph, 
+              path_in_graph=graph, method=method,
               weighted=weighted, directed=directed,
               god_node=False, docs_path=docs_folder,
               path_out=output, fformat=fformat, 

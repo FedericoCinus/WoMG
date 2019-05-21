@@ -1,7 +1,7 @@
 # /Topic/TopicModel.py
 # Abstract class defining Topic model
 import abc
-from womg.topic.topic_model import TopicModel
+from topic.topic_model import TopicModel
 
 
 class TLTTopicModel(TopicModel):

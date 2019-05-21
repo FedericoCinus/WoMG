@@ -7,9 +7,9 @@ import networkx as nx
 import numpy as np
 from tqdm import tqdm
 from sklearn.decomposition import NMF
-from womg.node2vec_git.src.node2vec_main import node2vec_main
-from womg.network.tlt_network_model import TLTNetworkModel
-from womg.utils.utility_functions import read_edgelist
+from node2vec_git.src.node2vec_main import node2vec_main
+from network.tlt_network_model import TLTNetworkModel
+from utils.utility_functions import read_edgelist
 
 
 
@@ -56,7 +56,7 @@ class TN(TLTNetworkModel):
     '''
 
     def __init__(self, numb_topics, homophily, weighted, directed, path_in_graph=None, 
-                 god_node=True, numb_docs=None, p=None,
+                 god_node=True, method='node2interests', p=None,
                  q=None, num_walks=None, walk_length=None, dimensions=None,
                  window_size=None, workers=None, iiter=None):
         super().__init__()
@@ -76,16 +76,16 @@ class TN(TLTNetworkModel):
         self.Hidden_window_size = window_size 
         self.Hidden_workers = workers 
         self.Hidden_iiter = iiter 
-        self.network_setup()
+        self.network_setup(method)
         self.save_model_class()
 
 
-    def network_setup(self):
+    def network_setup(self, method):
         '''
         - Sets the graph atribute using set_graph() method
         - Sets the info attribute using set_info() method
         - Sets the _godNode attribute using set_godNode() method
-        - Sets the interests vecotrs using set_interests() method
+        - Sets the interests vectors using set_interests() method
         - Sets the influnce vecotrs using set_influence() mehtod
         - Sets the new graph weights using update_weights() method
 
@@ -95,7 +95,7 @@ class TN(TLTNetworkModel):
         '''
         if self.Hidden_path_in_graph == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self.Hidden_path_in_graph = pathlib.Path.cwd() / "Input" / "Graph" / "lesmiserables_edgelist.txt"
+            self.Hidden_path_in_graph = pathlib.Path("../") / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
             self.Hidden_nx_obj = read_edgelist(self,path=self.Hidden_path_in_graph, weighted=False, directed=False)
         else:
             self.Hidden_path_in_graph = pathlib.Path(self.Hidden_path_in_graph)
@@ -104,7 +104,7 @@ class TN(TLTNetworkModel):
 
         if self.Hidden_god_node:
             self.set_godNode()
-        self.set_interests()
+        self.set_interests(method)
         self.set_influence()
         #print('updating weights')
         self.graph_weights_vecs_generation()
@@ -185,8 +185,10 @@ class TN(TLTNetworkModel):
           name of the method for creating interests vectors
         '''
         print('Generating interests')
-        if method == 'node2interests':
+        if str(method) == 'node2interests':
             self.node2interests(norm=False)
+        if str(method) == 'random':
+            self.random_interests()
 
 
     def set_influence(self, method='node2influence'):
@@ -297,6 +299,21 @@ class TN(TLTNetworkModel):
             self.interests_influence[int(node), 'int'] = left[int(index)]
             #print(self.interests_influence[int(node), 'int'])
 
+
+    def random_interests(self, norm=True):
+        '''
+        Create interests vector for each node using a random uniform probability density 
+        function and directly saves interests vectors in attribute 'interests_influence'
+        
+        Parameters
+        ----------
+        - norm : bool
+        if True interests vectors are normalized
+
+        '''
+        if norm:
+            for node in range(self.Hidden_numb_nodes):
+                self.interests_influence[int(node), 'int'] = np.random.rand(self.Hidden_numb_topics)
 
 
     def node2influence(self, scale_fact, alpha_max=10):
