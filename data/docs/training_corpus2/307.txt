@@ -1,0 +1,1 @@
+by pricing gas using a market-based system we're able to be more consistent with gas prices
