@@ -65,10 +65,10 @@ class LDA(TLTTopicModel):
 
         # setting lda input
         if mode == 'g':
-            print('Setting LDA in generative mode. Number of topics is set to ', self.Hidden_numb_topics)
+            print('Setting LDA in generative mode: ', self.Hidden_numb_docs, ' documents, with ', self.Hidden_numb_topics, ' topics.')
             print('Training the LDA model ..')
             self.Hidden_input_path = None
-            self.Hidden_training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus"
+            self.Hidden_training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
         if mode == 'r':
             if path:
                 self.Hidden_input_path = pathlib.Path(path)
@@ -79,7 +79,7 @@ class LDA(TLTTopicModel):
                 else:
                     print('No txt file in: ', self.Hidden_input_path)
             else:
-                self.Hidden_input_path = pathlib.Path.cwd() / "Input" / "Docs"
+                self.Hidden_input_path = pathlib.Path.cwd().parent / "data" / "docs"
                 if pathlib.Path(self.Hidden_input_path).exists():
                     numb_docs = count_files(self.Hidden_input_path)
                     if numb_docs != 0:
@@ -131,8 +131,8 @@ class LDA(TLTTopicModel):
         else:
             docs = read_docs(self.Hidden_training_path)
             dict_corp_tuple = self.preprocess_texts(docs)
-            #alpha = self.train_lda(dict_corp_tuple)
-            alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
+            alpha = self.train_lda(dict_corp_tuple)
+            #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
             self.topic_distrib = self.generates_topic_distrib(alpha)
 
 

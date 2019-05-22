@@ -54,7 +54,7 @@ class NetworkModel(ABC):
         '''
         #graph_adj = nx.adjacency_matrix(nx_obj).toarray()
         G = {}
-        print('Formatting graph')
+        print('Formatting graph:')
         if directed:
             for edge in tqdm(nx_obj.edges()):
                 G[(edge[0],edge[1])] = 1

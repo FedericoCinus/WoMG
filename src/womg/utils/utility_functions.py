@@ -97,7 +97,7 @@ def read_docs(path):
     docs = []
     for file in onlyfiles:
         f_path = pathlib.Path(path) / str(file)
-        with open(f_path) as f:
+        with open(f_path, 'rb') as f:
             doc_list = [j for j in f]
             docs.append(doc_list)
     return docs

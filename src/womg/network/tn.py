@@ -184,10 +184,10 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
-        print('Generating interests')
-        if str(method) == 'node2interests':
+        print('Generating interests:')
+        if method == 'node2interests':
             self.node2interests(norm=False)
-        if str(method) == 'random':
+        if method == 'random':
             self.random_interests()
 
 
