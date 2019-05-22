@@ -1,4 +1,0 @@
-gensim==3.7.1
-networkx==2.2
-numpy==1.16.2
-sklearn==
