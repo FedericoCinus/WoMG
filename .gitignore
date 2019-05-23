@@ -110,7 +110,7 @@ bin/*
 
 # Jupyter
 .DS_Store
-__pychache__
+__pycache__
 
 tex/*.pdf
 ./*.tar.gz
