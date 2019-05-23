@@ -20,20 +20,23 @@ class TN(TLTNetworkModel):
     Attributes
     ----------
     - interests_influence : dict
-      dictionary containing the influence and interests vectors
-      (of Hidden_numb_topics dimension) in the format:
-      key <- [node id, 'int'] (for interest) or [node id, 'infl'] (for influence)
-      value <- Hidden_numb_topics dimension array in numpy format
+        dictionary containing the influence and interests vectors
+        (of Hidden_numb_topics dimension) in the format:
+        key <- [node id, 'int'] (for interest) or [node id, 'infl'] (for influence)
+        value <- Hidden_numb_topics dimension array in numpy format
     - Hidden_nx_obj : NetworkX object
-      networkx instance of the input network
+        networkx instance of the input network
     - Hidden_godNode : dict
-      dictionary containing all the links of the god node that is out connected
-      to all the nodes but does not have in connections;
-      god node index (id) is -1; format will be:
-      key <- (-1, node id) [all int]
-      value <- link weight [int]
+        dictionary containing all the links of the god node that is out connected
+        to all the nodes but does not have in connections;
+        god node index (id) is -1; format will be:
+        key <- (-1, node id) [all int]
+        value <- link weight [int]
     - Hidden_numb_topics : int
-      dimension of the interests and influence vectors
+        dimension of the interests and influence vectors
+    - Hidden_fast : bool
+        flag for defining the chosen method for interests generation.
+        if True the fastest (random) method is chosen
 
     Methods
     -------
@@ -55,10 +58,12 @@ class TN(TLTNetworkModel):
 
     '''
 
-    def __init__(self, numb_topics, homophily, weighted, directed, path_in_graph=None, 
-                 god_node=True, method='node2interests', p=None,
-                 q=None, num_walks=None, walk_length=None, dimensions=None,
-                 window_size=None, workers=None, iiter=None):
+    def __init__(self, numb_topics, homophily,
+                 weighted, directed, path_in_graph,
+                 god_node, fast,
+                 p, q, num_walks,
+                 walk_length, dimensions,
+                 window_size, workers, iiter, method='node2interests'):
         super().__init__()
         self.interests_influence = {}
         self.Hidden_numb_topics = numb_topics
@@ -66,16 +71,17 @@ class TN(TLTNetworkModel):
         self.Hidden_weighted = weighted
         self.Hidden_directed = directed
         self.Hidden_path_in_graph = path_in_graph
+        self.Hidden_fast = fast
         self.Hidden_godNode = {}
         self.Hidden_god_node = god_node
-        self.Hidden_p = p 
-        self.Hidden_q = q 
+        self.Hidden_p = p
+        self.Hidden_q = q
         self.Hidden_num_walks = num_walks
-        self.Hidden_walk_length = walk_length 
-        self.Hidden_dimensions = dimensions 
-        self.Hidden_window_size = window_size 
-        self.Hidden_workers = workers 
-        self.Hidden_iiter = iiter 
+        self.Hidden_walk_length = walk_length
+        self.Hidden_dimensions = dimensions
+        self.Hidden_window_size = window_size
+        self.Hidden_workers = workers
+        self.Hidden_iiter = iiter
         self.network_setup(method)
         self.save_model_class()
 
@@ -184,11 +190,16 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
-        print('Generating interests:')
-        if method == 'node2interests':
-            self.node2interests(norm=False)
-        if method == 'random':
+
+        if self.Hidden_fast:
+            print('Fast generation of interests:')
             self.random_interests()
+        else:
+            print('Generating interests:')
+            if method == 'node2interests':
+                self.node2interests(norm=False)
+            if method == 'random':
+                self.random_interests()
 
 
     def set_influence(self, method='node2influence'):
@@ -251,15 +262,15 @@ class TN(TLTNetworkModel):
         else:
             self.Hidden_q = -3./2*self.Hidden_homophily + 7./4
         self.Hidden_p = 1
-        interests_model = node2vec_main(weighted=self.Hidden_weighted, 
+        interests_model = node2vec_main(weighted=self.Hidden_weighted,
                                         graph=self.Hidden_path_in_graph,
                                         directed=self.Hidden_directed,
-                                        p=self.Hidden_p, q=self.Hidden_q, 
-                                        num_walks=self.Hidden_num_walks, 
+                                        p=self.Hidden_p, q=self.Hidden_q,
+                                        num_walks=self.Hidden_num_walks,
                                         walk_length=self.Hidden_walk_length,
-                                        dimensions=self.Hidden_dimensions, 
-                                        window_size=self.Hidden_window_size, 
-                                        workers=self.Hidden_workers, 
+                                        dimensions=self.Hidden_dimensions,
+                                        window_size=self.Hidden_window_size,
+                                        workers=self.Hidden_workers,
                                         iiter=self.Hidden_iiter)
         #interests_model = node2vec.fit(window=10, min_count=1)
 
@@ -302,9 +313,9 @@ class TN(TLTNetworkModel):
 
     def random_interests(self, norm=True):
         '''
-        Create interests vector for each node using a random uniform probability density 
+        Create interests vector for each node using a random uniform probability density
         function and directly saves interests vectors in attribute 'interests_influence'
-        
+
         Parameters
         ----------
         - norm : bool

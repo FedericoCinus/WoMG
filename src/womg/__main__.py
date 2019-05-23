@@ -1,13 +1,10 @@
+'''
 import os
 import pathlib
-
-'''
 if not str(pathlib.Path.cwd()).endswith('src'):
   src_path = pathlib.Path.cwd() / "src"
   os.sys.path.insert(0, str(src_path))
 '''
-
-import argparse
 from network.tn import TN
 from topic.lda import LDA
 from diffusion.tlt import TLT
@@ -18,15 +15,15 @@ import click
 
 
 def graph_model(numb_topics, homophily, weighted, directed, path_in_graph,
-                method, path_out, 
+                fast, path_out,
                 fformat, p, q, num_walks, walk_length,
                 dimensions, window_size, workers, iiter):
     '''Reading graph with networkx
     '''
     print('Loading graph')
-    network_model = TN(numb_topics=numb_topics, homophily=homophily, 
+    network_model = TN(numb_topics=numb_topics, homophily=homophily,
                        god_node=False, weighted=weighted, directed=directed,
-                       path_in_graph=path_in_graph, method=method,
+                       path_in_graph=path_in_graph, fast=fast,
                        p=p, q=q, num_walks=num_walks, walk_length=walk_length,
                        dimensions=dimensions, window_size=window_size,
                        workers=workers, iiter=iiter)
@@ -35,45 +32,47 @@ def graph_model(numb_topics, homophily, weighted, directed, path_in_graph,
 def topic_model(numb_topics, numb_docs, virality, path_in, path_out, fformat):
     '''Generates a topic model
     '''
-    topic_model = LDA(numb_topics=numb_topics, numb_docs=numb_docs, virality=virality, path_in=path_in)
+    topic_model = LDA(numb_topics=numb_topics, numb_docs=numb_docs,
+                      virality=virality, path_in=path_in)
     topic_model.save_model_attr(path=path_out, fformat=fformat)
 
 def diffusion_model(numb_steps, actives_perc, path_out, fformat):
     '''Generates diffusion propagations
     '''
-    diffusion_model = TLT(numb_steps=numb_steps, actives_perc=actives_perc, path_out=path_out, fformat=fformat, out_format='dict')
+    diffusion_model = TLT(numb_steps=numb_steps, actives_perc=actives_perc,
+                          path_out=path_out, fformat=fformat, out_format='dict')
 
-def womg_main(numb_topics=15, numb_docs=None, 
-              numb_steps=100, homophily=0.5, 
+def womg_main(numb_topics=15, numb_docs=None,
+              numb_steps=100, homophily=0.5,
               actives_perc=0.05, virality=1,
               path_in_graph=None,
-              method='node2interests',
-              weighted=False, directed=False, 
+              fast=False,
+              weighted=False, directed=False,
               god_node=False, docs_path=None,
               path_out=None, fformat='txt',
               seed=None,
               dimensions=128, walk_length=80,
-              num_walks=10,  window_size=10, 
-              iiter=1, workers=8, 
+              num_walks=10,  window_size=10,
+              iiter=1, workers=8,
               p=1, q=1):
     '''
 
 
     --------------------------------------------------------------------
-    WoMG main function: 
+    WoMG main function:
 
-    The *WoMG* software generates synthetic datasets of documents cascades on network. 
-    It starts with any (un)directed, (un)weighted graph and a collection of documents 
-    and it outputs the propagation DAGs of the docs through the network. 
-    Diffusion process is guided by the nodes underlying preferences. 
+    The *WoMG* software generates synthetic datasets of documents cascades on network.
+    It starts with any (un)directed, (un)weighted graph and a collection of
+    documents and it outputs the propagation DAGs of the docs through the network.
+    Diffusion process is guided by the nodes underlying preferences.
     Please check the github page for more details.
 
 
     Parameters
     ----------
     numb_topics : int
-        number of topics in the topic model. Default 15. K<d 
-    
+        number of topics in the topic model. Default 15. K<d
+
     numb_docs : int
         number of docs to be generated. Default 100
 
@@ -81,18 +80,24 @@ def womg_main(numb_topics=15, numb_docs=None,
         number of time steps for diffusion
 
     homophily : float
-        0<=H<=1 :degree of homophily decoded from the given network. 
-        1-H is degree of influence between nodes; 
+        0<=H<=1 :degree of homophily decoded from the given network.
+        1-H is degree of influence between nodes;
         reccommended values are: 0, 0.5, 1. Default 0.5
 
     actives_perc : float
-        maximum percentage of active nodes in first step of simulation on an item 
+        maximum percentage of active nodes in first step of simulation on an item
         with respect to the number of nodes. Default 0.05
 
     virality : float
-        exponent of the powerlaw distribution for documents viralities. 
+        exponent of the powerlaw distribution for documents viralities.
         P(x; a) = x^{-a}, 0 <= x <=1. Deafault a=1
-    
+
+
+    fast : bool
+        defines the method for generating nodes' interests.
+        Two choices: 'node2interests', 'random'.
+        Default setting is True -> 'random'
+
 
     path_in_graph : str
         input path of the graph edgelist
@@ -103,7 +108,7 @@ def womg_main(numb_topics=15, numb_docs=None,
     directed : bool
         graph is (un)directed. Default  undirected
 
-    
+
     docs_path : str
         input  path of the documents folder
 
@@ -112,7 +117,7 @@ def womg_main(numb_topics=15, numb_docs=None,
 
     fformat : str
         file formats. Supported formats are txt and pickle. Default txt
-    
+
     seed : int
         seed (int) for random distribution extractions
 
@@ -132,7 +137,7 @@ def womg_main(numb_topics=15, numb_docs=None,
     iiter : int
         [node2vec param] number of epochs in SGD
 
-    workers: int 
+    workers: int
         [node2vec param] number of parallel workers. Default 8
 
     p : float
@@ -144,18 +149,18 @@ def womg_main(numb_topics=15, numb_docs=None,
     '''
     try:
         set_seed(seed)
-        graph_model(numb_topics=numb_topics, homophily=homophily, 
-                    weighted=weighted, directed=directed, 
-                    path_in_graph=path_in_graph, path_out=path_out, 
-                    fformat=fformat, method=method,
-                    p=p, q=q, 
+        graph_model(numb_topics=numb_topics, homophily=homophily,
+                    weighted=weighted, directed=directed,
+                    path_in_graph=path_in_graph, path_out=path_out,
+                    fformat=fformat, fast=fast,
+                    p=p, q=q,
                     num_walks=num_walks, walk_length=walk_length,
                     dimensions=dimensions, window_size=window_size,
                     workers=workers, iiter=iiter)
-        topic_model(numb_topics=numb_topics, numb_docs=numb_docs, 
-                    virality=virality,  path_in=docs_path, 
+        topic_model(numb_topics=numb_topics, numb_docs=numb_docs,
+                    virality=virality,  path_in=docs_path,
                     path_out=path_out, fformat=fformat)
-        diffusion_model(numb_steps=numb_steps, actives_perc=actives_perc, 
+        diffusion_model(numb_steps=numb_steps, actives_perc=actives_perc,
                         path_out=path_out, fformat=fformat)
     finally:
         cleaning()
@@ -171,35 +176,36 @@ def womg_main(numb_topics=15, numb_docs=None,
 @click.option('--docs', metavar='D', default=None,
                     help='Number of docs to be generated. Default 100',
                     type=int)
-@click.option('--steps', metavar='T', default=100,  
+@click.option('--steps', metavar='T', default=100,
                     help='Number of time steps for diffusion',
                     type=int)
-@click.option('--homophily', metavar='H', default=0.5, 
+@click.option('--homophily', metavar='H', default=0.5,
                     help='0<=H<=1 :degree of homophily decoded from the given network. 1-H is degree of influence between nodes; reccommended values are: 0, 0.5, 1. Default 0.5',
                     type=float)
-@click.option('--actives', metavar='A', default=0.5, 
+@click.option('--actives', metavar='A', default=0.5,
                     help='Maximum percentage of active nodes in first step of simulation on an item with respect to the number of nodes. Default 0.5',
                     type=float)
-@click.option('--virality', metavar='V', default=1, 
+@click.option('--virality', metavar='V', default=1,
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
                     type=float)
 
-@click.option('--graph', default=None, 
+@click.option('--graph', default=None,
                     help='Input path of the graph edgelist', type=str)
 
-@click.option('--method', default='node2interests', 
-                    help='Defining the method for interests vectors generation. Default is node2interests, based on node2vec.',
-                    type=str)
+
+@click.option('--fast', is_flag=True,
+                    help="defines the method for generating nodes' interests. Two choices: 'node2interests', 'random'. Default setting is False -> 'node2interests",
+                    default=False)
 
 @click.option('--weighted', is_flag=True,
                     help='boolean specifying (un)weighted. Default  unweighted', default=False)
 
 @click.option('--directed', is_flag=True,
-                    help='graph is (un)directed. Default  undirected', 
+                    help='graph is (un)directed. Default  undirected',
                     default=False)
 
 
-@click.option('--docs_folder', metavar='DOCS', default=None, 
+@click.option('--docs_folder', metavar='DOCS', default=None,
                     help='Input  path of the documents folder', type=str)
 @click.option('--output', default=None, help='Outputs path')
 @click.option('--fformat',  default='txt', help='Outputs format. Supported formats are txt and pickle. Default txt')
@@ -231,27 +237,33 @@ def womg_main(numb_topics=15, numb_docs=None,
 
 @click.option('--q', type=float, default=1,
                     help='manually set DFS parameter; else: it is set by H')
-def main_cli(topics, homophily, weighted, directed, graph, method,
-             fformat, docs, docs_folder, output, p, q, num_walks, walk_length,
-             dimensions, window_size, workers, iiter, 
-             virality, steps, actives, seed):
+def main_cli(topics, docs, steps, homophily, actives,
+             virality, graph, fast,
+             weighted, directed, docs_folder,
+             output, fformat, seed,
+             dimensions, walk_length,
+             num_walks, window_size,
+             iiter, workers,
+             p, q
+            ):
     '''
 
 
-    The *WoMG* software generates synthetic datasets of documents cascades on network. 
-    It starts with any (un)directed, (un)weighted graph and a collection of documents 
-    and it outputs the propagation DAGs of the docs through the network. 
-    Diffusion process is guided by the nodes underlying preferences. 
+    The *WoMG* software generates synthetic datasets of documents cascades on network.
+    It starts with any (un)directed, (un)weighted graph and a collection of
+    documents and it outputs the propagation DAGs of the docs through the network.
+    Diffusion process is guided by the nodes underlying preferences.
     Please check the github page for more details.
-    
+
     '''
     womg_main(numb_topics=topics, numb_docs=docs,
               numb_steps=steps, homophily=homophily,
               actives_perc=actives, virality=virality,
-              path_in_graph=graph, method=method,
+              path_in_graph=graph,
+              fast=fast,
               weighted=weighted, directed=directed,
               god_node=False, docs_path=docs_folder,
-              path_out=output, fformat=fformat, 
+              path_out=output, fformat=fformat,
               seed=seed,
               dimensions=dimensions, walk_length=walk_length,
               num_walks=num_walks, window_size=window_size,

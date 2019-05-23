@@ -144,10 +144,10 @@ class TLT(DiffusionModel):
 
         if self.Hidden_network_model.Hidden_directed:
             #print("directed")
-            neighbors = [i[0] for i in list(self.Hidden_network_model.Hidden_nx_obj.in_edges(node))]
+            neighbors = [u for u, _v in list(self.Hidden_network_model.Hidden_nx_obj.in_edges(node))]
         else: 
             #print("undirected")
-            neighbors = [i[1] for i in list(self.Hidden_network_model.Hidden_nx_obj.edges(node))]
+            neighbors = [v for _u, v in list(self.Hidden_network_model.Hidden_nx_obj.edges(node))]
             #print(neighbors)
 
 
