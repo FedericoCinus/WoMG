@@ -77,7 +77,7 @@ class TLT(DiffusionModel):
         self.Hidden_numb_nodes = int(self.Hidden_network_model.info['numb_nodes'])
         self.Hidden_numb_docs = int(self.Hidden_topic_model.Hidden_numb_docs)
         self.Hidden_numb_topics = int(self.Hidden_topic_model.Hidden_numb_topics)
-        self.Hidden_stall_count = [0 for i in range(self.Hidden_numb_docs)]
+        self.Hidden_stall_count = 0
         self.set_sets()
 
 
@@ -145,7 +145,7 @@ class TLT(DiffusionModel):
         if self.Hidden_network_model.Hidden_directed:
             #print("directed")
             neighbors = [u for u, _v in list(self.Hidden_network_model.Hidden_nx_obj.in_edges(node))]
-        else: 
+        else:
             #print("undirected")
             neighbors = [v for _u, v in list(self.Hidden_network_model.Hidden_nx_obj.edges(node))]
             #print(neighbors)
@@ -156,7 +156,7 @@ class TLT(DiffusionModel):
             #print(v, node)
             #print(v in self.Hidden_active_nodes[item])
             if v != node and  v in self.Hidden_active_nodes[item]:
-                
+
                 v_sum += np.array(self.Hidden_network_model.graph[(v, node)])
                 node_check = True
         if node_check:
@@ -197,9 +197,10 @@ class TLT(DiffusionModel):
 
         '''
         self.Hidden_new_active_nodes[item] = new_active_nodes
-        #print(self.Hidden_stall_count[item])
+        #print(item, self.Hidden_new_active_nodes[item])
         if self.Hidden_new_active_nodes[item] == set():
-            self.Hidden_stall_count[item] = self.Hidden_stall_count[item] + 1
+            #print('item', item)
+            self.Hidden_stall_count += 1
         removing_list = new_active_nodes.union(self.Hidden_active_nodes[item])
         for node in removing_list:
             self.Hidden_inactive_nodes[item].discard(node)
@@ -234,25 +235,19 @@ class TLT(DiffusionModel):
         '''
         for item in range(self.Hidden_numb_docs):
             self.Hidden_active_nodes[item] = random_initial_active_set(self, max_active_perc=self.Hidden_actives)
+            if self.Hidden_active_nodes[item] == set():
+                self.Hidden_stall_count += 1
             self.Hidden_inactive_nodes[item] = set(self.Hidden_network_model.Hidden_nx_obj.nodes())
         self.Hidden_new_active_nodes = self.Hidden_active_nodes
 
 
     def stop_criterior(self):
         '''
-        Stops the run method if inactive set is empty
-        '''
-        return self.Hidden_inactive_nodes == set(), ' because all nodes are active'
-
-    def stop_criterior_2(self, stall_steps=3):
-        '''
-        BUG
         Stops the run if there are not new active nodes for given time step seq
         '''
-        check = 0
-        for item in range(len(self.Hidden_stall_count)):
-            check *= (self.Hidden_stall_count[item] <= stall_steps)
-        return check
+        #print('stall count ', self.Hidden_stall_count)
+        return self.Hidden_stall_count == self.Hidden_numb_docs
+
 
 
     @staticmethod
@@ -262,7 +257,7 @@ class TLT(DiffusionModel):
         into a list format:
 
             'doc; activating_node \n'
-        
+
         '''
         lista = ''
         for key in dictio.keys():

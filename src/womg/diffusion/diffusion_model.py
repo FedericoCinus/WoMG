@@ -57,11 +57,13 @@ class DiffusionModel(abc.ABC):
         '''
         print("Computing cascades: ")
         for t in tqdm(range(numb_steps)):
-            if not self.stop_criterior()[0]:
-                #print(self.stop_criterior()[0], self.stop_criterior()[1])
+            if not self.stop_criterior():
+                #print(self.stop_criterior())
                 self.iteration(step=t)
-            if self.stop_criterior()[0] or self.stop_criterior_2():
-                print('Simulation stoped at timestep ',str(t)   )
+            else:
+                print('Simulation stoped at timestep ', str(t-1) ,
+                        '\nNo more nodes will activate'  )
+                break
 
 
     @abc.abstractmethod
