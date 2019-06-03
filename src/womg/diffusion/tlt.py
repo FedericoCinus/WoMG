@@ -52,7 +52,7 @@ class TLT(DiffusionModel):
     '''
 
     def __init__(self, numb_steps, actives_perc, path_out, out_format='list',
-                 fformat='txt', notebook=False):
+                 fformat='txt', progress_bar=False):
         super().__init__()
         self.Hidden_numb_steps = numb_steps
         self.Hidden_numb_nodes = 0
@@ -65,10 +65,10 @@ class TLT(DiffusionModel):
         self.Hidden_path_out = path_out
         self.Hidden_out_format = out_format
         self.Hidden_fformat = fformat
-        if notebook:
-            self.Hidden_progr_bar = tqdm_notebook
+        if progress_bar:
+            self.Hidden_progress_bar = tqdm_notebook
         else:
-            self.Hidden_progr_bar = tqdm
+            self.Hidden_progress_bar = tqdm
         self._formatted_output = []
         self.diffusion_setup()
         self.run(self.Hidden_numb_steps)
@@ -98,7 +98,7 @@ class TLT(DiffusionModel):
         #print(self.Hidden_stall_count)
         self.save_model_attr(step=step, fformat=self.Hidden_fformat)
         #print(self.Hidden_active_nodes)
-        for item in self.Hidden_progr_bar(range(self.Hidden_numb_docs)):
+        for item in self.Hidden_progress_bar(range(self.Hidden_numb_docs)):
             new_active_nodes = set()
             #print('ITEM: '+str(item))
             if self.Hidden_active_nodes[item] != set() or None:
