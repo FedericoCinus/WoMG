@@ -1,10 +1,17 @@
-'''
+#dealing with path (WoMG is not a library for now)
+
 import os
 import pathlib
 if not str(pathlib.Path.cwd()).endswith('src'):
-  src_path = pathlib.Path.cwd() / "src"
+  src_path = pathlib.Path.cwd() / "src" / "womg"
   os.sys.path.insert(0, str(src_path))
-'''
+if str(pathlib.Path.cwd()).endswith('examples'):
+  src_path = pathlib.Path.cwd().parent / "src" / "womg"
+  os.sys.path.insert(0, str(src_path))
+#print(pathlib.Path.cwd())
+
+##################################################
+
 from network.tn import TN
 from topic.lda import LDA
 from diffusion.tlt import TLT
@@ -17,7 +24,8 @@ import click
 def graph_model(numb_topics, homophily, weighted, directed, path_in_graph,
                 fast, path_out,
                 fformat, p, q, num_walks, walk_length,
-                dimensions, window_size, workers, iiter):
+                dimensions, window_size, workers, iiter,
+                notebook):
     '''Reading graph with networkx
     '''
     print('Loading graph')
@@ -26,21 +34,24 @@ def graph_model(numb_topics, homophily, weighted, directed, path_in_graph,
                        path_in_graph=path_in_graph, fast=fast,
                        p=p, q=q, num_walks=num_walks, walk_length=walk_length,
                        dimensions=dimensions, window_size=window_size,
-                       workers=workers, iiter=iiter)
+                       workers=workers, iiter=iiter,
+                       notebook=notebook)
     network_model.save_model_attr(path=path_out, fformat=fformat)
 
-def topic_model(numb_topics, numb_docs, virality, path_in, path_out, fformat):
+def topic_model(numb_topics, numb_docs, virality, path_in, path_out, fformat,
+                notebook):
     '''Generates a topic model
     '''
     topic_model = LDA(numb_topics=numb_topics, numb_docs=numb_docs,
                       virality=virality, path_in=path_in)
     topic_model.save_model_attr(path=path_out, fformat=fformat)
 
-def diffusion_model(numb_steps, actives_perc, path_out, fformat):
+def diffusion_model(numb_steps, actives_perc, path_out, fformat, notebook):
     '''Generates diffusion propagations
     '''
     diffusion_model = TLT(numb_steps=numb_steps, actives_perc=actives_perc,
-                          path_out=path_out, fformat=fformat, out_format='dict')
+                          path_out=path_out, fformat=fformat, out_format='dict',
+                          notebook=notebook)
 
 def womg_main(numb_topics=15, numb_docs=None,
               numb_steps=100, homophily=0.5,
@@ -54,7 +65,8 @@ def womg_main(numb_topics=15, numb_docs=None,
               dimensions=128, walk_length=80,
               num_walks=10,  window_size=10,
               iiter=1, workers=8,
-              p=1, q=1):
+              p=1, q=1,
+              notebook=False):
     '''
 
 
@@ -146,6 +158,9 @@ def womg_main(numb_topics=15, numb_docs=None,
     q : float
         [node2vec param] manually set DFS parameter; else: it is set by H
 
+    notebook : bool
+        boolean for specifying the run environment (Jupyter notebook)
+
     '''
     try:
         set_seed(seed)
@@ -156,12 +171,14 @@ def womg_main(numb_topics=15, numb_docs=None,
                     p=p, q=q,
                     num_walks=num_walks, walk_length=walk_length,
                     dimensions=dimensions, window_size=window_size,
-                    workers=workers, iiter=iiter)
+                    workers=workers, iiter=iiter, notebook=notebook)
         topic_model(numb_topics=numb_topics, numb_docs=numb_docs,
                     virality=virality,  path_in=docs_path,
-                    path_out=path_out, fformat=fformat)
+                    path_out=path_out, fformat=fformat,
+                    notebook=notebook)
         diffusion_model(numb_steps=numb_steps, actives_perc=actives_perc,
-                        path_out=path_out, fformat=fformat)
+                        path_out=path_out, fformat=fformat,
+                        notebook=notebook)
     finally:
         cleaning()
 
@@ -237,6 +254,9 @@ def womg_main(numb_topics=15, numb_docs=None,
 
 @click.option('--q', type=float, default=1,
                     help='manually set DFS parameter; else: it is set by H')
+@click.option('--notebook', is_flag=True,
+                    help='boolean specifying the run environment (terminal[False] or Jupyter notebook[True]). Default False',
+                    default=False)
 def main_cli(topics, docs, steps, homophily, actives,
              virality, graph, fast,
              weighted, directed, docs_folder,
@@ -244,8 +264,8 @@ def main_cli(topics, docs, steps, homophily, actives,
              dimensions, walk_length,
              num_walks, window_size,
              iiter, workers,
-             p, q
-            ):
+             p, q,
+             notebook):
     '''
 
 
@@ -268,7 +288,8 @@ def main_cli(topics, docs, steps, homophily, actives,
               dimensions=dimensions, walk_length=walk_length,
               num_walks=num_walks, window_size=window_size,
               iiter=iiter, workers=workers,
-              p=p, q=q)
+              p=p, q=q,
+              notebook=notebook)
 
 
 if __name__ == '__main__':

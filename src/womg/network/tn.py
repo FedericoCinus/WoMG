@@ -5,7 +5,7 @@ import pathlib
 import collections
 import networkx as nx
 import numpy as np
-from tqdm import tqdm
+from tqdm import tqdm, tqdm_notebook
 from sklearn.decomposition import NMF
 from node2vec_git.src.node2vec_main import node2vec_main
 from network.tlt_network_model import TLTNetworkModel
@@ -63,7 +63,8 @@ class TN(TLTNetworkModel):
                  god_node, fast,
                  p, q, num_walks,
                  walk_length, dimensions,
-                 window_size, workers, iiter, method='node2interests'):
+                 window_size, workers, iiter, method='node2interests',
+                 notebook=False):
         super().__init__()
         self.interests_influence = {}
         self.Hidden_numb_topics = numb_topics
@@ -82,6 +83,10 @@ class TN(TLTNetworkModel):
         self.Hidden_window_size = window_size
         self.Hidden_workers = workers
         self.Hidden_iiter = iiter
+        if notebook:
+            self.Hidden_progr_bar = tqdm_notebook
+        else:
+            self.Hidden_progr_bar = tqdm
         self.network_setup(method)
         self.save_model_class()
 
@@ -169,7 +174,7 @@ class TN(TLTNetworkModel):
         '''
         if nodes is None:
             print('Setting god node')
-            for node in tqdm(self.Hidden_nx_obj.nodes()):
+            for node in self.Hidden_progr_bar(self.Hidden_nx_obj.nodes()):
                 self.Hidden_godNode[(-1, node)] = weight
                 self.graph.update(self.Hidden_godNode)
         if isinstance(nodes, int):
@@ -283,7 +288,7 @@ class TN(TLTNetworkModel):
                     minim = min(interests_model.wv[str(i)])
             ##
             print("Computing interest vectors: ")
-            for node in tqdm(sorted(interests_model.wv.vocab)):
+            for node in self.Hidden_progr_bar(sorted(interests_model.wv.vocab)):
                 self.interests_influence[int(node), 'int'] = np.array([])
                 for topic in range(self.Hidden_numb_topics):
                     self.interests_influence[int(node), 'int'] = np.append(self.interests_influence[int(node), 'int'],
