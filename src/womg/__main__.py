@@ -12,13 +12,28 @@ if str(pathlib.Path.cwd()).endswith('examples'):
 
 ##################################################
 
+import click
 from network.tn import TN
 from topic.lda import LDA
 from diffusion.tlt import TLT
 from utils.utility_functions import cleaning
 from utils.distributions import set_seed
 
-import click
+
+'''
+def save(network_model, topic_model, diffusion_model,
+         save_int, save_infl, save_keyw):
+    saver = TxTSaver() if fformat == 'txt' else None
+    if save_int:
+        saver.save_users_interests(network_model)
+    if save_infl:
+        saver.save_users_influence(network_model)
+    if save_keyw:
+        saver.save_items_keyw(topic_model)
+
+    saver.save_items_descript(topic_model)
+    saver.save_propagations(diffusion_model)
+'''
 
 
 def womg_main(numb_topics=15, numb_docs=None,
@@ -145,7 +160,7 @@ def womg_main(numb_topics=15, numb_docs=None,
                             workers=workers, iiter=iiter,
                             progress_bar=progress_bar)
         network_model.network_setup(fast=fast)
-        network_model.save_model_attr(path=path_out, fformat=fformat)
+        #network_model.save_model_attr(path=path_out, fformat=fformat)
 
         topic_model = LDA(numb_topics=numb_topics,
                           numb_docs=numb_docs,

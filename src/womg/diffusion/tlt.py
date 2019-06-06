@@ -149,12 +149,12 @@ class TLT(DiffusionModel):
         v_sum = np.zeros(self.Hidden_numb_topics)
         node_check = False
 
-        if self.Hidden_network_model.Hidden_directed:
+        if self.Hidden_network_model._directed:
             #print("directed")
-            neighbors = [u for u, _v in list(self.Hidden_network_model.Hidden_nx_obj.in_edges(node))]
+            neighbors = [u for u, _v in list(self.Hidden_network_model._nx_obj.in_edges(node))]
         else:
             #print("undirected")
-            neighbors = [v for _u, v in list(self.Hidden_network_model.Hidden_nx_obj.edges(node))]
+            neighbors = [v for _u, v in list(self.Hidden_network_model._nx_obj.edges(node))]
             #print(neighbors)
 
 
@@ -230,7 +230,7 @@ class TLT(DiffusionModel):
             self.Hidden_active_nodes[item] = random_initial_active_set(self, max_active_perc=self.Hidden_actives)
             if self.Hidden_active_nodes[item] == set():
                 self.Hidden_stall_count[item] += 1
-            self.Hidden_inactive_nodes[item] = set(self.Hidden_network_model.Hidden_nx_obj.nodes())
+            self.Hidden_inactive_nodes[item] = set(self.Hidden_network_model._nx_obj.nodes())
 
             self.Hidden_new_active_nodes[item] = self.Hidden_active_nodes[item]
 
