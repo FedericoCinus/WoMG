@@ -35,7 +35,7 @@ class LDA(TLTTopicModel):
         self.set_viralities(virality)
         self.set_topic_distrib()
         self.set_word_distrib()
-        self.save_model_class()
+
 
     def set_lda_mode(self, path, mode='r'):
         '''
@@ -138,7 +138,7 @@ class LDA(TLTTopicModel):
 
 
     def preprocess_texts(self, docs):
-        ''' 
+        '''
         Preprocessing input texts: divides docs into words, bow format
         '''
         data_words = self.sent_to_words(docs)
@@ -191,7 +191,7 @@ class LDA(TLTTopicModel):
         '''
         id2word = gensim.corpora.Dictionary(data_words)  # defining dictionary
         corpus = [id2word.doc2bow(word) for word in data_words]
-    
+
         #print('Corpus with '+str(self.Hidden_numb_docs)+' documents loaded')
         return id2word, corpus
 
@@ -250,7 +250,7 @@ class LDA(TLTTopicModel):
     def train_lda(self, dict_corp_tuple):
         '''
         Pre-train lda model on a saved corpus for infering the prior weights of the distributions given
-        a number of topics, which correpsonds to the weights' dimension  
+        a number of topics, which correpsonds to the weights' dimension
 
         Returns gensim object of alpha prior topic distrib vec
 
@@ -276,7 +276,7 @@ class LDA(TLTTopicModel):
                                                     per_word_topics=True)
 
         return lda_model.alpha
-        
+
 
 
 

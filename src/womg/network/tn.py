@@ -89,7 +89,6 @@ class TN(TLTNetworkModel):
         else:
             self.Hidden_progress_bar = tqdm
         self.network_setup(method)
-        self.save_model_class()
 
 
     def network_setup(self, method):

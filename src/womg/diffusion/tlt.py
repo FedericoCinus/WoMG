@@ -51,9 +51,12 @@ class TLT(DiffusionModel):
     -
     '''
 
-    def __init__(self, numb_steps, actives_perc, path_out, out_format,
+    def __init__(self, network_model, topic_model, numb_steps, actives_perc,
+                 path_out, out_format,
                  fformat='txt', progress_bar=False):
         super().__init__()
+        self.Hidden_network_model = network_model
+        self.Hidden_topic_model = topic_model
         self.Hidden_numb_steps = numb_steps
         self.Hidden_numb_nodes = 0
         self.Hidden_numb_docs = 0
@@ -77,8 +80,6 @@ class TLT(DiffusionModel):
         '''
         Sets all the attributes of the current and super class
         '''
-        self.set_network_model()
-        self.set_topic_model()
         self.Hidden_numb_nodes = int(self.Hidden_network_model.info['numb_nodes'])
         self.Hidden_numb_docs = int(self.Hidden_topic_model.Hidden_numb_docs)
         self.Hidden_numb_topics = int(self.Hidden_topic_model.Hidden_numb_topics)
@@ -214,22 +215,6 @@ class TLT(DiffusionModel):
             for node in removing_list:
                 self.Hidden_inactive_nodes[item].discard(node)
                 self.Hidden_active_nodes[item].add(node)
-
-
-
-    def set_network_model(self):
-        '''
-        Sets the Hidden_network_model attribute to the loaded TLTNetworkModel obj
-        from pickle file
-        '''
-        self.Hidden_network_model = self.read_class_pickle('network')
-
-    def set_topic_model(self):
-        '''
-        Sets the Hidden_topic_model attribute to the loaded TLTTopicModel obj
-        from pickle file
-        '''
-        self.Hidden_topic_model = self.read_class_pickle('topic')
 
 
     def set_sets(self):

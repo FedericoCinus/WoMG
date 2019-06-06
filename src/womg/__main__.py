@@ -21,38 +21,6 @@ from utils.distributions import set_seed
 import click
 
 
-def graph_model(numb_topics, homophily, weighted, directed, path_in_graph,
-                fast, path_out,
-                fformat, p, q, num_walks, walk_length,
-                dimensions, window_size, workers, iiter,
-                progress_bar):
-    '''Reading graph with networkx
-    '''
-    print('Loading graph')
-    network_model = TN(numb_topics=numb_topics, homophily=homophily,
-                       god_node=False, weighted=weighted, directed=directed,
-                       path_in_graph=path_in_graph, fast=fast,
-                       p=p, q=q, num_walks=num_walks, walk_length=walk_length,
-                       dimensions=dimensions, window_size=window_size,
-                       workers=workers, iiter=iiter,
-                       progress_bar=progress_bar)
-    network_model.save_model_attr(path=path_out, fformat=fformat)
-
-def topic_model(numb_topics, numb_docs, virality, path_in, path_out, fformat,
-                progress_bar):
-    '''Generates a topic model
-    '''
-    topic_model = LDA(numb_topics=numb_topics, numb_docs=numb_docs,
-                      virality=virality, path_in=path_in)
-    topic_model.save_model_attr(path=path_out, fformat=fformat)
-
-def diffusion_model(numb_steps, actives_perc, path_out, fformat, progress_bar):
-    '''Generates diffusion propagations
-    '''
-    diffusion_model = TLT(numb_steps=numb_steps, actives_perc=actives_perc,
-                          path_out=path_out, fformat=fformat, out_format='list',
-                          progress_bar=progress_bar)
-
 def womg_main(numb_topics=15, numb_docs=None,
               numb_steps=100, homophily=0.5,
               actives_perc=0.05, virality=1,
@@ -164,23 +132,27 @@ def womg_main(numb_topics=15, numb_docs=None,
         if False progress_bar=tqdm. Default False
 
     '''
+
     try:
         set_seed(seed)
-        graph_model(numb_topics=numb_topics, homophily=homophily,
-                    weighted=weighted, directed=directed,
-                    path_in_graph=path_in_graph, path_out=path_out,
-                    fformat=fformat, fast=fast,
-                    p=p, q=q,
-                    num_walks=num_walks, walk_length=walk_length,
-                    dimensions=dimensions, window_size=window_size,
-                    workers=workers, iiter=iiter, progress_bar=progress_bar)
-        topic_model(numb_topics=numb_topics, numb_docs=numb_docs,
-                    virality=virality,  path_in=docs_path,
-                    path_out=path_out, fformat=fformat,
-                    progress_bar=progress_bar)
-        diffusion_model(numb_steps=numb_steps, actives_perc=actives_perc,
-                        path_out=path_out, fformat=fformat,
-                        progress_bar=progress_bar)
+        network_model = TN(numb_topics=numb_topics, homophily=homophily,
+                            god_node=False,
+                            weighted=weighted, directed=directed,
+                            path_in_graph=path_in_graph,
+                            fast=fast,
+                            p=p, q=q,
+                            num_walks=num_walks, walk_length=walk_length,
+                            dimensions=dimensions, window_size=window_size,
+                            workers=workers, iiter=iiter,
+                            progress_bar=progress_bar)
+        network_model.save_model_attr(path=path_out, fformat=fformat)
+        topic_model = LDA(numb_topics=numb_topics, numb_docs=numb_docs,
+                          virality=virality,  path_in=docs_path)
+        topic_model.save_model_attr(path=path_out, fformat=fformat)
+        diffusion_model = TLT(network_model=network_model, topic_model=topic_model,
+                              numb_steps=numb_steps, actives_perc=actives_perc,
+                              path_out=path_out, fformat=fformat,
+                              out_format='list', progress_bar=progress_bar)
     finally:
         cleaning()
 
