@@ -26,18 +26,29 @@ class LDA(TLTTopicModel):
         sets the lda mode: reading or generating mode
     '''
 
-    def __init__(self, numb_topics, numb_docs, virality, path_in):
+    def __init__(self, numb_topics, numb_docs, path_in):
         super().__init__()
         self.Hidden_numb_topics = numb_topics
         self.Hidden_numb_docs = numb_docs
         self.Hidden_word_distrib = {}
-        self.set_lda_mode(path=path_in)
-        self.set_viralities(virality)
+        self.Hidden_path_in = path_in
+
+
+    def fit(self):
+        '''
+        Pipeline for fitting the lda model
+
+        1. define the lda mode : generative mode / reading mode
+        2. set the topic distributions of the documents
+        3. set the word distribution of the documents
+        '''
+        self.set_lda_mode()
         self.set_topic_distrib()
         self.set_word_distrib()
 
 
-    def set_lda_mode(self, path, mode='r'):
+
+    def set_lda_mode(self, mode='r'):
         '''
         Sets how lda has to work:
         reading a document folder or generating documents
@@ -53,14 +64,14 @@ class LDA(TLTTopicModel):
 
         '''
         # setting mode
-        if ((self.Hidden_numb_docs == None) and (path == None)):
+        if ((self.Hidden_numb_docs == None) and (self.Hidden_path_in == None)):
             mode = 'g'
             self.Hidden_numb_docs = 100
         elif self.Hidden_numb_docs:
             mode = 'g'
-        elif path:
+        elif self.Hidden_path_in:
             mode = 'r'
-        elif path and self.Hidden_numb_docs:
+        elif self.Hidden_path_in and self.Hidden_numb_docs:
             print('Error: insert docs for generating them; insert docs path for reading them. Not Both!')
 
         # setting lda input
@@ -70,8 +81,8 @@ class LDA(TLTTopicModel):
             self.Hidden_input_path = None
             self.Hidden_training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
         if mode == 'r':
-            if path:
-                self.Hidden_input_path = pathlib.Path(path)
+            if self.Hidden_path_in:
+                self.Hidden_input_path = pathlib.Path(self.Hidden_path_in)
                 numb_docs = count_files(self.Hidden_input_path)
                 if numb_docs != 0:
                     self.Hidden_numb_docs = numb_docs
@@ -91,15 +102,15 @@ class LDA(TLTTopicModel):
                     print('Docs folder inside input folder has been deleted')
 
 
-    def set_viralities(self, virality):
+    def set_docs_viralities(self, virality):
         '''
         Sets the documents viralities to the given scalar/vector
 
         Parameters
         ----------
-        viralities : int/vec
-            if int is given: all the viralities are set to the given scalar
-            if numb_docs vec is given: each doc virality is set to the correspondent
+        viralitiy : float
+            Exponent of the powerlaw distribution for documents
+            viralities. P(x; a) = x^{-a}, 0 <= x <=1
         '''
         viralities = random_viralities_vec(gamma=virality, dimensions=self.Hidden_numb_docs)
 

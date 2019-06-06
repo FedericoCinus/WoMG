@@ -60,10 +60,10 @@ class TN(TLTNetworkModel):
 
     def __init__(self, numb_topics, homophily,
                  weighted, directed, path_in_graph,
-                 god_node, fast,
+                 god_node,
                  p, q, num_walks,
                  walk_length, dimensions,
-                 window_size, workers, iiter, method='node2interests',
+                 window_size, workers, iiter,
                  progress_bar=False):
         super().__init__()
         self.interests_influence = {}
@@ -72,7 +72,6 @@ class TN(TLTNetworkModel):
         self.Hidden_weighted = weighted
         self.Hidden_directed = directed
         self.Hidden_path_in_graph = path_in_graph
-        self.Hidden_fast = fast
         self.Hidden_godNode = {}
         self.Hidden_god_node = god_node
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
@@ -88,10 +87,9 @@ class TN(TLTNetworkModel):
             self.Hidden_progress_bar = tqdm_notebook
         else:
             self.Hidden_progress_bar = tqdm
-        self.network_setup(method)
 
 
-    def network_setup(self, method):
+    def network_setup(self, fast):
         '''
         - Sets the graph atribute using set_graph() method
         - Sets the info attribute using set_info() method
@@ -115,7 +113,7 @@ class TN(TLTNetworkModel):
 
         if self.Hidden_god_node:
             self.set_godNode()
-        self.set_interests(method)
+        self.set_interests(fast)
         self.set_influence()
         #print('updating weights')
         self.graph_weights_vecs_generation()
@@ -185,7 +183,7 @@ class TN(TLTNetworkModel):
                 self.Hidden_godNode[(-1, node)] = weight
                 self.graph.update(self.Hidden_godNode)
 
-    def set_interests(self, method='node2interests'):
+    def set_interests(self, fast):
         '''
         Creates interests vectors (numb_topics dimension) for each node and
         save them in the interests_influence class attribute.
@@ -196,15 +194,12 @@ class TN(TLTNetworkModel):
           name of the method for creating interests vectors
         '''
 
-        if self.Hidden_fast:
+        if fast:
             print('Fast generation of interests:')
             self.random_interests()
         else:
             print('Generating interests:')
-            if method == 'node2interests':
-                self.node2interests(norm=False)
-            if method == 'random':
-                self.random_interests()
+            self.node2interests(norm=False)
 
 
     def set_influence(self, method='node2influence'):

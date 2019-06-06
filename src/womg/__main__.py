@@ -139,17 +139,24 @@ def womg_main(numb_topics=15, numb_docs=None,
                             god_node=False,
                             weighted=weighted, directed=directed,
                             path_in_graph=path_in_graph,
-                            fast=fast,
                             p=p, q=q,
                             num_walks=num_walks, walk_length=walk_length,
                             dimensions=dimensions, window_size=window_size,
                             workers=workers, iiter=iiter,
                             progress_bar=progress_bar)
+        network_model.network_setup(fast=fast)
         network_model.save_model_attr(path=path_out, fformat=fformat)
-        topic_model = LDA(numb_topics=numb_topics, numb_docs=numb_docs,
-                          virality=virality,  path_in=docs_path)
+
+        topic_model = LDA(numb_topics=numb_topics,
+                          numb_docs=numb_docs,
+                          path_in=docs_path)
+        topic_model.fit()
+        topic_model.set_docs_viralities(virality=virality)
+
         topic_model.save_model_attr(path=path_out, fformat=fformat)
-        diffusion_model = TLT(network_model=network_model, topic_model=topic_model,
+
+        diffusion_model = TLT(network_model=network_model,
+                              topic_model=topic_model,
                               numb_steps=numb_steps, actives_perc=actives_perc,
                               path_out=path_out, fformat=fformat,
                               out_format='list', progress_bar=progress_bar)
