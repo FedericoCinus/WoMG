@@ -109,9 +109,9 @@ img/*
 bin/*
 
 # Jupyter
-.DS_Store
-__pycache__
-.ipynb_checkpoints
+*.DS_Store
+**/__pycache__
+*.ipynb_checkpoints
 
 tex/*.pdf
 ./*.tar.gz
