@@ -51,13 +51,13 @@ class TLT(DiffusionModel):
     -
     '''
 
-    def __init__(self, network_model, topic_model, numb_steps, actives_perc,
+    def __init__(self, network_model, topic_model,
+                 actives_perc,
                  path_out, out_format,
                  fformat='txt', progress_bar=False):
         super().__init__()
         self.Hidden_network_model = network_model
         self.Hidden_topic_model = topic_model
-        self.Hidden_numb_steps = numb_steps
         self.Hidden_numb_nodes = 0
         self.Hidden_numb_docs = 0
         self.Hidden_numb_topics = 0
@@ -73,8 +73,7 @@ class TLT(DiffusionModel):
         else:
             self.Hidden_progress_bar = tqdm
         self._formatted_output = []
-        self.diffusion_setup()
-        self.run(self.Hidden_numb_steps)
+
 
     def diffusion_setup(self):
         '''

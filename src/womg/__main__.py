@@ -157,9 +157,11 @@ def womg_main(numb_topics=15, numb_docs=None,
 
         diffusion_model = TLT(network_model=network_model,
                               topic_model=topic_model,
-                              numb_steps=numb_steps, actives_perc=actives_perc,
+                              actives_perc=actives_perc,
                               path_out=path_out, fformat=fformat,
                               out_format='list', progress_bar=progress_bar)
+        diffusion_model.diffusion_setup()
+        diffusion_model.run(numb_steps=numb_steps)
     finally:
         cleaning()
 
