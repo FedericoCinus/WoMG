@@ -75,6 +75,7 @@ class TN(TLTNetworkModel):
         self.Hidden_fast = fast
         self.Hidden_godNode = {}
         self.Hidden_god_node = god_node
+        #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self.Hidden_p = p
         self.Hidden_q = q
         self.Hidden_num_walks = num_walks

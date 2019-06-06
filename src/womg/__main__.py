@@ -50,7 +50,7 @@ def diffusion_model(numb_steps, actives_perc, path_out, fformat, progress_bar):
     '''Generates diffusion propagations
     '''
     diffusion_model = TLT(numb_steps=numb_steps, actives_perc=actives_perc,
-                          path_out=path_out, fformat=fformat, out_format='dict',
+                          path_out=path_out, fformat=fformat, out_format='list',
                           progress_bar=progress_bar)
 
 def womg_main(numb_topics=15, numb_docs=None,

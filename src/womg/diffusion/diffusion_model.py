@@ -3,7 +3,6 @@
 import abc
 import pickle
 import pathlib
-from tqdm import tqdm
 
 
 class DiffusionModel(abc.ABC):
@@ -56,7 +55,7 @@ class DiffusionModel(abc.ABC):
             number of simulation steps, i.e. number of times to call iteration()
         '''
         print("Computing cascades: ")
-        for t in tqdm(range(numb_steps)):
+        for t in self.Hidden_progress_bar(range(numb_steps)):
             if not self.stop_criterior():
                 #print(self.stop_criterior())
                 self.iteration(step=t)
@@ -101,7 +100,7 @@ class DiffusionModel(abc.ABC):
          -----
          All the attributes which start with "_" are NOT saved
         '''
-        if path == None or path == '':
+        if path in (None, ''):
             output_dir = pathlib.Path.cwd().parent / "Output"
         else:
             output_dir = str(path)

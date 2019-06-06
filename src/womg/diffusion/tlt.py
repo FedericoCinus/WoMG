@@ -51,7 +51,7 @@ class TLT(DiffusionModel):
     -
     '''
 
-    def __init__(self, numb_steps, actives_perc, path_out, out_format='list',
+    def __init__(self, numb_steps, actives_perc, path_out, out_format,
                  fformat='txt', progress_bar=False):
         super().__init__()
         self.Hidden_numb_steps = numb_steps
@@ -82,7 +82,9 @@ class TLT(DiffusionModel):
         self.Hidden_numb_nodes = int(self.Hidden_network_model.info['numb_nodes'])
         self.Hidden_numb_docs = int(self.Hidden_topic_model.Hidden_numb_docs)
         self.Hidden_numb_topics = int(self.Hidden_topic_model.Hidden_numb_topics)
-        self.Hidden_stall_count = 0
+        self.Hidden_stall_count = {}
+        for i in range(self.Hidden_numb_docs):
+            self.Hidden_stall_count[i] = 0
         self.set_sets()
 
 
@@ -179,7 +181,7 @@ class TLT(DiffusionModel):
         Updating the active, inactive and current new active sets attributes.
 
             The value correspondent to 'item' key of the Hidden_new_active_nodes
-            dictionary is set equal to the given input set (Hidden_new_active_nodes).
+            dictionary is set equal to the given input set (new_active_nodes).
             This set is given by the iteration method where update_sets is called.
 
             The Hidden_inactive_nodes attribute is updating discarding the activated
@@ -202,14 +204,16 @@ class TLT(DiffusionModel):
 
         '''
         self.Hidden_new_active_nodes[item] = new_active_nodes
-        #print(item, self.Hidden_new_active_nodes[item])
+
         if self.Hidden_new_active_nodes[item] == set():
-            #print('item', item)
-            self.Hidden_stall_count += 1
-        removing_list = new_active_nodes.union(self.Hidden_active_nodes[item])
-        for node in removing_list:
-            self.Hidden_inactive_nodes[item].discard(node)
-            self.Hidden_active_nodes[item].add(node)
+            #print('item ', item)
+            self.Hidden_stall_count[item] += 1
+
+        removing_list = new_active_nodes.union(self.Hidden_active_nodes[item])  ### needs improvement
+        if removing_list != set():
+            for node in removing_list:
+                self.Hidden_inactive_nodes[item].discard(node)
+                self.Hidden_active_nodes[item].add(node)
 
 
 
@@ -241,9 +245,10 @@ class TLT(DiffusionModel):
         for item in range(self.Hidden_numb_docs):
             self.Hidden_active_nodes[item] = random_initial_active_set(self, max_active_perc=self.Hidden_actives)
             if self.Hidden_active_nodes[item] == set():
-                self.Hidden_stall_count += 1
+                self.Hidden_stall_count[item] += 1
             self.Hidden_inactive_nodes[item] = set(self.Hidden_network_model.Hidden_nx_obj.nodes())
-        self.Hidden_new_active_nodes = self.Hidden_active_nodes
+
+            self.Hidden_new_active_nodes[item] = self.Hidden_active_nodes[item]
 
 
     def stop_criterior(self):
@@ -251,7 +256,10 @@ class TLT(DiffusionModel):
         Stops the run if there are not new active nodes for given time step seq
         '''
         #print('stall count ', self.Hidden_stall_count)
-        return self.Hidden_stall_count == self.Hidden_numb_docs
+        stall_factor = True
+        for item in self.Hidden_stall_count.keys():
+            stall_factor *= (self.Hidden_stall_count[item] >= 1)
+        return stall_factor
 
 
 
