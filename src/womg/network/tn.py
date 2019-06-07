@@ -279,6 +279,7 @@ class TN(TLTNetworkModel):
                                         workers=self._workers,
                                         iiter=self._iiter)
         #interests_model = node2vec.fit(window=10, min_count=1)
+        #print(interests_model.wv.vocab)
 
         # Translation
         if transl:

@@ -2,7 +2,6 @@
 # Implementation of LDA topic-model
 import pathlib
 import gensim
-import random
 import numpy as np
 from topic.tlt_topic_model import TLTTopicModel
 from utils.utility_functions import count_files, read_docs
@@ -17,8 +16,8 @@ class LDA(TLTTopicModel):
     ----------
     numb_topics : int
         hidden
-    word_distrib : dict
-        key: topic index, value: word distribution
+    items_keyw : dict
+        dict of items in bow format
 
     Methods
     -------
@@ -28,10 +27,10 @@ class LDA(TLTTopicModel):
 
     def __init__(self, numb_topics, numb_docs, path_in):
         super().__init__()
-        self.Hidden_numb_topics = numb_topics
-        self.Hidden_numb_docs = numb_docs
-        self.Hidden_word_distrib = {}
-        self.Hidden_path_in = path_in
+        self._numb_topics = numb_topics
+        self._numb_docs = numb_docs
+        self._path_in = path_in
+        self.items_keyw = {}
 
 
     def fit(self):
@@ -42,13 +41,19 @@ class LDA(TLTTopicModel):
         2. set the topic distributions of the documents
         3. set the word distribution of the documents
         '''
-        self.set_lda_mode()
-        self.set_topic_distrib()
-        self.set_word_distrib()
+        mode_reading = self.set_lda_mode()
+        lda_model = self.train_lda()
+        self.topics_descript = self.get_topics_descript(lda_model)
+        if mode_reading:
+            self.get_items_descript(path=self._path_in, model=lda_model)
+            self.get_items_keyw(model=lda_model)
+        else:
+            self.gen_items_descript(model=lda_model)
+            self.get_items_keyw(model=lda_model)
 
 
 
-    def set_lda_mode(self, mode='r'):
+    def set_lda_mode(self):
         '''
         Sets how lda has to work:
         reading a document folder or generating documents
@@ -58,49 +63,55 @@ class LDA(TLTTopicModel):
         ----------
         path : string
             position of the document folder
-        mode : string bool
-            if 'r': it will read docs inside the given folder path or input folder
-            if 'g': it will use lda for generating docs
+
+        Returns
+        -------
+        reading : bool
+            if True: it will read docs inside the given folder path or input folder
+            if False: it will use lda for generating docs
 
         '''
         # setting mode
-        if ((self.Hidden_numb_docs == None) and (self.Hidden_path_in == None)):
-            mode = 'g'
-            self.Hidden_numb_docs = 100
-        elif self.Hidden_numb_docs:
-            mode = 'g'
-        elif self.Hidden_path_in:
-            mode = 'r'
-        elif self.Hidden_path_in and self.Hidden_numb_docs:
+        if ((self._numb_docs == None) and (self._path_in == None)):
+            reading = False
+            self._numb_docs = 100
+        elif self._numb_docs:
+            reading = False
+        elif self._path_in:
+            reading = True
+        elif self._path_in and self._numb_docs:
             print('Error: insert docs for generating them; insert docs path for reading them. Not Both!')
 
         # setting lda input
-        if mode == 'g':
-            print('Setting LDA in generative mode: ', self.Hidden_numb_docs, ' documents, with ', self.Hidden_numb_topics, ' topics.')
-            print('Training the LDA model ..')
-            self.Hidden_input_path = None
-            self.Hidden_training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
-        if mode == 'r':
-            if self.Hidden_path_in:
-                self.Hidden_input_path = pathlib.Path(self.Hidden_path_in)
-                numb_docs = count_files(self.Hidden_input_path)
+
+        if reading:
+            if self._path_in:
+                self._input_path = pathlib.Path(self._path_in)
+                numb_docs = count_files(self._input_path)
                 if numb_docs != 0:
-                    self.Hidden_numb_docs = numb_docs
-                    print('Extracting topic distribution from docs in ', self.Hidden_input_path)
+                    self._numb_docs = numb_docs
+                    print('Extracting topic distribution from docs in ', self._input_path)
                 else:
-                    print('No txt file in: ', self.Hidden_input_path)
+                    print('No txt file in: ', self._input_path)
             else:
-                self.Hidden_input_path = pathlib.Path.cwd().parent / "data" / "docs"
-                if pathlib.Path(self.Hidden_input_path).exists():
-                    numb_docs = count_files(self.Hidden_input_path)
+                self._input_path = pathlib.Path.cwd().parent / "data" / "docs"
+                if pathlib.Path(self._input_path).exists():
+                    numb_docs = count_files(self._input_path)
                     if numb_docs != 0:
-                        self.Hidden_numb_docs = numb_docs
-                        print('Extracting topic distribution from docs in ', self.Hidden_input_path)
+                        self._numb_docs = numb_docs
+                        print('Extracting topic distribution from docs in ', self._input_path)
                     else:
-                        print('No txt file in: ', self.Hidden_input_path)
+                        print('No txt file in: ', self._input_path)
                 else:
                     print('Docs folder inside input folder has been deleted')
 
+        else:
+            print('Setting LDA in generative mode: ', self._numb_docs, ' documents, with ', self._numb_topics, ' topics.')
+            print('Training the LDA model ..')
+            self._input_path = None
+            self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
+
+        return reading
 
     def set_docs_viralities(self, virality):
         '''
@@ -112,40 +123,53 @@ class LDA(TLTTopicModel):
             Exponent of the powerlaw distribution for documents
             viralities. P(x; a) = x^{-a}, 0 <= x <=1
         '''
-        viralities = random_viralities_vec(gamma=virality, dimensions=self.Hidden_numb_docs)
+        viralities = random_viralities_vec(gamma=virality, dimensions=self._numb_docs)
 
-        if np.size(viralities) == self.Hidden_numb_docs:
-            for item in range(self.Hidden_numb_docs):
+        if np.size(viralities) == self._numb_docs:
+            for item in range(self._numb_docs):
                 self.viralities[item] = viralities[item]
         if np.size(viralities) == 1:
-            for item in range(self.Hidden_numb_docs):
+            for item in range(self._numb_docs):
                 self.viralities[item] = viralities
         #print(viralities)
 
 
-    def set_topic_distrib(self):
+    def get_items_descript(self, path, model):
         '''
-        Sets the topic distribution as attribute of the superclass
-
-        1. read the docs
-        2. creates the bag of words
-        3. creates the corpus
-        4. extracts the topic distribution for each doc
-        5. formats the topic model of gensim to python dict
+        Gets the topic distribution as attribute of the superclass
         '''
-        if self.Hidden_input_path != None:
-            docs = read_docs(self.Hidden_input_path)
-            dict_corp_tuple = self.preprocess_texts(docs)
-            topic_model = self.topic_distrib_extraction(dict_corp_tuple)
-            gammas = self.tformat(topic_model)
-            self.topic_distrib = gammas
-        else:
-            docs = read_docs(self.Hidden_training_path)
-            dict_corp_tuple = self.preprocess_texts(docs)
-            alpha = self.train_lda(dict_corp_tuple)
-            #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
-            self.topic_distrib = self.generates_topic_distrib(alpha)
+        #potrebbe esserci un bug
+        docs = read_docs(path)
+        id2word, corpus = self.preprocess_texts(docs)
+        items_descript = model.get_document_topics(corpus, minimum_probability=0.)
+        gammas = {}
+        item = 0
+        for item_descript in items_descript:
+            gammas[item] = np.array([i[1] for i in item_descript])
+            item += 1
+        if self._numb_docs == len(gammas.keys()):
+            print("Items' distribution over topics is stored")
+            print(gammas)
+        self.items_descript = gammas
 
+    def gen_items_descript(self, model):
+        '''
+        Generates the topic distribution for each item
+        and stores it in the imets_descript attribute
+        '''
+        alpha = model.alpha
+        #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
+        gammas = {}
+        for item in range(self._numb_docs):
+            gammas[item] = np.random.dirichlet(alpha)
+        self.items_descript = gammas
+
+
+    def get_items_keyw(self, model):
+        '''
+        Get the the items keyword in a bow format
+        '''
+        return
 
 
     def preprocess_texts(self, docs):
@@ -154,16 +178,9 @@ class LDA(TLTTopicModel):
         '''
         data_words = self.sent_to_words(docs)
         dict_corp_tuple = self.corpus_gen(data_words)
-
         #print(dict_corp_tuple)
         return dict_corp_tuple
 
-
-    def set_word_distrib(self):
-        '''
-        Sets word distribution of topics as attribute
-        '''
-        pass
 
     def sent_to_words(self, docs):
         '''
@@ -203,62 +220,11 @@ class LDA(TLTTopicModel):
         id2word = gensim.corpora.Dictionary(data_words)  # defining dictionary
         corpus = [id2word.doc2bow(word) for word in data_words]
 
-        #print('Corpus with '+str(self.Hidden_numb_docs)+' documents loaded')
+        #print('Corpus with '+str(self._numb_docs)+' documents loaded')
         return id2word, corpus
 
-    def topic_distrib_extraction(self, dict_corp_tuple):
-        '''
-        Returns gensim object of items' distribution over topics
 
-        Parameters
-        ----------
-        dict_corp_tuple : tuple
-            output of the corpus_gen() method: dictionary and corpus
-
-        Returns
-        -------
-        gensim lda topic model
-        '''
-        id2word = dict_corp_tuple[0]
-        corpus = dict_corp_tuple[1]
-        lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
-                                                    id2word=id2word,
-                                                    num_topics=self.Hidden_numb_topics,
-                                                    random_state=100,
-                                                    update_every=1,
-                                                    chunksize=100,
-                                                    passes=10,
-                                                    alpha='auto',
-                                                    per_word_topics=True)
-        #print(lda_model.alpha)
-        return lda_model.get_document_topics(corpus, minimum_probability=0.)
-
-    def tformat(self, topic_model):
-        '''
-        Returns items' distribution over topics in dict format, each key is
-        the item index
-
-        Parameters
-        ----------
-        topic model : gensim obj
-            lda topic model in gensim format
-
-        Returns
-        -------
-        gammas : dict
-            dictionary of topic distributions for documents
-        '''
-        gammas = {}
-        item = 0
-        for item_distr in topic_model:
-            gammas[item] = np.array([i[1] for i in item_distr])
-            item += 1
-        if self.Hidden_numb_docs == len(gammas.keys()):
-            print("Items' distribution over topics is stored")
-            #print(gammas)
-        return gammas
-
-    def train_lda(self, dict_corp_tuple):
+    def train_lda(self):
         '''
         Pre-train lda model on a saved corpus for infering the prior weights of the distributions given
         a number of topics, which correpsonds to the weights' dimension
@@ -274,30 +240,33 @@ class LDA(TLTTopicModel):
         -------
         gensim lda alpha
         '''
-        id2word = dict_corp_tuple[0]
-        corpus = dict_corp_tuple[1]
+        docs = read_docs(self._training_path)
+        id2word, corpus = self.preprocess_texts(docs)
         lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
                                                     id2word=id2word,
-                                                    num_topics=self.Hidden_numb_topics,
+                                                    num_topics=self._numb_topics,
                                                     random_state=100,
                                                     update_every=1,
                                                     chunksize=100,
                                                     passes=10,
                                                     alpha='auto',
                                                     per_word_topics=True)
+        return lda_model
 
-        return lda_model.alpha
-
-
-
-
-    def generates_topic_distrib(self, alpha=0.):
+    def get_topics_descript(self, model, mtrx_form=False):
         '''
-        Generates topic distribution for each hypothetical document using
-        pre-trained lda over 15 topics
+        Getting the word distribution for each topic
+
+        Parameters
+        ----------
+        model : gensim obj
+            input model from gensim library e.g. lda model trained
+        all : bool
+            if True the complete word distribution for each topic is given
+            in a (topics)x(words) matrix format
+            if False a combination of most important words is given for each topic
         '''
-        #alpha_pre = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
-        gammas = {}
-        for item in range(self.Hidden_numb_docs):
-            gammas[item] = np.random.dirichlet(alpha)
-        return gammas
+        if mtrx_form:
+            return model.get_topics()
+        else:
+            return model.print_topics()

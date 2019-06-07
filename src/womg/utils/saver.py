@@ -1,26 +1,42 @@
-from abc import ABC
+import abc
+import pickle
+import pathlib
 
-class Saver(ABC):
+class Saver():
     '''
     Abstract class for defining the structure of a saver object
     '''
     def __init__(self):
         self._path = ''
 
-    @abstractmethod
+    @abc.abstractmethod
     def save_diffusion(self, diffusion_model):
         '''
         Abstract method for saving a diffusion model at each step of simulation
         '''
         return
 
-    @abstractmethod
+    @abc.abstractmethod
     def save_model(self, model):
         '''
         Abstract method for saving a network model or topic model
         '''
         return
 
+    @staticmethod
+    def make_output_directory(path):
+        '''
+        Returns the output directory path:
+        - in case path arg is None -> it create a Output folder in the parent
+        folder of the current path
+        - in case path is given -> it check that parent folders exist
+        '''
+        if path in (None, ''):
+            output_dir = pathlib.Path.cwd().parent / "Output"
+        else:
+            output_dir = pathlib.Path(path)
+        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+        return output_dir
 
 
 class JsonSaver(Saver):
@@ -28,7 +44,7 @@ class JsonSaver(Saver):
     Concrete class for defining methods for saving in json format
     '''
     def __init__(self, path):
-        super().__init()
+        super().__init__()
         self._path = path
 
     def save_diffusion(self, diffusion_model):
@@ -51,36 +67,94 @@ class TxtSaver(Saver):
     Concrete class for defining methods for saving in json format
     '''
     def __init__(self, path):
-        super().__init()
+        super().__init__()
         self._path = path
 
-    def save_users_interests(self, netwrok_model):
+    def save_users_interests(self, network_model):
         '''
         Concrete method for saving the network model interests attribute
-        in a txt format: user_id_int [k-array of interests]
+        in a txt format: user_id_int [K-array of interests]
         '''
-        return
+        output_dir = self.make_output_directory(self._path)
+
+        filename = output_dir / str("Users_interests_sim0.txt")
+        sim_numb = 0
+        while pathlib.Path(filename).exists():
+            sim_numb+=1
+            filename = output_dir / str("Users_interests_sim" + str(sim_numb) + ".txt")
+
+        with open(filename, "w") as f:
+            for node in network_model.users_influence.keys():
+                f.write(str(node) + ' ' +str(list(network_model.users_interests[node])) + '\n')
+
 
     def save_users_influence(self, network_model):
         '''
         Concrete method for saving the network model influence attribute
-        in a txt format: user_id_int [k-array of influence]
+        in a txt format: user_id_int [K-array of influence]
         '''
-        return
+        output_dir = self.make_output_directory(self._path)
+
+        filename = output_dir / str("Users_influence_sim0.txt")
+        sim_numb = 0
+        while pathlib.Path(filename).exists():
+            sim_numb+=1
+            filename = output_dir / str("Users_influence_sim" + str(sim_numb) + ".txt")
+
+        with open(filename, "w") as f:
+            for node in network_model.users_influence.keys():
+                f.write(str(node) + ' ' +str(list(network_model.users_influence[node])) + '\n')
+
 
     def save_items_descript(self, topic_model):
         '''
-        Concrete method for saving the diffusion model or files
-        in a txt format
+        Concrete method for saving the topic model items description
+        in a txt format: item_id_int [K-array of probabilities]
         '''
-        return
+        output_dir = self.make_output_directory(self._path)
+
+        filename = output_dir / str("Items_description_sim0.txt")
+        sim_numb = 0
+        while pathlib.Path(filename).exists():
+            sim_numb+=1
+            filename = output_dir / str("Items_description_sim" + str(sim_numb) + ".txt")
+
+        with open(filename, "w") as f:
+            for item in topic_model.items_descript.keys():
+                f.write(str(item) + ' ' +str(list(topic_model.items_descript[item])) + '\n')
+
+    def save_topics_descript(self, topic_model):
+        '''
+        Concrete method for saving the topic model items description
+        in a txt format: topic_id_int [V-array of probabilities]
+        '''
+        output_dir = self.make_output_directory(self._path)
+
+        filename = output_dir / str("Topics_descript_sim0.txt")
+        sim_numb = 0
+        while pathlib.Path(filename).exists():
+            sim_numb+=1
+            filename = output_dir / str("Topics_descript_sim" + str(sim_numb) + ".txt")
+
+        with open(filename, "w") as f:
+            f.write(str(topic_model.topics_descript))
+
 
     def save_items_keyw(self, topic_model):
         '''
         Concrete method for saving the network model or topic model files
         in a txt format
         '''
-        return
+        output_dir = self.make_output_directory(self._path)
+
+        filename = output_dir / str("Items_keyw_sim0.txt")
+        sim_numb = 0
+        while pathlib.Path(filename).exists():
+            sim_numb+=1
+            filename = output_dir / str("Items_keyw_sim" + str(sim_numb) + ".txt")
+
+        with open(filename, "w") as f:
+            f.write(str(topic_model.items_keyw))
 
     def save_propagations(self, diffusion_model):
         '''
@@ -88,7 +162,6 @@ class TxtSaver(Saver):
         in a txt format
         '''
         return
-
 
 
     def save_model_attr(self, path=None, fformat='txt', way='w'):
@@ -146,4 +219,3 @@ class TxtSaver(Saver):
         file = pathlib.Path.cwd() /  "__network_model"
         with open(file, 'wb') as f:
             pickle.dump(self, f)
-'''

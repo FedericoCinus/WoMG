@@ -60,7 +60,7 @@ class DiffusionModel(abc.ABC):
                 #print(self.stop_criterior())
                 self.iteration(step=t)
             else:
-                print('\nSimulation stoped at timestep ', str(t-1) ,
+                print('\nSimulation stopped at timestep ', str(t-1) ,
                         '\nNo more nodes will activate'  )
                 break
 

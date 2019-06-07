@@ -54,7 +54,7 @@ class TLT(DiffusionModel):
     def __init__(self, network_model, topic_model,
                  actives_perc,
                  path_out, out_format,
-                 fformat='txt', progress_bar=False):
+                 fformat='txt', progress_bar=False, save=True):
         super().__init__()
         self.Hidden_network_model = network_model
         self.Hidden_topic_model = topic_model
@@ -73,6 +73,7 @@ class TLT(DiffusionModel):
         else:
             self.Hidden_progress_bar = tqdm
         self._formatted_output = []
+        self.Hidden_save = save
 
 
     def diffusion_setup(self):
@@ -80,8 +81,8 @@ class TLT(DiffusionModel):
         Sets all the attributes of the current and super class
         '''
         self.Hidden_numb_nodes = int(self.Hidden_network_model.info['numb_nodes'])
-        self.Hidden_numb_docs = int(self.Hidden_topic_model.Hidden_numb_docs)
-        self.Hidden_numb_topics = int(self.Hidden_topic_model.Hidden_numb_topics)
+        self.Hidden_numb_docs = int(self.Hidden_topic_model._numb_docs)
+        self.Hidden_numb_topics = int(self.Hidden_topic_model._numb_topics)
         self.Hidden_stall_count = {}
         for i in range(self.Hidden_numb_docs):
             self.Hidden_stall_count[i] = 0
@@ -98,7 +99,8 @@ class TLT(DiffusionModel):
         3. Save results contained in public attributes: new activated nodes
         '''
         #print(self.Hidden_stall_count)
-        self.save_model_attr(step=step, fformat=self.Hidden_fformat)
+        if self.Hidden_save:
+            self.save_model_attr(step=step, fformat=self.Hidden_fformat)
         #print(self.Hidden_active_nodes)
         for item in self.Hidden_progress_bar(range(self.Hidden_numb_docs)):
             new_active_nodes = set()
@@ -167,7 +169,7 @@ class TLT(DiffusionModel):
                 v_sum += np.array(self.Hidden_network_model.graph[(v, node)])
                 node_check = True
         if node_check:
-            z_sum = np.dot(self.Hidden_topic_model.topic_distrib[item], v_sum)
+            z_sum = np.dot(self.Hidden_topic_model.items_descript[item], v_sum)
             #print('value: ',(1/(np.exp(- z_sum)+1)))
             #print('threshold: ',threshold)
             return (1/(np.exp(- z_sum)+1)) >= threshold

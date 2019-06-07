@@ -26,7 +26,7 @@ class TLTTopicModel(TopicModel):
         self.viralities = {}
 
     @abc.abstractmethod
-    def topic_distrib_extraction(self):
+    def get_items_descript(self):
         '''
         Methods for infering topic distributions of the given documents
         '''

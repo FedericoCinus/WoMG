@@ -18,12 +18,14 @@ from topic.lda import LDA
 from diffusion.tlt import TLT
 from utils.utility_functions import cleaning
 from utils.distributions import set_seed
+from utils.saver import TxtSaver
 
 
-'''
+
 def save(network_model, topic_model, diffusion_model,
+         path, fformat,
          save_int, save_infl, save_keyw):
-    saver = TxTSaver() if fformat == 'txt' else None
+    saver = TxtSaver(path) if fformat == 'txt' else None
     if save_int:
         saver.save_users_interests(network_model)
     if save_infl:
@@ -32,24 +34,28 @@ def save(network_model, topic_model, diffusion_model,
         saver.save_items_keyw(topic_model)
 
     saver.save_items_descript(topic_model)
-    saver.save_propagations(diffusion_model)
-'''
+    saver.save_topics_descript(topic_model)
+    #saver.save_propagations(diffusion_model)
 
 
-def womg_main(numb_topics=15, numb_docs=None,
-              numb_steps=100, homophily=0.5,
-              actives_perc=0.05, virality=1,
-              path_in_graph=None,
-              fast=False,
-              weighted=False, directed=False,
-              god_node=False, docs_path=None,
-              path_out=None, fformat='txt',
-              seed=None,
-              dimensions=128, walk_length=80,
-              num_walks=10,  window_size=10,
-              iiter=1, workers=8,
-              p=1, q=1,
-              progress_bar=False):
+
+def womg_main(numb_topics, numb_docs,
+              numb_steps, homophily,
+              actives_perc, virality,
+              path_in_graph,
+              fast,
+              weighted, directed,
+              god_node, docs_path,
+              path_out, fformat,
+              seed,
+              dimensions, walk_length,
+              num_walks,  window_size,
+              iiter, workers,
+              p, q,
+              progress_bar,
+              save_int,
+              save_infl,
+              save_keyw):
     '''
 
 
@@ -146,6 +152,14 @@ def womg_main(numb_topics=15, numb_docs=None,
         if True progress_bar=tqdm_notebook -> Jupyter progress_bar;
         if False progress_bar=tqdm. Default False
 
+    save_int : bool
+        if True WoMG saves the interests vector for each node
+
+    save_infl : bool
+        if True WoMG saves the influence vector for each node
+
+    save_keyw : bool
+        if True WoMG saves the keywords in a bow format for each document
     '''
 
     try:
@@ -168,8 +182,6 @@ def womg_main(numb_topics=15, numb_docs=None,
         topic_model.fit()
         topic_model.set_docs_viralities(virality=virality)
 
-        topic_model.save_model_attr(path=path_out, fformat=fformat)
-
         diffusion_model = TLT(network_model=network_model,
                               topic_model=topic_model,
                               actives_perc=actives_perc,
@@ -177,6 +189,15 @@ def womg_main(numb_topics=15, numb_docs=None,
                               out_format='list', progress_bar=progress_bar)
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
+
+        save(network_model=network_model,
+             topic_model=topic_model,
+             diffusion_model=diffusion_model,
+             path=path_out,
+             fformat=fformat,
+             save_int=save_int,
+             save_infl=save_infl,
+             save_keyw=save_keyw)
     finally:
         cleaning()
 
@@ -255,6 +276,16 @@ def womg_main(numb_topics=15, numb_docs=None,
 @click.option('--progress_bar', is_flag=True,
                     help='boolean for specifying the progress bar related to the environment if True progress_bar=tqdm_notebook -> Jupyter progress_bar; if False progress_bar=tqdm. Default False ',
                     default=False)
+
+@click.option('--save_int', is_flag=True,
+                    help='if True WoMG saves the interests vector for each node',
+                    default=False)
+@click.option('--save_infl', is_flag=True,
+                    help='if True WoMG saves the influence vector for each node',
+                    default=False)
+@click.option('--save_keyw', is_flag=True,
+                    help='if True WoMG saves the keywords in a bow format for each document',
+                    default=False)
 def main_cli(topics, docs, steps, homophily, actives,
              virality, graph, fast,
              weighted, directed, docs_folder,
@@ -263,7 +294,10 @@ def main_cli(topics, docs, steps, homophily, actives,
              num_walks, window_size,
              iiter, workers,
              p, q,
-             progress_bar):
+             progress_bar,
+             save_int,
+             save_infl,
+             save_keyw):
     '''
 
 
@@ -287,7 +321,10 @@ def main_cli(topics, docs, steps, homophily, actives,
               num_walks=num_walks, window_size=window_size,
               iiter=iiter, workers=workers,
               p=p, q=q,
-              progress_bar=progress_bar)
+              progress_bar=progress_bar,
+              save_int=save_int,
+              save_infl=save_infl,
+              save_keyw=save_keyw)
 
 
 if __name__ == '__main__':
