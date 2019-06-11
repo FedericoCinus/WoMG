@@ -120,13 +120,17 @@ class DiffusionModel(abc.ABC):
                     sim_numb -= 1
                     filename = output_dir / str('Diffusion_' + str(attribute) + '_sim' + str(sim_numb) +'.' + str(fformat))
 
-                title = 'time ' + str(step) + ': item; node'
+                #title = 'time ' + str(step) + ': item; node'
                 if fformat == 'txt':
                     with open(filename, way) as f:
-                        f.write('\n'+title+'\n'+str(self.__getattribute__(str(attribute))))
+                        #print('step: ', step)
+                        #print(self.Hidden_new_active_nodes)
+                        #print('actives '+self.__getattribute__(str(attribute))[0])
+                        for node in range(len(self.__getattribute__(str(attribute)))):
+                            f.write(str(step) +' '+ str(self.__getattribute__(str(attribute))[node]))
                 if fformat == 'pickle':
                     with open(filename, way+'b') as f:
-                        pickle.dump('\n'+title+'\n'+self.__getattribute__(str(attribute)), f, pickle.HIGHEST_PROTOCOL)
+                        pickle.dump('\n' + str(step) + ' - '+self.__getattribute__(str(attribute)), f, pickle.HIGHEST_PROTOCOL)
 
 
     def save_model_class(self):

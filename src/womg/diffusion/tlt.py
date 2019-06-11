@@ -102,6 +102,11 @@ class TLT(DiffusionModel):
         if self.Hidden_save:
             self.save_model_attr(step=step, fformat=self.Hidden_fformat)
         #print(self.Hidden_active_nodes)
+        #print('before iter: \n ', self.Hidden_new_active_nodes)
+        if step == 0:
+            for item in range(self.Hidden_numb_docs):
+                new_active_nodes = self.Hidden_active_nodes[item]
+                self.update_sets(item, new_active_nodes)
         for item in self.Hidden_progress_bar(range(self.Hidden_numb_docs)):
             new_active_nodes = set()
             #print('ITEM: '+str(item))
@@ -111,6 +116,8 @@ class TLT(DiffusionModel):
                         new_active_nodes.add(node)
                 #print('item: '+str(item)+' curr new set act: '+ str(new_active_nodes))
                 self.update_sets(item, new_active_nodes)
+        #print('after iter: \n ',self.Hidden_new_active_nodes)
+
 
 
     def parameter(self, item, node):
@@ -258,10 +265,10 @@ class TLT(DiffusionModel):
             'doc; activating_node \n'
 
         '''
-        lista = ''
+        lista = []
         for key in dictio.keys():
             for node in dictio[key]:
-                lista += str(key) + '; ' + str(node)+'\n'
+                lista.append(str(key) + ' ' + str(node) + '\n')
         return lista
 
     @property
