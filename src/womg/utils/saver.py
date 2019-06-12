@@ -136,7 +136,8 @@ class TxtSaver(Saver):
         filename = self.make_filename("Items_keyw", output_dir)
 
         with open(filename, "w") as f:
-            f.write(str(topic_model.items_keyw))
+            for item in topic_model.items_keyw.keys():
+                f.write(str(item) + ' ' + str(topic_model.items_keyw[item]) + '\n')
 
     def save_propagation(self, propagation, step=0):
         '''

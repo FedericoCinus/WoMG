@@ -23,9 +23,12 @@ from utils.saver import TxtSaver
 
 
 def save(network_model, topic_model, diffusion_model,
-         path,
+         path, save_all,
          save_int, save_infl, save_keyw):
     saver = TxtSaver(path)
+    if save_all == True:
+        save_int = save_infl = save_keyw = True
+
     if save_int:
         saver.save_users_interests(network_model)
     if save_infl:
@@ -53,6 +56,7 @@ def womg_main(numb_topics, numb_docs,
               iiter, workers,
               p, q,
               progress_bar,
+              save_all,
               save_int,
               save_infl,
               save_keyw):
@@ -158,6 +162,9 @@ def womg_main(numb_topics, numb_docs,
 
     save_keyw : bool
         if True WoMG saves the keywords in a bow format for each document
+
+    save_all : bool
+        save all non-optional outputs
     '''
 
     try:
@@ -191,15 +198,12 @@ def womg_main(numb_topics, numb_docs,
              topic_model=topic_model,
              diffusion_model=diffusion_model,
              path=path_out,
+             save_all=save_all,
              save_int=save_int,
              save_infl=save_infl,
              save_keyw=save_keyw)
     finally:
         cleaning()
-
-
-
-#default_graph = pathlib.Path.cwd().parent / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
 
 @click.command()
 @click.option('--topics', metavar='K', default=15,
@@ -281,6 +285,10 @@ def womg_main(numb_topics, numb_docs,
 @click.option('--save_keyw', is_flag=True,
                     help='if True WoMG saves the keywords in a bow format for each document',
                     default=False)
+@click.option('--save_all', is_flag=True,
+                    help='if True WoMG saves all non-optional outputs',
+                    default=False)
+
 def main_cli(topics, docs, steps, homophily, actives,
              virality, graph, fast,
              weighted, directed, docs_folder,
@@ -290,6 +298,7 @@ def main_cli(topics, docs, steps, homophily, actives,
              iiter, workers,
              p, q,
              progress_bar,
+             save_all,
              save_int,
              save_infl,
              save_keyw):
@@ -317,6 +326,7 @@ def main_cli(topics, docs, steps, homophily, actives,
               iiter=iiter, workers=workers,
               p=p, q=q,
               progress_bar=progress_bar,
+              save_all=save_all,
               save_int=save_int,
               save_infl=save_infl,
               save_keyw=save_keyw)

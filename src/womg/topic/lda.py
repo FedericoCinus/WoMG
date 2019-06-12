@@ -1,5 +1,6 @@
 # /Topic/lda.py
 # Implementation of LDA topic-model
+import re
 import pathlib
 import gensim
 import numpy as np
@@ -29,8 +30,10 @@ class LDA(TLTTopicModel):
         super().__init__()
         self.numb_topics = numb_topics
         self.numb_docs = numb_docs
+        self.numb_words = 20
         self._path_in = path_in
         self.items_keyw = {}
+        self.dictionary = []
 
 
     def fit(self):
@@ -38,18 +41,19 @@ class LDA(TLTTopicModel):
         Pipeline for fitting the lda model
 
         1. define the lda mode : generative mode / reading mode
-        2. set the topic distributions of the documents
-        3. set the word distribution of the documents
+        2. train lda
+        3. get the items descriptions (topic distribution for each item)
+        4. get the items keywords (bow list for each item)
         '''
         mode_reading = self.set_lda_mode()
         lda_model = self.train_lda()
         self.topics_descript = self.get_topics_descript(lda_model)
         if mode_reading:
             self.get_items_descript(path=self._path_in, model=lda_model)
-            self.get_items_keyw(model=lda_model)
+            self.get_items_keyw(path=self._path_in, model=lda_model)
         else:
             self.gen_items_descript(model=lda_model)
-            self.get_items_keyw(model=lda_model)
+            self.gen_items_keyw(model=lda_model)
 
 
 
@@ -83,7 +87,6 @@ class LDA(TLTTopicModel):
             print('Error: insert docs for generating them; insert docs path for reading them. Not Both!')
 
         # setting lda input
-
         if reading:
             if self._path_in:
                 self._input_path = pathlib.Path(self._path_in)
@@ -165,20 +168,75 @@ class LDA(TLTTopicModel):
         self.items_descript = gammas
 
 
-    def get_items_keyw(self, model):
+    def get_items_keyw(self, path, model):
         '''
-        Get the the items keyword in a bow format
+        Get the items keyword in a bow format
         '''
         return
 
+    def gen_items_keyw(self, model):
+        '''
+        Generates the items keyword in a bow format
+        '''
+        items_descript = self.items_descript
+        topics_descript = self.get_topics_descript(model, mtrx_form=True)
+
+        for item in range(self.numb_docs):
+            item_keyw = []
+            for word in range(self.numb_words):
+                multi_items = np.random.multinomial(1, items_descript[item], size=1)
+                topic_index = np.where(multi_items==1)[1]
+                multi_topics = np.random.multinomial(1, topics_descript[topic_index][0], size=1)
+                word_index = np.where(multi_topics==1)[1]
+                item_keyw.append(self.dictionary[word_index[0]])
+            self.items_keyw[item] = self.to_bow(item_keyw)
+
+
+
+    def to_bow(self, text):
+        '''
+        Returns the give doc in a bow format
+        '''
+        bow = self.dictionary.doc2bow(text)
+        bow_dict = {}
+        for word_index, freq in bow:
+            bow_dict[self.dictionary[word_index]] = freq
+        return bow_dict
 
     def preprocess_texts(self, docs):
         '''
         Preprocessing input texts: divides docs into words, bow format
         '''
-        data_words = self.sent_to_words(docs)
+        # Remove new line characters
+        data = [re.sub(r'\s+', ' ', str(sent[0])) for sent in docs]
+
+        # Remove distracting single quotes
+        data = [re.sub(r"\'", "", str(sent[0])) for sent in docs]
+
+        # Remove all the special characters
+        data = [re.sub(r'\W', ' ', str(sent[0])) for sent in docs]
+
+        # remove all single characters
+        data = [re.sub(r'\s+[a-zA-Z]\s+', ' ', str(sent[0])) for sent in docs]
+
+        # Remove single characters from the start
+        data = [re.sub(r'\^[a-zA-Z]\s+', ' ', str(sent[0])) for sent in docs]
+
+        # Substituting multiple spaces with single space
+        data = [re.sub(r'\s+', ' ', str(sent[0]), flags=re.I) for sent in docs]
+
+        # Removing prefixed 'b'
+        data = [re.sub(r'^b\s+', '', str(sent[0])) for sent in docs]
+
+        # Remove article
+        data = [re.sub(r'the', '', str(sent[0])) for sent in docs]
+
+        # Remove to
+        data = [re.sub(r'to', '', str(sent[0])) for sent in docs]
+
+        data_words = self.sent_to_words(data)
         dict_corp_tuple = self.corpus_gen(data_words)
-        #print(dict_corp_tuple)
+
         return dict_corp_tuple
 
 
@@ -219,8 +277,6 @@ class LDA(TLTTopicModel):
         '''
         id2word = gensim.corpora.Dictionary(data_words)  # defining dictionary
         corpus = [id2word.doc2bow(word) for word in data_words]
-
-        #print('Corpus with '+str(self.numb_docs)+' documents loaded')
         return id2word, corpus
 
 
@@ -242,6 +298,7 @@ class LDA(TLTTopicModel):
         '''
         docs = read_docs(self._training_path)
         id2word, corpus = self.preprocess_texts(docs)
+        self.dictionary = id2word
         lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
                                                     id2word=id2word,
                                                     num_topics=self.numb_topics,
@@ -251,6 +308,7 @@ class LDA(TLTTopicModel):
                                                     passes=10,
                                                     alpha='auto',
                                                     per_word_topics=True)
+
         return lda_model
 
     def get_topics_descript(self, model, mtrx_form=False):
