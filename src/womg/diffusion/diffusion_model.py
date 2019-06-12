@@ -11,8 +11,8 @@ class DiffusionModel(abc.ABC):
 
     Attributes
     ----------
-    Hidden_network_model : networkModel obj
-    Hidden_topic_model : topicModel obj
+    network_model : networkModel obj
+    topic_model : topicModel obj
 
     Methods
     -------
@@ -35,8 +35,8 @@ class DiffusionModel(abc.ABC):
     '''
 
     def __init__(self):
-        self.Hidden_network_model = {}
-        self.Hidden_topic_model = {}
+        self.network_model = {}
+        self.topic_model = {}
 
 
     def validate_config(self):
@@ -55,13 +55,12 @@ class DiffusionModel(abc.ABC):
             number of simulation steps, i.e. number of times to call iteration()
         '''
         print("Computing cascades: ")
-        for t in self.Hidden_progress_bar(range(numb_steps)):
+        for t in self._progress_bar(range(numb_steps)):
             if not self.stop_criterior():
-                #print(self.stop_criterior())
                 self.iteration(step=t)
             else:
-                print('\nSimulation stopped at timestep ', str(t-1) ,
-                        '\nNo more nodes will activate'  )
+                print('\n Simulation stopped at timestep ', str(t-1) ,
+                        '\n Diffusion has been completed.'  )
                 break
 
 
@@ -80,67 +79,3 @@ class DiffusionModel(abc.ABC):
         to stop
         '''
         pass
-
-
-    def save_model_attr(self, path=None, fformat='pickle', way='a', step=0):
-        '''
-        Saves all diffusion model attributes
-
-        Parameters
-        ----------
-        path : string
-            path in which the method will save the data,
-            if None is given it will create an "Output" directory in the
-            current path
-        fformat : string
-            defines the file format of each attribute data,
-            one can choose between 'pickle' and 'json' in this string notation
-
-         Notes
-         -----
-         All the attributes which start with "_" are NOT saved
-        '''
-        if path in (None, ''):
-            output_dir = pathlib.Path.cwd().parent / "Output"
-        else:
-            output_dir = str(path)
-
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-        for attribute in self.__dict__.keys():
-            if not str(attribute).startswith('Hidden_'):
-                # dealing with already existing files
-                if str(attribute).startswith('_'):
-                    attribute = str(attribute)[1:]
-                filename = output_dir / str('Diffusion_' + str(attribute) + '_sim0' +'.' + str(fformat))
-                sim_numb = 0
-                while pathlib.Path(filename).exists():
-                    sim_numb+=1
-                    filename = output_dir / str('Diffusion_' + str(attribute) + '_sim' + str(sim_numb) +'.' + str(fformat))
-                if step != 0:
-                    sim_numb -= 1
-                    filename = output_dir / str('Diffusion_' + str(attribute) + '_sim' + str(sim_numb) +'.' + str(fformat))
-
-                #title = 'time ' + str(step) + ': item; node'
-                if fformat == 'txt':
-                    with open(filename, way) as f:
-                        #print('step: ', step)
-                        #print(self.Hidden_new_active_nodes)
-                        #print('actives '+self.__getattribute__(str(attribute))[0])
-                        for node in range(len(self.__getattribute__(str(attribute)))):
-                            f.write(str(step) +' '+ str(self.__getattribute__(str(attribute))[node]))
-                if fformat == 'pickle':
-                    with open(filename, way+'b') as f:
-                        pickle.dump('\n' + str(step) + ' - '+self.__getattribute__(str(attribute)), f, pickle.HIGHEST_PROTOCOL)
-
-
-    def save_model_class(self):
-        '''
-        Saves all class in pickle format in the current directory
-
-        Notes
-        -----
-        Class model file will be saved with a name that starts with "Hidden_"
-        '''
-        file = pathlib.Path.cwd() /  '__diffusion_model'
-        with open(file, 'wb') as f:
-            pickle.dump(self, f)

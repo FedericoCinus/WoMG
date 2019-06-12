@@ -27,8 +27,8 @@ class LDA(TLTTopicModel):
 
     def __init__(self, numb_topics, numb_docs, path_in):
         super().__init__()
-        self._numb_topics = numb_topics
-        self._numb_docs = numb_docs
+        self.numb_topics = numb_topics
+        self.numb_docs = numb_docs
         self._path_in = path_in
         self.items_keyw = {}
 
@@ -72,14 +72,14 @@ class LDA(TLTTopicModel):
 
         '''
         # setting mode
-        if ((self._numb_docs == None) and (self._path_in == None)):
+        if ((self.numb_docs == None) and (self._path_in == None)):
             reading = False
-            self._numb_docs = 100
-        elif self._numb_docs:
+            self.numb_docs = 100
+        elif self.numb_docs:
             reading = False
         elif self._path_in:
             reading = True
-        elif self._path_in and self._numb_docs:
+        elif self._path_in and self.numb_docs:
             print('Error: insert docs for generating them; insert docs path for reading them. Not Both!')
 
         # setting lda input
@@ -89,7 +89,7 @@ class LDA(TLTTopicModel):
                 self._input_path = pathlib.Path(self._path_in)
                 numb_docs = count_files(self._input_path)
                 if numb_docs != 0:
-                    self._numb_docs = numb_docs
+                    self.numb_docs = numb_docs
                     print('Extracting topic distribution from docs in ', self._input_path)
                 else:
                     print('No txt file in: ', self._input_path)
@@ -98,7 +98,7 @@ class LDA(TLTTopicModel):
                 if pathlib.Path(self._input_path).exists():
                     numb_docs = count_files(self._input_path)
                     if numb_docs != 0:
-                        self._numb_docs = numb_docs
+                        self.numb_docs = numb_docs
                         print('Extracting topic distribution from docs in ', self._input_path)
                     else:
                         print('No txt file in: ', self._input_path)
@@ -106,7 +106,7 @@ class LDA(TLTTopicModel):
                     print('Docs folder inside input folder has been deleted')
 
         else:
-            print('Setting LDA in generative mode: ', self._numb_docs, ' documents, with ', self._numb_topics, ' topics.')
+            print('Setting LDA in generative mode: ', self.numb_docs, ' documents, with ', self.numb_topics, ' topics.')
             print('Training the LDA model ..')
             self._input_path = None
             self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
@@ -123,13 +123,13 @@ class LDA(TLTTopicModel):
             Exponent of the powerlaw distribution for documents
             viralities. P(x; a) = x^{-a}, 0 <= x <=1
         '''
-        viralities = random_viralities_vec(gamma=virality, dimensions=self._numb_docs)
+        viralities = random_viralities_vec(gamma=virality, dimensions=self.numb_docs)
 
-        if np.size(viralities) == self._numb_docs:
-            for item in range(self._numb_docs):
+        if np.size(viralities) == self.numb_docs:
+            for item in range(self.numb_docs):
                 self.viralities[item] = viralities[item]
         if np.size(viralities) == 1:
-            for item in range(self._numb_docs):
+            for item in range(self.numb_docs):
                 self.viralities[item] = viralities
         #print(viralities)
 
@@ -147,7 +147,7 @@ class LDA(TLTTopicModel):
         for item_descript in items_descript:
             gammas[item] = np.array([i[1] for i in item_descript])
             item += 1
-        if self._numb_docs == len(gammas.keys()):
+        if self.numb_docs == len(gammas.keys()):
             print("Items' distribution over topics is stored")
             print(gammas)
         self.items_descript = gammas
@@ -160,7 +160,7 @@ class LDA(TLTTopicModel):
         alpha = model.alpha
         #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
         gammas = {}
-        for item in range(self._numb_docs):
+        for item in range(self.numb_docs):
             gammas[item] = np.random.dirichlet(alpha)
         self.items_descript = gammas
 
@@ -220,7 +220,7 @@ class LDA(TLTTopicModel):
         id2word = gensim.corpora.Dictionary(data_words)  # defining dictionary
         corpus = [id2word.doc2bow(word) for word in data_words]
 
-        #print('Corpus with '+str(self._numb_docs)+' documents loaded')
+        #print('Corpus with '+str(self.numb_docs)+' documents loaded')
         return id2word, corpus
 
 
@@ -244,7 +244,7 @@ class LDA(TLTTopicModel):
         id2word, corpus = self.preprocess_texts(docs)
         lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
                                                     id2word=id2word,
-                                                    num_topics=self._numb_topics,
+                                                    num_topics=self.numb_topics,
                                                     random_state=100,
                                                     update_every=1,
                                                     chunksize=100,

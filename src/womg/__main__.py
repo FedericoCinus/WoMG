@@ -23,9 +23,9 @@ from utils.saver import TxtSaver
 
 
 def save(network_model, topic_model, diffusion_model,
-         path, fformat,
+         path,
          save_int, save_infl, save_keyw):
-    saver = TxtSaver(path) if fformat == 'txt' else None
+    saver = TxtSaver(path)
     if save_int:
         saver.save_users_interests(network_model)
     if save_infl:
@@ -46,7 +46,7 @@ def womg_main(numb_topics, numb_docs,
               fast,
               weighted, directed,
               god_node, docs_path,
-              path_out, fformat,
+              path_out,
               seed,
               dimensions, walk_length,
               num_walks,  window_size,
@@ -116,8 +116,6 @@ def womg_main(numb_topics, numb_docs,
     path_out : str
         outputs path
 
-    fformat : str
-        file formats. Supported formats are txt and pickle. Default txt
 
     seed : int
         seed (int) for random distribution extractions
@@ -174,7 +172,6 @@ def womg_main(numb_topics, numb_docs,
                             workers=workers, iiter=iiter,
                             progress_bar=progress_bar)
         network_model.network_setup(fast=fast)
-        #network_model.save_model_attr(path=path_out, fformat=fformat)
 
         topic_model = LDA(numb_topics=numb_topics,
                           numb_docs=numb_docs,
@@ -185,8 +182,8 @@ def womg_main(numb_topics, numb_docs,
         diffusion_model = TLT(network_model=network_model,
                               topic_model=topic_model,
                               actives_perc=actives_perc,
-                              path_out=path_out, fformat=fformat,
-                              out_format='list', progress_bar=progress_bar)
+                              path_out=path_out,
+                              progress_bar=progress_bar)
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
 
@@ -194,7 +191,6 @@ def womg_main(numb_topics, numb_docs,
              topic_model=topic_model,
              diffusion_model=diffusion_model,
              path=path_out,
-             fformat=fformat,
              save_int=save_int,
              save_infl=save_infl,
              save_keyw=save_keyw)
@@ -244,7 +240,6 @@ def womg_main(numb_topics, numb_docs,
 @click.option('--docs_folder', metavar='DOCS', default=None,
                     help='Input  path of the documents folder', type=str)
 @click.option('--output', default=None, help='Outputs path')
-@click.option('--fformat',  default='txt', help='Outputs format. Supported formats are txt and pickle. Default txt')
 @click.option('--seed', help='Seed (int) for random distribution extractions',
                     type=int, required=False)
 
@@ -289,7 +284,7 @@ def womg_main(numb_topics, numb_docs,
 def main_cli(topics, docs, steps, homophily, actives,
              virality, graph, fast,
              weighted, directed, docs_folder,
-             output, fformat, seed,
+             output, seed,
              dimensions, walk_length,
              num_walks, window_size,
              iiter, workers,
@@ -315,7 +310,7 @@ def main_cli(topics, docs, steps, homophily, actives,
               fast=fast,
               weighted=weighted, directed=directed,
               god_node=False, docs_path=docs_folder,
-              path_out=output, fformat=fformat,
+              path_out=output,
               seed=seed,
               dimensions=dimensions, walk_length=walk_length,
               num_walks=num_walks, window_size=window_size,

@@ -1,5 +1,4 @@
 import abc
-import pickle
 import pathlib
 
 class Saver():
@@ -38,28 +37,36 @@ class Saver():
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
         return output_dir
 
+    @staticmethod
+    def make_filename(name, output_dir, new_file=True):
+        '''
+        Returns the correct filename checking the file "name" is in "output_dir"
+        If the file already exists it returns a filename with an incrementing
+        index.
 
-class JsonSaver(Saver):
-    '''
-    Concrete class for defining methods for saving in json format
-    '''
-    def __init__(self, path):
-        super().__init__()
-        self._path = path
+        Parameters
+        ----------
+        - name : str
+            name of the file
+        - output_dir : str
+            path of the "name" file
 
-    def save_diffusion(self, diffusion_model):
+        Returns
+        -------
+        Filename (str)
         '''
-        Concrete method for saving the diffusion model or files
-        in a Json format
-        '''
-        return
+        filename = output_dir / str(name + "0.txt")
+        sim_numb = 0
 
-    def save_model(self, model):
-        '''
-        Concrete method for saving the network model or topic model files
-        in a Json format
-        '''
-        return
+        while pathlib.Path(filename).exists():
+            sim_numb+=1
+            filename = output_dir / str(name + str(sim_numb) + ".txt")
+        if new_file:
+            return filename
+        else:
+            sim_numb-=1
+            filename = output_dir / str(name + str(sim_numb) + ".txt")
+            return filename
 
 
 class TxtSaver(Saver):
@@ -76,12 +83,7 @@ class TxtSaver(Saver):
         in a txt format: user_id_int [K-array of interests]
         '''
         output_dir = self.make_output_directory(self._path)
-
-        filename = output_dir / str("Users_interests_sim0.txt")
-        sim_numb = 0
-        while pathlib.Path(filename).exists():
-            sim_numb+=1
-            filename = output_dir / str("Users_interests_sim" + str(sim_numb) + ".txt")
+        filename = self.make_filename("Users_interests", output_dir)
 
         with open(filename, "w") as f:
             for node in network_model.users_influence.keys():
@@ -94,12 +96,7 @@ class TxtSaver(Saver):
         in a txt format: user_id_int [K-array of influence]
         '''
         output_dir = self.make_output_directory(self._path)
-
-        filename = output_dir / str("Users_influence_sim0.txt")
-        sim_numb = 0
-        while pathlib.Path(filename).exists():
-            sim_numb+=1
-            filename = output_dir / str("Users_influence_sim" + str(sim_numb) + ".txt")
+        filename = self.make_filename("Users_influence", output_dir)
 
         with open(filename, "w") as f:
             for node in network_model.users_influence.keys():
@@ -112,12 +109,7 @@ class TxtSaver(Saver):
         in a txt format: item_id_int [K-array of probabilities]
         '''
         output_dir = self.make_output_directory(self._path)
-
-        filename = output_dir / str("Items_description_sim0.txt")
-        sim_numb = 0
-        while pathlib.Path(filename).exists():
-            sim_numb+=1
-            filename = output_dir / str("Items_description_sim" + str(sim_numb) + ".txt")
+        filename = self.make_filename("Items_descript", output_dir)
 
         with open(filename, "w") as f:
             for item in topic_model.items_descript.keys():
@@ -129,12 +121,7 @@ class TxtSaver(Saver):
         in a txt format: topic_id_int [V-array of probabilities]
         '''
         output_dir = self.make_output_directory(self._path)
-
-        filename = output_dir / str("Topics_descript_sim0.txt")
-        sim_numb = 0
-        while pathlib.Path(filename).exists():
-            sim_numb+=1
-            filename = output_dir / str("Topics_descript_sim" + str(sim_numb) + ".txt")
+        filename = self.make_filename("Topics_descript", output_dir)
 
         with open(filename, "w") as f:
             f.write(str(topic_model.topics_descript))
@@ -146,76 +133,21 @@ class TxtSaver(Saver):
         in a txt format
         '''
         output_dir = self.make_output_directory(self._path)
-
-        filename = output_dir / str("Items_keyw_sim0.txt")
-        sim_numb = 0
-        while pathlib.Path(filename).exists():
-            sim_numb+=1
-            filename = output_dir / str("Items_keyw_sim" + str(sim_numb) + ".txt")
+        filename = self.make_filename("Items_keyw", output_dir)
 
         with open(filename, "w") as f:
             f.write(str(topic_model.items_keyw))
 
-    def save_propagations(self, diffusion_model):
+    def save_propagation(self, propagation, step=0):
         '''
-        Concrete method for saving the network model or topic model files
-        in a txt format
+        Concrete method for saving the cascades files in a txt format
         '''
-        return
-
-
-    def save_model_attr(self, path=None, fformat='txt', way='w'):
-        '''
-        Saves all network model attributes
-
-        Parameters
-        ----------
-        path : string
-            path in which the method will save the data,
-            if None is given it will create an "Output" directory in the
-            current path
-        fformat : string
-            defines the file format of each attribute data,
-            one can choose between 'pickle' and 'json' in this string notation
-
-         Notes
-         -----
-         All the attributes which start with "Hidden_" are NOT saved
-        '''
-        if path == None or path == '':
-            output_dir = pathlib.Path.cwd().parent / "Output"
+        output_dir = self.make_output_directory(self._path)
+        if step == 0:
+            filename = self.make_filename("Propagations", output_dir, True)
         else:
-            output_dir = pathlib.Path(path)
+            filename = self.make_filename("Propagations", output_dir, False)
 
-        pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-        for attribute in self.__dict__.keys():
-            if not str(attribute).startswith('Hidden_'):
-
-                filename = output_dir / str("Network_" + str(attribute) + "_sim0."  + str(fformat))
-                sim_numb = 0
-                while pathlib.Path(filename).exists():
-                    sim_numb+=1
-                    filename = output_dir / str("Network_" + str(attribute) + "_sim" + str(sim_numb) + "." + str(fformat))
-
-
-                if fformat == 'json':
-                    with open(filename, way) as f:
-                        json.dump(self.__getattribute__(str(attribute)), f)
-                if fformat == 'txt':
-                    with open(filename, way) as f:
-                        f.write(str(self.__getattribute__(str(attribute))))
-                if fformat == 'pickle':
-                    with open(filename, way+'b') as f:
-                        pickle.dump(self.__getattribute__(str(attribute)), f)
-
-    def save_model_class(self):
-        '''
-        Saves all class in pickle format in the current directory
-
-        Notes
-        -----
-        Class model file will be saved with a name that starts with "Hidden_"
-        '''
-        file = pathlib.Path.cwd() /  "__network_model"
-        with open(file, 'wb') as f:
-            pickle.dump(self, f)
+        with open(filename, 'a') as f:
+            for node in range(len(propagation)):
+                f.write(str(step) +' '+ str(propagation[node]))

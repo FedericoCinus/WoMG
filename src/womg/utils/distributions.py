@@ -24,7 +24,6 @@ def random_viralities_vec(gamma, dimensions):
     samples = []
     for i in range(dimensions):
         samples.append(np.float_power(random.random(), -gamma))
-    #print(samples)
     return samples
 
 def random_initial_active_set(self, max_active_perc=0.5):
@@ -32,7 +31,7 @@ def random_initial_active_set(self, max_active_perc=0.5):
        max_active_perc is the maximum perc (of N) of active nodes on an item
        if random_config arg is False same initial configuration will be built
     '''
-    numb_nodes = int(self.Hidden_network_model.info['numb_nodes'])
+    numb_nodes = int(self.network_model.info['numb_nodes'])
     nodes_list = [i for i in range(numb_nodes)]
     max_active = int(max_active_perc * numb_nodes)
     active_nodes = set(random.sample(nodes_list, random.randint(0, max_active)))

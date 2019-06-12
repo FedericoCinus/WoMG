@@ -7,6 +7,7 @@ from tqdm import tqdm, tqdm_notebook
 
 from utils.distributions import random_initial_active_set
 from diffusion.diffusion_model import DiffusionModel
+from utils.saver import TxtSaver
 
 
 class TLT(DiffusionModel):
@@ -15,13 +16,13 @@ class TLT(DiffusionModel):
 
     Attributes
     ----------
-    Hidden_numb_steps : int
-    Hidden_numb_nodes : int
-    Hidden_numb_docs : int
-    Hidden_numb_topics : int
-    Hidden_new_active_nodes : dict
-    Hidden_active_nodes : dict
-    Hidden_inactive_nodes : dict
+    _numb_steps : int
+    _numb_nodes : int
+    _numb_docs : int
+    _numb_topics : int
+    new_active_nodes : dict
+    active_nodes : dict
+    inactive_nodes : dict
 
     Methods
     -------
@@ -33,12 +34,12 @@ class TLT(DiffusionModel):
         valuates the tlt parameter of the diffusion process
     update_sets
         updates the active and inactive sets of nodes and current activating nodes
-    set_network_model
+    setnetwork_model
         set network_model attribute to the loaded pickle object of
-    tlt_network_model class
-        set_topic_model
+    tltnetwork_model class
+        settopic_model
     set topic_model attribute to the loaded pickle object of
-        tlt_topic_model class
+        tlttopic_model class
     set_sets
         sets the initial configuration of the active and inactive sets of nodes
     stop_criterior
@@ -53,39 +54,37 @@ class TLT(DiffusionModel):
 
     def __init__(self, network_model, topic_model,
                  actives_perc,
-                 path_out, out_format,
-                 fformat='txt', progress_bar=False, save=True):
+                 path_out,
+                 progress_bar=False):
         super().__init__()
-        self.Hidden_network_model = network_model
-        self.Hidden_topic_model = topic_model
-        self.Hidden_numb_nodes = 0
-        self.Hidden_numb_docs = 0
-        self.Hidden_numb_topics = 0
-        self.Hidden_actives = actives_perc
-        self.Hidden_new_active_nodes = {}
-        self.Hidden_active_nodes = {}
-        self.Hidden_inactive_nodes = {}
-        self.Hidden_path_out = path_out
-        self.Hidden_out_format = out_format
-        self.Hidden_fformat = fformat
+        self.network_model = network_model
+        self.topic_model = topic_model
+        self.saver = TxtSaver(path_out)
+        self.new_active_nodes = {}
+        self.active_nodes = {}
+        self.inactive_nodes = {}
+        self._propagations = []
+        self._numb_nodes = 0
+        self._numb_docs = 0
+        self._numb_topics = 0
+        self._actives = actives_perc
         if progress_bar:
-            self.Hidden_progress_bar = tqdm_notebook
+            self._progress_bar = tqdm_notebook
         else:
-            self.Hidden_progress_bar = tqdm
-        self._formatted_output = []
-        self.Hidden_save = save
+            self._progress_bar = tqdm
+
 
 
     def diffusion_setup(self):
         '''
         Sets all the attributes of the current and super class
         '''
-        self.Hidden_numb_nodes = int(self.Hidden_network_model.info['numb_nodes'])
-        self.Hidden_numb_docs = int(self.Hidden_topic_model._numb_docs)
-        self.Hidden_numb_topics = int(self.Hidden_topic_model._numb_topics)
-        self.Hidden_stall_count = {}
-        for i in range(self.Hidden_numb_docs):
-            self.Hidden_stall_count[i] = 0
+        self._numb_nodes = int(self.network_model.info['numb_nodes'])
+        self._numb_docs = int(self.topic_model.numb_docs)
+        self._numb_topics = int(self.topic_model.numb_topics)
+        self._stall_count = {}
+        for i in range(self._numb_docs):
+            self._stall_count[i] = 0
         self.set_sets()
 
 
@@ -98,25 +97,19 @@ class TLT(DiffusionModel):
         2. Then it updates the sets of nodes
         3. Save results contained in public attributes: new activated nodes
         '''
-        #print(self.Hidden_stall_count)
-        if self.Hidden_save:
-            self.save_model_attr(step=step, fformat=self.Hidden_fformat)
-        #print(self.Hidden_active_nodes)
-        #print('before iter: \n ', self.Hidden_new_active_nodes)
+        self.saver.save_propagation(self.propagations, step)
+        
         if step == 0:
-            for item in range(self.Hidden_numb_docs):
-                new_active_nodes = self.Hidden_active_nodes[item]
+            for item in range(self._numb_docs):
+                new_active_nodes = self.active_nodes[item]
                 self.update_sets(item, new_active_nodes)
-        for item in self.Hidden_progress_bar(range(self.Hidden_numb_docs)):
+        for item in self._progress_bar(range(self._numb_docs)):
             new_active_nodes = set()
-            #print('ITEM: '+str(item))
-            if self.Hidden_active_nodes[item] != set() or None:
-                for node in self.Hidden_inactive_nodes[item]:
+            if self.active_nodes[item] != set() or None:
+                for node in self.inactive_nodes[item]:
                     if self.parameter(item=item, node=node):
                         new_active_nodes.add(node)
-                #print('item: '+str(item)+' curr new set act: '+ str(new_active_nodes))
                 self.update_sets(item, new_active_nodes)
-        #print('after iter: \n ',self.Hidden_new_active_nodes)
 
 
 
@@ -151,37 +144,27 @@ class TLT(DiffusionModel):
             is activating on that given item. Else False.
 
         '''
-        #print(self.Hidden_topic_model.viralities[item])
-        threshold = 1/self.Hidden_topic_model.viralities[item]
+        #print(self.topic_model.viralities[item])
+        threshold = 1/self.topic_model.viralities[item]
         # calculating the sum over active nodes on item linked with user
 
-        v_sum = np.zeros(self.Hidden_numb_topics)
+        v_sum = np.zeros(self._numb_topics)
         node_check = False
 
-        if self.Hidden_network_model._directed:
-            #print("directed")
-            neighbors = [u for u, _v in list(self.Hidden_network_model._nx_obj.in_edges(node))]
+        if self.network_model._directed:
+            neighbors = [u for u, _v in list(self.network_model._nx_obj.in_edges(node))]
         else:
-            #print("undirected")
-            neighbors = [v for _u, v in list(self.Hidden_network_model._nx_obj.edges(node))]
-            #print(neighbors)
+            neighbors = [v for _u, v in list(self.network_model._nx_obj.edges(node))]
 
-
-        #print(node)
         for v in neighbors:
-            #print(v, node)
-            #print(v in self.Hidden_active_nodes[item])
-            if v != node and  v in self.Hidden_active_nodes[item]:
+            if v != node and  v in self.active_nodes[item]:
 
-                v_sum += np.array(self.Hidden_network_model.graph[(v, node)])
+                v_sum += np.array(self.network_model.graph[(v, node)])
                 node_check = True
         if node_check:
-            z_sum = np.dot(self.Hidden_topic_model.items_descript[item], v_sum)
-            #print('value: ',(1/(np.exp(- z_sum)+1)))
-            #print('threshold: ',threshold)
+            z_sum = np.dot(self.topic_model.items_descript[item], v_sum)
             return (1/(np.exp(- z_sum)+1)) >= threshold
         else:
-            #print("always false")
             return False
 
 
@@ -189,14 +172,14 @@ class TLT(DiffusionModel):
         '''
         Updating the active, inactive and current new active sets attributes.
 
-            The value correspondent to 'item' key of the Hidden_new_active_nodes
+            The value correspondent to 'item' key of the new_active_nodes
             dictionary is set equal to the given input set (new_active_nodes).
             This set is given by the iteration method where update_sets is called.
 
-            The Hidden_inactive_nodes attribute is updating discarding the activated
+            The inactive_nodes attribute is updating discarding the activated
             nodes calculated inside iteration()
 
-            The Hidden_active_nodes attribute is updating adding the activated
+            The active_nodes attribute is updating adding the activated
             nodes calculated inside iteration()
 
         Parameters
@@ -212,17 +195,17 @@ class TLT(DiffusionModel):
         this method is called inside the items for-loop inside iteration() method
 
         '''
-        self.Hidden_new_active_nodes[item] = new_active_nodes
+        self.new_active_nodes[item] = new_active_nodes
 
-        if self.Hidden_new_active_nodes[item] == set():
+        if self.new_active_nodes[item] == set():
             #print('item ', item)
-            self.Hidden_stall_count[item] += 1
+            self._stall_count[item] += 1
 
-        removing_list = new_active_nodes.union(self.Hidden_active_nodes[item])  ### needs improvement
+        removing_list = new_active_nodes.union(self.active_nodes[item])  ### needs improvement
         if removing_list != set():
             for node in removing_list:
-                self.Hidden_inactive_nodes[item].discard(node)
-                self.Hidden_active_nodes[item].add(node)
+                self.inactive_nodes[item].discard(node)
+                self.active_nodes[item].add(node)
 
 
     def set_sets(self):
@@ -231,27 +214,26 @@ class TLT(DiffusionModel):
             active nodes are defined with a random extraction defined in
             distributions module in utilities package
 
-            Hidden_inactive_nodes are all the nodes set
+            inactive_nodes are all the nodes set
 
             current new activated nodes set is equal to the active one
         '''
-        for item in range(self.Hidden_numb_docs):
-            self.Hidden_active_nodes[item] = random_initial_active_set(self, max_active_perc=self.Hidden_actives)
-            if self.Hidden_active_nodes[item] == set():
-                self.Hidden_stall_count[item] += 1
-            self.Hidden_inactive_nodes[item] = set(self.Hidden_network_model._nx_obj.nodes())
+        for item in range(self._numb_docs):
+            self.active_nodes[item] = random_initial_active_set(self, max_active_perc=self._actives)
+            if self.active_nodes[item] == set():
+                self._stall_count[item] += 1
+            self.inactive_nodes[item] = set(self.network_model._nx_obj.nodes())
 
-            self.Hidden_new_active_nodes[item] = self.Hidden_active_nodes[item]
+            self.new_active_nodes[item] = self.active_nodes[item]
 
 
     def stop_criterior(self):
         '''
         Stops the run if there are not new active nodes for given time step seq
         '''
-        #print('stall count ', self.Hidden_stall_count)
         stall_factor = True
-        for item in self.Hidden_stall_count.keys():
-            stall_factor *= (self.Hidden_stall_count[item] >= 1)
+        for item in self._stall_count.keys():
+            stall_factor *= (self._stall_count[item] >= 1)
         return stall_factor
 
 
@@ -272,19 +254,16 @@ class TLT(DiffusionModel):
         return lista
 
     @property
-    def formatted_output(self):
+    def propagations(self):
         '''
-        When formatted_output is called for save it is set to the current config
+        When propagations is called for save it is set to the current config
         '''
-        if self.Hidden_out_format == 'list':
-            self.formatted_output = self.list_format(self.Hidden_new_active_nodes)
-        if self.Hidden_out_format == 'dict':
-            self.formatted_output = self.Hidden_new_active_nodes
-        return self._formatted_output
+        self.propagations = self.list_format(self.new_active_nodes)
+        return self._propagations
 
-    @formatted_output.setter
-    def formatted_output(self, value):
-        self._formatted_output = value
+    @propagations.setter
+    def propagations(self, value):
+        self._propagations = value
 
 
     def read_class_pickle(self, model):
