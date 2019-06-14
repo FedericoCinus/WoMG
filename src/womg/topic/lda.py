@@ -5,7 +5,7 @@ import pathlib
 import gensim
 import numpy as np
 from topic.tlt_topic_model import TLTTopicModel
-from utils.utility_functions import count_files, read_docs
+from utils.utility_functions import count_files, read_docs, TopicsError
 from utils.distributions import random_viralities_vec
 
 class LDA(TLTTopicModel):
@@ -26,12 +26,13 @@ class LDA(TLTTopicModel):
         sets the lda mode: reading or generating mode
     '''
 
-    def __init__(self, numb_topics, numb_docs, path_in):
+    def __init__(self, numb_topics, numb_docs, docs_path, items_descr_path):
         super().__init__()
         self.numb_topics = numb_topics
         self.numb_docs = numb_docs
         self.numb_words = 20
-        self._path_in = path_in
+        self._docs_path = docs_path
+        self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
 
@@ -45,13 +46,17 @@ class LDA(TLTTopicModel):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
-        mode_reading = self.set_lda_mode()
-        lda_model = self.train_lda()
-        self.topics_descript = self.get_topics_descript(lda_model)
-        if mode_reading:
-            self.get_items_descript(path=self._path_in, model=lda_model)
-            self.get_items_keyw(path=self._path_in, model=lda_model)
-        else:
+        mode = self.set_lda_mode()
+        if mode == 'load':
+            self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
+        if mode == 'get':
+            lda_model = self.train_lda(path=self._docs_path)
+            self.topics_descript = self.get_topics_descript(lda_model)
+            self.get_items_descript(path=self._docs_path, model=lda_model)
+            self.get_items_keyw(path=self._docs_path, model=lda_model)
+        if mode == 'gen':
+            lda_model = self.train_lda()
+            self.topics_descript = self.get_topics_descript(lda_model)
             self.gen_items_descript(model=lda_model)
             self.gen_items_keyw(model=lda_model)
 
@@ -76,45 +81,33 @@ class LDA(TLTTopicModel):
 
         '''
         # setting mode
-        if ((self.numb_docs == None) and (self._path_in == None)):
-            reading = False
-            self.numb_docs = 100
-        elif self.numb_docs:
-            reading = False
-        elif self._path_in:
-            reading = True
-        elif self._path_in and self.numb_docs:
-            print('Error: insert docs for generating them; insert docs path for reading them. Not Both!')
-
-        # setting lda input
-        if reading:
-            if self._path_in:
-                self._input_path = pathlib.Path(self._path_in)
-                numb_docs = count_files(self._input_path)
-                if numb_docs != 0:
-                    self.numb_docs = numb_docs
-                    print('Extracting topic distribution from docs in ', self._input_path)
-                else:
-                    print('No txt file in: ', self._input_path)
+        if self.numb_docs == None and self._docs_path == None:
+            mode = 'load'
+            if self._items_descr_path == None:
+                # pre-trained topic model with 15 topics and 50 docs
+                self.items_descr_path = ' '
             else:
-                self._input_path = pathlib.Path.cwd().parent / "data" / "docs"
-                if pathlib.Path(self._input_path).exists():
-                    numb_docs = count_files(self._input_path)
-                    if numb_docs != 0:
-                        self.numb_docs = numb_docs
-                        print('Extracting topic distribution from docs in ', self._input_path)
-                    else:
-                        print('No txt file in: ', self._input_path)
-                else:
-                    print('Docs folder inside input folder has been deleted')
+                # given trained topic model
+                self.items_descript = self._items_descr_path
 
-        else:
+        if self.numb_docs == None and self._docs_path != None and self.items_descr_path == None:
+            mode = 'get'
+            path = pathlib.Path(self._docs_path)
+            numb_docs = count_files(path)
+            if numb_docs != 0:
+                self.numb_docs = numb_docs
+                print('Extracting topic distribution from docs in ', path)
+            else:
+                print('No txt file in: ', path)
+
+        if self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
+            mode = 'gen'
             print('Setting LDA in generative mode: ', self.numb_docs, ' documents, with ', self.numb_topics, ' topics.')
             print('Training the LDA model ..')
-            self._input_path = None
             self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
 
-        return reading
+        return mode
+
 
     def set_docs_viralities(self, virality):
         '''
@@ -191,6 +184,51 @@ class LDA(TLTTopicModel):
                 item_keyw.append(self.dictionary[word_index[0]])
             self.items_keyw[item] = self.to_bow(item_keyw)
 
+    def get_topics_descript(self, model, mtrx_form=False):
+        '''
+        Getting the word distribution for each topic
+
+        Parameters
+        ----------
+        model : gensim obj
+            input model from gensim library e.g. lda model trained
+        all : bool
+            if True the complete word distribution for each topic is given
+            in a (topics)x(words) matrix format
+            if False a combination of most important words is given for each topic
+        '''
+        if mtrx_form:
+            return model.get_topics()
+        else:
+            return model.print_topics()
+
+
+    def load_items_descr(self, path):
+        '''
+        Returns the items_descript loaded from a file in path
+
+        Parameters
+        ----------
+        path : int
+            path of the items_descript file
+
+        Returns
+        -------
+        tuple of items_descript loaded from path and numb_docs
+        '''
+        items_descr_dict = {}
+        with open(self._items_descr_path, 'r') as f:
+            numb_docs = 0
+            for line in f:
+                line = line.replace(',','').replace(']','').replace('[','')
+                values = line.split()
+                node = int(values[0])
+                interests_vec = [float(i) for i in values[1:]]
+                if self.numb_topics != len(interests_vec):
+                    raise TopicsError("Please write the correct number of topics as input")
+                items_descr_dict[node] = interests_vec
+                numb_docs += 1
+        return items_descr_dict, numb_docs
 
 
     def to_bow(self, text):
@@ -280,21 +318,22 @@ class LDA(TLTTopicModel):
         return id2word, corpus
 
 
-    def train_lda(self):
+    def train_lda(self, path=None):
         '''
-        Pre-train lda model on a saved corpus for infering the prior weights of the distributions given
-        a number of topics, which correpsonds to the weights' dimension
+        Pre-train lda model on a saved corpus for infering the prior weights of
+        the distributions given a number of topics, which correpsonds to the
+        weights' dimension
 
-        Returns gensim object of alpha prior topic distrib vec
+        Returns gensim object of lda model
 
         Parameters
         ----------
-        dict_corp_tuple : tuple
-            output of the corpus_gen() method: dictionary and corpus
+        path : str
+            path of the training corpus
 
         Returns
         -------
-        gensim lda alpha
+        gensim lda model object
         '''
         docs = read_docs(self._training_path)
         id2word, corpus = self.preprocess_texts(docs)
@@ -310,21 +349,3 @@ class LDA(TLTTopicModel):
                                                     per_word_topics=True)
 
         return lda_model
-
-    def get_topics_descript(self, model, mtrx_form=False):
-        '''
-        Getting the word distribution for each topic
-
-        Parameters
-        ----------
-        model : gensim obj
-            input model from gensim library e.g. lda model trained
-        all : bool
-            if True the complete word distribution for each topic is given
-            in a (topics)x(words) matrix format
-            if False a combination of most important words is given for each topic
-        '''
-        if mtrx_form:
-            return model.get_topics()
-        else:
-            return model.print_topics()

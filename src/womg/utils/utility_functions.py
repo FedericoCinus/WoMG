@@ -3,6 +3,8 @@ import pathlib
 import pickle
 import networkx as nx
 
+class TopicsError(Exception):
+    pass
 
 def read_edgelist(self, path, weighted, directed):
     '''

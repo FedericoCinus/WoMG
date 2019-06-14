@@ -64,7 +64,7 @@ class TN(TLTNetworkModel):
     '''
 
     def __init__(self, numb_topics, homophily,
-                 weighted, directed, path_in_graph,
+                 weighted, directed, graph_path,
                  god_node,
                  p, q, num_walks,
                  walk_length, dimensions,
@@ -77,7 +77,7 @@ class TN(TLTNetworkModel):
         self._homophily = homophily
         self._weighted = weighted
         self._directed = directed
-        self._path_in_graph = path_in_graph
+        self._graph_path = graph_path
         self._godNode = {}
         self._god_node = god_node
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
@@ -108,13 +108,13 @@ class TN(TLTNetworkModel):
         -----
         See each method docstring for details
         '''
-        if self._path_in_graph == None:
+        if self._graph_path == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self._path_in_graph = pathlib.Path("../") / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
-            self._nx_obj = read_edgelist(self,path=self._path_in_graph, weighted=False, directed=False)
+            self._graph_path = pathlib.Path("../") / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+            self._nx_obj = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
         else:
-            self._path_in_graph = pathlib.Path(self._path_in_graph)
-            self._nx_obj = read_edgelist(self, path=self._path_in_graph, weighted=self._weighted, directed=self._directed)
+            self._graph_path = pathlib.Path(self._graph_path)
+            self._nx_obj = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
         self.set_graph()
 
         if self._god_node:
@@ -269,7 +269,7 @@ class TN(TLTNetworkModel):
             self._q = -3./2*self._homophily + 7./4
         self._p = 1
         interests_model = node2vec_main(weighted=self._weighted,
-                                        graph=self._path_in_graph,
+                                        graph=self._graph_path,
                                         directed=self._directed,
                                         p=self._p, q=self._q,
                                         num_walks=self._num_walks,

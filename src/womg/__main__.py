@@ -38,17 +38,17 @@ def save(network_model, topic_model, diffusion_model,
 
     saver.save_items_descript(topic_model)
     saver.save_topics_descript(topic_model)
-    #saver.save_propagations(diffusion_model)
 
 
 
 def womg_main(numb_topics, numb_docs,
               numb_steps, homophily,
               actives_perc, virality,
-              path_in_graph,
+              graph_path,
               fast,
               weighted, directed,
               god_node, docs_path,
+              items_descr_path,
               path_out,
               seed,
               dimensions, walk_length,
@@ -104,7 +104,7 @@ def womg_main(numb_topics, numb_docs,
         Default setting is True -> 'random'
 
 
-    path_in_graph : str
+    graph_path : str
         input path of the graph edgelist
 
     weighted : bool
@@ -172,7 +172,7 @@ def womg_main(numb_topics, numb_docs,
         network_model = TN(numb_topics=numb_topics, homophily=homophily,
                             god_node=False,
                             weighted=weighted, directed=directed,
-                            path_in_graph=path_in_graph,
+                            graph_path=graph_path,
                             p=p, q=q,
                             num_walks=num_walks, walk_length=walk_length,
                             dimensions=dimensions, window_size=window_size,
@@ -182,7 +182,8 @@ def womg_main(numb_topics, numb_docs,
 
         topic_model = LDA(numb_topics=numb_topics,
                           numb_docs=numb_docs,
-                          path_in=docs_path)
+                          docs_path=docs_path,
+                          items_descr_path=items_descr_path)
         topic_model.fit()
         topic_model.set_docs_viralities(virality=virality)
 
@@ -243,6 +244,8 @@ def womg_main(numb_topics, numb_docs,
 
 @click.option('--docs_folder', metavar='DOCS', default=None,
                     help='Input  path of the documents folder', type=str)
+@click.option('--items_descr_path', default=None,
+                    help='Input  path items description file representing each item in the topics space. Format: topic_index [topic-dim vec]', type=str)
 @click.option('--output', default=None, help='Outputs path')
 @click.option('--seed', help='Seed (int) for random distribution extractions',
                     type=int, required=False)
@@ -292,6 +295,7 @@ def womg_main(numb_topics, numb_docs,
 def main_cli(topics, docs, steps, homophily, actives,
              virality, graph, fast,
              weighted, directed, docs_folder,
+             items_descr_path,
              output, seed,
              dimensions, walk_length,
              num_walks, window_size,
@@ -315,10 +319,11 @@ def main_cli(topics, docs, steps, homophily, actives,
     womg_main(numb_topics=topics, numb_docs=docs,
               numb_steps=steps, homophily=homophily,
               actives_perc=actives, virality=virality,
-              path_in_graph=graph,
+              graph_path=graph,
               fast=fast,
               weighted=weighted, directed=directed,
               god_node=False, docs_path=docs_folder,
+              items_descr_path=items_descr_path,
               path_out=output,
               seed=seed,
               dimensions=dimensions, walk_length=walk_length,
