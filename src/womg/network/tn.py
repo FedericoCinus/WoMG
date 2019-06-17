@@ -204,7 +204,7 @@ class TN(TLTNetworkModel):
             print('Fast generation of interests:')
             self.random_interests()
         else:
-            print('Generating interests:')
+            print('Generating interests from graph in ')
             self.node2interests(norm=False)
 
 

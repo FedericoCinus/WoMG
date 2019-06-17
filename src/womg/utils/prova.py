@@ -4,9 +4,11 @@ import re
 import pathlib
 import gensim
 import numpy as np
+from nltk.corpus import stopwords
 from topic.tlt_topic_model import TLTTopicModel
 from utils.utility_functions import count_files, read_docs, TopicsError
 from utils.distributions import random_viralities_vec
+
 
 class LDA(TLTTopicModel):
     '''
@@ -34,7 +36,6 @@ class LDA(TLTTopicModel):
         self._docs_path = docs_path
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
-        self.dictionary = []
 
 
     def fit(self):
@@ -49,16 +50,17 @@ class LDA(TLTTopicModel):
         mode = self.set_lda_mode()
         if mode == 'load':
             self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
-        if mode == 'get':
-            lda_model = self.train_lda(path=self._docs_path)
-            self.topics_descript = self.get_topics_descript(lda_model)
-            self.get_items_descript(path=self._docs_path, model=lda_model)
-            self.get_items_keyw(path=self._docs_path, model=lda_model)
-        if mode == 'gen':
+        else:
+            self.make_dictionary()
             lda_model = self.train_lda()
-            self.topics_descript = self.get_topics_descript(lda_model)
-            self.gen_items_descript(model=lda_model)
-            self.gen_items_keyw(model=lda_model)
+            if mode == 'get':
+                self.topics_descript = self.get_topics_descript(lda_model)
+                self.get_items_descript(path=self._docs_path, model=lda_model)
+                self.get_items_keyw(path=self._docs_path, model=lda_model)
+            if mode == 'gen':
+                self.topics_descript = self.get_topics_descript(lda_model)
+                self.gen_items_descript(model=lda_model)
+                self.gen_items_keyw(model=lda_model)
 
 
 
@@ -136,7 +138,6 @@ class LDA(TLTTopicModel):
         '''
         Gets the topic distribution as attribute of the superclass
         '''
-        #potrebbe esserci un bug
         docs = read_docs(path)
         corpus = self.preprocess_texts(docs)
         gammas = {}
@@ -149,7 +150,6 @@ class LDA(TLTTopicModel):
             print("Items' distribution over topics is stored")
             #print(gammas)
         self.items_descript = gammas
-        
 
     def gen_items_descript(self, model):
         '''
@@ -244,10 +244,17 @@ class LDA(TLTTopicModel):
             bow_dict[self.dictionary[word_index]] = freq
         return bow_dict
 
-    def preprocess_texts(self, docs):
+    @staticmethod
+    def clean_text(docs):
         '''
-        Preprocessing input texts: divides docs into words, bow format
+
+        Parameters
+        ----------
+        docs : list of lists
+            each entry is the list containing the doc in string format
+
         '''
+        print(docs)
         # Remove new line characters
         data = [re.sub(r'\s+', ' ', str(sent[0])) for sent in docs]
 
@@ -275,10 +282,8 @@ class LDA(TLTTopicModel):
         # Remove to
         data = [re.sub(r'to', '', str(sent[0])) for sent in docs]
 
-        data_words = self.sent_to_words(data)
-        corpus = [self.dictionary.doc2bow(word) for word in data_words]
-        return corpus
-
+        #print(data)
+        return data
 
     def sent_to_words(self, docs):
         '''
@@ -294,15 +299,39 @@ class LDA(TLTTopicModel):
         data_words : list
             list of lists: each entry is the list of words of one doc
         '''
-        data_words = []
         for sentence in docs:
-            data_words.append(gensim.utils.simple_preprocess(str(sentence), deacc=True))
-        return list(data_words)
+            yield(gensim.utils.simple_preprocess(str(sentence), deacc=True))
+
+
+    def remove_stop_words(self, texts):
+        '''
+        '''
+        stop_words = stopwords.words('english')
+        return [[word for word in gensim.utils.simple_preprocess(str(doc)) if word not in stop_words] for doc in texts]
 
 
 
+    def make_dictionary(self):
+        '''
+        Sets the dictionary attribute using a training corpus in input
 
-    def train_lda(self, path=None):
+        Parameters
+        ----------
+        data_words : list
+            list of lists: each entry is the list of words of one doc
+
+        Returns
+        -------
+        id2word : list
+            dictionary of unique words
+        '''
+        train_corpus = read_docs(self._training_path)
+        clean_train_corpus = self.clean_text(train_corpus)
+        dictio = list(self.sent_to_words(clean_train_corpus))
+        self.dictionary = gensim.corpora.Dictionary(dictio)
+
+
+    def train_lda(self):
         '''
         Pre-train lda model on a saved corpus for infering the prior weights of
         the distributions given a number of topics, which correpsonds to the
@@ -320,9 +349,12 @@ class LDA(TLTTopicModel):
         gensim lda model object
         '''
         docs = read_docs(self._training_path)
-        data_words = self.sent_to_words(docs)
-        self.dictionary = gensim.corpora.Dictionary(data_words)
-        corpus = self.preprocess_texts(docs)
+        #clean_docs = self.clean_text(docs)
+        docs_words = list(self.sent_to_words(docs))
+        #print(docs_words)
+        corpus = [self.dictionary.doc2bow(text, return_missing=True) for text in docs_words]
+        #print(corpus)
+        #print(self.dictionary)
         lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
                                                     id2word=self.dictionary,
                                                     num_topics=self.numb_topics,

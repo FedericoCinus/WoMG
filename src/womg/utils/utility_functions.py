@@ -94,6 +94,10 @@ def read_docs(path):
     ----------
     path : str
         position of the folder
+
+    Returns
+    -------
+    docs in a list format : each entry of the list is a file in a list of words
     '''
     onlyfiles = [f for f in pathlib.os.listdir(path) if pathlib.os.path.isfile(pathlib.os.path.join(path, f))]
     docs = []
