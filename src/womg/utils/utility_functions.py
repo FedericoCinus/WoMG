@@ -6,6 +6,9 @@ import networkx as nx
 class TopicsError(Exception):
     pass
 
+class DocsError(Exception):
+    pass
+
 def read_edgelist(self, path, weighted, directed):
     '''
         Reference implementation of node2vec.
@@ -64,7 +67,8 @@ def cleaning():
         pathlib.os.remove(top_file)
 
 def count_files(path):
-    '''Returns number of files in a directory
+    '''Returns number of files in a directory; files that start wtih '.' are not
+       considered
 
     Parameters
     ----------
@@ -76,6 +80,9 @@ def count_files(path):
     It is not recursive: it does not count files in inner directories
     '''
     files = next(pathlib.os.walk(str(path)))[2]
+    for file in files:
+        if file.startswith('.'):
+            files.remove(file)
     return len(files)
 
 def read_graph(file_path):

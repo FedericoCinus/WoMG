@@ -5,7 +5,7 @@ import pathlib
 import gensim
 import numpy as np
 from topic.tlt_topic_model import TLTTopicModel
-from utils.utility_functions import count_files, read_docs, TopicsError
+from utils.utility_functions import count_files, read_docs, TopicsError, DocsError
 from utils.distributions import random_viralities_vec
 
 class LDA(TLTTopicModel):
@@ -35,6 +35,7 @@ class LDA(TLTTopicModel):
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
+        self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
 
 
     def fit(self):
@@ -49,13 +50,12 @@ class LDA(TLTTopicModel):
         mode = self.set_lda_mode()
         if mode == 'load':
             self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
+        lda_model = self.train_lda()
         if mode == 'get':
-            lda_model = self.train_lda(path=self._docs_path)
             self.topics_descript = self.get_topics_descript(lda_model)
             self.get_items_descript(path=self._docs_path, model=lda_model)
-            self.get_items_keyw(path=self._docs_path, model=lda_model)
+            self.get_items_keyw(path=self._docs_path)
         if mode == 'gen':
-            lda_model = self.train_lda()
             self.topics_descript = self.get_topics_descript(lda_model)
             self.gen_items_descript(model=lda_model)
             self.gen_items_keyw(model=lda_model)
@@ -85,10 +85,11 @@ class LDA(TLTTopicModel):
             mode = 'load'
             if self._items_descr_path == None:
                 # pre-trained topic model with 15 topics and 50 docs
-                self.items_descr_path = ' '
+                self._items_descr_path = pathlib.Path.cwd().parent / 'data' / 'topic_model' / 'Items_descript.txt'
             else:
-                # given trained topic model
-                self.items_descript = self._items_descr_path
+                pass
+            print('Loading items descriptions (topic distrib for each doc) in: ', self._items_descr_path)
+
 
         if self.numb_docs == None and self._docs_path != None and self._items_descr_path == None:
             mode = 'get'
@@ -99,14 +100,20 @@ class LDA(TLTTopicModel):
                 print('Extracting topic distribution from docs in ', path)
             else:
                 print('No txt file in: ', path)
-            self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
 
+        if self.numb_docs != None and self._docs_path != None and self._items_descr_path == None:
+            mode = 'get'
+            path = pathlib.Path(self._docs_path)
+            numb_docs = count_files(path)
+            if self.numb_docs != numb_docs:
+                raise DocsError("Please write the correct number of docs as input or do not insert it in case you give a docs_folder")
+            else:
+                print('Extracting topic distribution from docs in ', path)
 
         if self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
             mode = 'gen'
             print('Setting LDA in generative mode: ', self.numb_docs, ' documents, with ', self.numb_topics, ' topics.')
             print('Training the LDA model ..')
-            self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
 
         return mode
 
@@ -134,9 +141,16 @@ class LDA(TLTTopicModel):
 
     def get_items_descript(self, path, model):
         '''
-        Gets the topic distribution as attribute of the superclass
+        Gets the topic distribution and puts it as attribute of the superclass
+        reading documents from the docs folder path given as parameter
+
+        Parameters
+        ----------
+        path : str
+            path of the of the docs folder
+        model : Gensim obj
+            trained Gensim lda model
         '''
-        #potrebbe esserci un bug
         docs = read_docs(path)
         corpus = self.preprocess_texts(docs)
         gammas = {}
@@ -147,14 +161,13 @@ class LDA(TLTTopicModel):
             item += 1
         if self.numb_docs == len(gammas.keys()):
             print("Items' distribution over topics is stored")
-            #print(gammas)
         self.items_descript = gammas
-        
+
 
     def gen_items_descript(self, model):
         '''
         Generates the topic distribution for each item
-        and stores it in the imets_descript attribute
+        and stores it in the items_descript attribute
         '''
         alpha = model.alpha
         #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
@@ -164,11 +177,15 @@ class LDA(TLTTopicModel):
         self.items_descript = gammas
 
 
-    def get_items_keyw(self, path, model):
+    def get_items_keyw(self, path):
         '''
         Get the items keyword in a bow format
         '''
-        return
+        docs = read_docs(path)
+        data_words = self.sent_to_words(docs)
+        for item in range(self.numb_docs):
+            self.items_keyw[item] = self.to_bow(data_words[item])
+
 
     def gen_items_keyw(self, model):
         '''
@@ -228,7 +245,7 @@ class LDA(TLTTopicModel):
                 node = int(values[0])
                 interests_vec = [float(i) for i in values[1:]]
                 if self.numb_topics != len(interests_vec):
-                    raise TopicsError("Please write the correct number of topics as input")
+                    raise TopicsError("Please write the correct number of topics as input or in case you give the items_descr_path you can omit it")
                 items_descr_dict[node] = interests_vec
                 numb_docs += 1
         return items_descr_dict, numb_docs
@@ -298,8 +315,6 @@ class LDA(TLTTopicModel):
         for sentence in docs:
             data_words.append(gensim.utils.simple_preprocess(str(sentence), deacc=True))
         return list(data_words)
-
-
 
 
     def train_lda(self, path=None):
