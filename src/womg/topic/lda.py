@@ -86,6 +86,8 @@ class LDA(TLTTopicModel):
             if self._items_descr_path == None:
                 # pre-trained topic model with 15 topics and 50 docs
                 self._items_descr_path = pathlib.Path.cwd().parent / 'data' / 'topic_model' / 'Items_descript.txt'
+                self._topics_descr_path = pathlib.Path.cwd().parent / 'data' / 'topic_model' / 'Topics_descript.txt'
+                self.topics_descript = self.load_topics_descr(self._topics_descr_path)
             else:
                 pass
             print('Loading items descriptions (topic distrib for each doc) in: ', self._items_descr_path)
@@ -237,7 +239,7 @@ class LDA(TLTTopicModel):
         tuple of items_descript loaded from path and numb_docs
         '''
         items_descr_dict = {}
-        with open(self._items_descr_path, 'r') as f:
+        with open(path, 'r') as f:
             numb_docs = 0
             for line in f:
                 line = line.replace(',','').replace(']','').replace('[','')
@@ -250,6 +252,14 @@ class LDA(TLTTopicModel):
                 numb_docs += 1
         return items_descr_dict, numb_docs
 
+    def load_topics_descr(self, path):
+        '''
+        Loads a topic description file (for each topic word distribution)
+        '''
+        with open(path, 'r') as f:
+            topics_descript = f.readlines()
+            #topics_descript[0].replace("\\",'').replace(']','')
+        return str(topics_descript[0])
 
     def to_bow(self, text):
         '''

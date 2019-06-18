@@ -123,8 +123,11 @@ class TxtSaver(Saver):
         output_dir = self.make_output_directory(self._path)
         filename = self.make_filename("Topics_descript", output_dir)
 
-        with open(filename, "w") as f:
-            f.write(str(topic_model.topics_descript))
+        if topic_model.topics_descript != {}:
+            with open(filename, "w") as f:
+                f.write(str(topic_model.topics_descript))
+        else:
+            pass
 
 
     def save_items_keyw(self, topic_model):
