@@ -119,7 +119,7 @@ def n2i_main(topics=15,
                                 verbose=verbose)
 
     if reduce:
-    # Translation
+        # Translation
         if translate:
             # translation constant
             minim = 0.
@@ -131,7 +131,7 @@ def n2i_main(topics=15,
                 print("Computing interest vectors: ")
                 for node in tqdm(sorted(interests_model.wv.vocab)):
                     emb[int(node)] = np.array([])
-                    for topic in range(topics):
+                    for topic in range(dimensions):
                         emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
                     # Normalization
                     if normalize:
@@ -140,7 +140,7 @@ def n2i_main(topics=15,
             else:
                 for node in sorted(interests_model.wv.vocab):
                     emb[int(node)] = np.array([])
-                    for topic in range(topics):
+                    for topic in range(dimensions):
                         emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
                     # Normalization
                     if normalize:
@@ -150,7 +150,7 @@ def n2i_main(topics=15,
         else:
             for node in sorted(interests_model.wv.vocab):
                 emb[int(node)] = np.array([])
-                for topic in range(topics):
+                for topic in range(dimensions):
                     emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
                 M.append(emb[int(node)])
 
@@ -162,10 +162,42 @@ def n2i_main(topics=15,
         left = nmf.transform(M)
         for node, index in zip(sorted(interests_model.wv.vocab), range(numb_nodes)):
             emb[int(node)] = left[int(index)]
-            #print(emb[int(node)])
+
+    # NO REDUCTION
     else:
-        for node in interests_model.wv.vocab:
-            emb[node] = interests_model.wv[str(node)]
+        if translate:
+            # translation constant
+            minim = 0.
+            for i in interests_model.wv.vocab:
+                if min(interests_model.wv[str(i)]) < minim:
+                    minim = min(interests_model.wv[str(i)])
+            ##
+            if verbose:
+                print("Computing interest vectors: ")
+                for node in tqdm(sorted(interests_model.wv.vocab)):
+                    emb[int(node)] = np.array([])
+                    for topic in range(dimensions):
+                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
+                    # Normalization
+                    if normalize:
+                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
+                    M.append(emb[int(node)])
+            else:
+                for node in sorted(interests_model.wv.vocab):
+                    emb[int(node)] = np.array([])
+                    for topic in range(dimensions):
+                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
+                    # Normalization
+                    if normalize:
+                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
+                    M.append(emb[int(node)])
+        # NO Translation
+        else:
+            for node in sorted(interests_model.wv.vocab):
+                emb[int(node)] = np.array([])
+                for topic in range(dimensions):
+                    emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
+                M.append(emb[int(node)])
 
     save_emb(emb=emb, path=output, verbose=verbose)
 

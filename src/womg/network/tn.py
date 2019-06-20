@@ -292,7 +292,7 @@ class TN(TLTNetworkModel):
             print("Computing interest vectors: ")
             for node in self._progress_bar(sorted(interests_model.wv.vocab)):
                 self.users_interests[int(node)] = np.array([])
-                for topic in range(self._numb_topics):
+                for topic in range(self._dimensions):
                     self.users_interests[int(node)] = np.append(self.users_interests[int(node)],
                                                                       interests_model.wv[node][topic] + abs(minim))
                 # Normalization
@@ -303,7 +303,7 @@ class TN(TLTNetworkModel):
         else:
             for node in sorted(interests_model.wv.vocab):
                 self.users_interests[int(node)] = np.array([])
-                for topic in range(self._numb_topics):
+                for topic in range(self._dimensions):
                     self.users_interests[int(node)] = np.append(self.users_interests[int(node)],
                                                                   interests_model.wv[node][topic])
                 M.append(self.users_interests[int(node)])
