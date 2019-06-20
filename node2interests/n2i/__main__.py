@@ -30,7 +30,8 @@ def n2i_main(topics=15,
          p=1, q=1,
          normalize=False,
          translate=True,
-         reduce=True):
+         reduce=True,
+         verbose=False):
     '''
 
 
@@ -114,7 +115,8 @@ def n2i_main(topics=15,
                                 dimensions=dimensions,
                                 window_size=window_size,
                                 workers=workers,
-                                iiter=iiter)
+                                iiter=iiter,
+                                verbose=verbose)
 
     if reduce:
     # Translation
@@ -125,15 +127,25 @@ def n2i_main(topics=15,
                 if min(interests_model.wv[str(i)]) < minim:
                     minim = min(interests_model.wv[str(i)])
             ##
-            print("Computing interest vectors: ")
-            for node in tqdm(sorted(interests_model.wv.vocab)):
-                emb[int(node)] = np.array([])
-                for topic in range(topics):
-                    emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
-                # Normalization
-                if normalize:
-                    emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
-                M.append(emb[int(node)])
+            if verbose:
+                print("Computing interest vectors: ")
+                for node in tqdm(sorted(interests_model.wv.vocab)):
+                    emb[int(node)] = np.array([])
+                    for topic in range(topics):
+                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
+                    # Normalization
+                    if normalize:
+                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
+                    M.append(emb[int(node)])
+            else:
+                for node in sorted(interests_model.wv.vocab):
+                    emb[int(node)] = np.array([])
+                    for topic in range(topics):
+                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
+                    # Normalization
+                    if normalize:
+                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
+                    M.append(emb[int(node)])
         # NO Translation
         else:
             for node in sorted(interests_model.wv.vocab):
@@ -143,7 +155,8 @@ def n2i_main(topics=15,
                 M.append(emb[int(node)])
 
         # NMF Reduction
-        print('Reducing dimensions from ', dimensions,' to ', topics)
+        if verbose:
+            print('Reducing dimensions from ', dimensions,' to ', topics)
         nmf = NMF(n_components=topics, random_state=42, max_iter=1000)
         right = nmf.fit(M).components_
         left = nmf.transform(M)
@@ -154,7 +167,7 @@ def n2i_main(topics=15,
         for node in interests_model.wv.vocab:
             emb[node] = interests_model.wv[str(node)]
 
-    save_emb(emb=emb, path=output)
+    save_emb(emb=emb, path=output, verbose=verbose)
 
 
 @click.command()
@@ -211,6 +224,9 @@ def n2i_main(topics=15,
 @click.option('--reduce', is_flag=True,
                     help='reduce dimension with NMF',
                     default=True)
+@click.option('--verbose', is_flag=True,
+                    help='n2i rpivdes all prints',
+                    default=False)
 def main_cli(topics,
          graph, fast,
          weighted, directed,
@@ -221,7 +237,8 @@ def main_cli(topics,
          p, q,
          normalize,
          translate,
-         reduce):
+         reduce,
+         verbose):
     '''
 
 
@@ -243,7 +260,8 @@ def main_cli(topics,
              p=p, q=q,
              normalize=normalize,
              translate=translate,
-             reduce=reduce)
+             reduce=reduce,
+             verbose=verbose)
 
 if __name__ == '__main__':
     main_cli()

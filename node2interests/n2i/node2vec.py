@@ -42,12 +42,12 @@ def learn_embeddings(walks, dimensions, window_size, workers, iiter):
     return model.wv
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
-                  dimensions, window_size, workers, iiter):
+                  dimensions, window_size, workers, iiter, verbose):
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''
     nx_G = read_graph(weighted, graph, directed)
-    G = Graph(nx_G, directed, p, q)
+    G = Graph(nx_G, directed, p, q, verbose=verbose)
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
     emb_model = learn_embeddings(walks, dimensions, window_size,
@@ -55,7 +55,7 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
 
     return emb_model
 
-def save_emb(emb, path):
+def save_emb(emb, path, verbose=False):
     '''
     saves embeddings in path with the following format :
     node_id [embeddings]
@@ -65,7 +65,8 @@ def save_emb(emb, path):
         for node in emb.keys():
             tmp_emb = [_ for _ in emb[node]]
             f.write(str(node) + ' ' + str(tmp_emb) + '\n')
-    print('Embeddings have been saved in ', path)
+    if verbose:
+        print('Embeddings have been saved in ', path)
 
 def make_filename(name, output_dir, new_file=True):
     '''
