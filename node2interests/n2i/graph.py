@@ -23,6 +23,7 @@ class Graph():
 
         while len(list(walk)) < walk_length:
             cur = walk[-1]
+            #change sorted
             cur_nbrs = sorted(G.neighbors(cur))
             if len(list(cur_nbrs)) > 0:
                 if len(list(walk)) == 1:
@@ -88,11 +89,11 @@ class Graph():
         is_directed = self.is_directed
 
         alias_nodes = {}
-        
+
         nodes = G.nodes()
         if self.verbose:
             nodes = tqdm(nodes)
-        
+
         for node in nodes:
             unnormalized_probs = [G[node][nbr]['weight'] for nbr in sorted(G.neighbors(node))]
             norm_const = sum(unnormalized_probs)
@@ -105,7 +106,7 @@ class Graph():
         edges = G.edges()
         if self.verbose:
             edges = tqdm(edges)
-        
+
         if is_directed:
             for edge in edges:
                 alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
