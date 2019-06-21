@@ -46,7 +46,10 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''
-    nx_G = read_graph(weighted, graph, directed)
+    if type(graph) == str:
+        nx_G = read_graph(weighted, graph, directed)
+    else:
+        nx_G = graph
     G = Graph(nx_G, directed, p, q, verbose=verbose)
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
