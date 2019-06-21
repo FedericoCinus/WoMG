@@ -44,19 +44,17 @@ class Graph():
         G = self.G
         walks = []
         nodes = list(G.nodes())
+
+        range_num_walks = range(num_walks)
         if self.verbose:
             print('Walk iteration:')
-            for walk_iter in tqdm(range(num_walks)):
-                #print(str(walk_iter+1), '/', str(num_walks))
-                random.shuffle(nodes)
-                for node in nodes:
-                    walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
-        else:
-            for walk_iter in range(num_walks):
-                #print(str(walk_iter+1), '/', str(num_walks))
-                random.shuffle(nodes)
-                for node in nodes:
-                    walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
+            range_num_walks = tqdm(range_num_walks)
+
+        for walk_iter in range_num_walks:
+            #print(str(walk_iter+1), '/', str(num_walks))
+            random.shuffle(nodes)
+            for node in nodes:
+                walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
 
         #print(walks)
         return walks
@@ -90,38 +88,31 @@ class Graph():
         is_directed = self.is_directed
 
         alias_nodes = {}
+        
+        nodes = G.nodes()
         if self.verbose:
-            for node in tqdm(G.nodes()):
-                unnormalized_probs = [G[node][nbr]['weight'] for nbr in sorted(G.neighbors(node))]
-                norm_const = sum(unnormalized_probs)
-                normalized_probs =  [float(u_prob)/norm_const for u_prob in unnormalized_probs]
-                alias_nodes[node] = alias_setup(normalized_probs)
-        else:
-            for node in G.nodes():
-                unnormalized_probs = [G[node][nbr]['weight'] for nbr in sorted(G.neighbors(node))]
-                norm_const = sum(unnormalized_probs)
-                normalized_probs =  [float(u_prob)/norm_const for u_prob in unnormalized_probs]
-                alias_nodes[node] = alias_setup(normalized_probs)
+            nodes = tqdm(nodes)
+        
+        for node in nodes:
+            unnormalized_probs = [G[node][nbr]['weight'] for nbr in sorted(G.neighbors(node))]
+            norm_const = sum(unnormalized_probs)
+            normalized_probs =  [float(u_prob)/norm_const for u_prob in unnormalized_probs]
+            alias_nodes[node] = alias_setup(normalized_probs)
 
         alias_edges = {}
         triads = {}
 
+        edges = G.edges()
         if self.verbose:
-            if is_directed:
-                for edge in tqdm(G.edges()):
-                    alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
-            else:
-                for edge in tqdm(G.edges()):
-                    alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
-                    alias_edges[(edge[1], edge[0])] = self.get_alias_edge(edge[1], edge[0])
+            edges = tqdm(edges)
+        
+        if is_directed:
+            for edge in edges:
+                alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
         else:
-            if is_directed:
-                for edge in G.edges():
-                    alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
-            else:
-                for edge in G.edges():
-                    alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
-                    alias_edges[(edge[1], edge[0])] = self.get_alias_edge(edge[1], edge[0])
+            for edge in edges:
+                alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
+                alias_edges[(edge[1], edge[0])] = self.get_alias_edge(edge[1], edge[0])
 
         self.alias_nodes = alias_nodes
         self.alias_edges = alias_edges

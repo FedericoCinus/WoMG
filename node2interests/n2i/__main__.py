@@ -20,10 +20,10 @@ from n2i.node2vec import node2vec, read_graph, save_emb
 
 curr_path = str(pathlib.Path.cwd())
 
-def n2i_main(topics=15,
-         graph=None, fast=False,
+def n2i_nx_graph(nx_graph,
+         topics=15,
          weighted=False, directed=False,
-         output=curr_path, seed=None,
+         fast=False, seed=None,
          dimensions=128, walk_length=80,
          num_walks=10, window_size=10,
          iiter=1, workers=8,
@@ -32,82 +32,16 @@ def n2i_main(topics=15,
          translate=True,
          reduce=True,
          verbose=False):
-    '''
-
-
-
-    Creates interests vector for each node using node2vec algorithm and
-    saves interests in a file.
-
-    3 steps:
-        1. finding node2vec embeddings
-        2. translation to positive axes of the embeddings
-        3. reduction with NMF to _topics dimensions
-
-    Parameters
-    ----------
-    - topics : int
-        Number of topics in the topic model. Default 15. K<d
-    - graph : str
-        Input path of the graph edgelist
-    - fast : bool
-        defines the method for generating nodes' interests. Two choices: 'node2interests', 'random'. Default setting is False -> 'node2interests
-    - weighted : bool
-        boolean specifying (un)weighted. Default  unweighted
-    - directed : bool
-        graph is (un)directed. Default  undirected
-    - output : str
-        Outputs path
-    - seed : int
-        Seed (int) for random distribution extractions
-    - dimensions : int
-        Number of dimensions for node2vec. Default 128
-    - walk_length : int
-        ength of walk per source. Default 80
-    - num_walks : int
-        number of walks per source. Default 10
-    - window_size : int
-        context size for optimization. Default 10
-    - iiter : int
-        number of epochs in SGD
-    - workers : int
-        number of parallel workers. Default   8
-    - p : float
-        manually set BFS parameter
-    - q : float
-        manually set DFS parameter
-    - norm : bool
-      choose if interests have to be normalize (True) or not (False)
-    - transl : bool
-      choose if interests have to be translated to positive axes
-    - reduce : bool
-        if True reduces dimensions with NMF
-
-
-
-    Notes
-    -----
-    - Arrays are translated in order to have non-negative entries
-    - Dimension is reduced to the number of topics using NMF, which mantains
-      positivity
-    '''
-    # seed
-    if seed != None:
-        random.seed(seed)
-        np.random.seed(seed)
-    if topics >= dimensions:
-        print('Topics have to be less than dimensions')
-        sys.exit()
+    
     # Embeddings
     emb = {}
     # Final matrix
     M = []
     # Node2Vec
     #print(graph)
-    nx_graph = read_graph(weighted=weighted, graph=graph, directed=directed)
     numb_nodes = nx.number_of_nodes(nx_graph)
     interests_model = node2vec(weighted=weighted,
-                                graph=graph,
+                                graph=nx_graph,
                                 directed=directed,
                                 p=p, q=q,
                                 num_walks=num_walks,
@@ -198,6 +132,107 @@ def n2i_main(topics=15,
                 for topic in range(dimensions):
                     emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
                 M.append(emb[int(node)])
+                
+    return emb
+
+def n2i_main(topics=15,
+         graph=None, fast=False,
+         weighted=False, directed=False,
+         output=curr_path, seed=None,
+         dimensions=128, walk_length=80,
+         num_walks=10, window_size=10,
+         iiter=1, workers=8,
+         p=1, q=1,
+         normalize=False,
+         translate=True,
+         reduce=True,
+         verbose=False):
+    '''
+
+
+
+    Creates interests vector for each node using node2vec algorithm and
+    saves interests in a file.
+
+    3 steps:
+        1. finding node2vec embeddings
+        2. translation to positive axes of the embeddings
+        3. reduction with NMF to _topics dimensions
+
+    Parameters
+    ----------
+    - topics : int
+        Number of topics in the topic model. Default 15. K<d
+    - graph : str
+        Input path of the graph edgelist
+    - fast : bool
+        defines the method for generating nodes' interests. Two choices: 'node2interests', 'random'. Default setting is False -> 'node2interests
+    - weighted : bool
+        boolean specifying (un)weighted. Default  unweighted
+    - directed : bool
+        graph is (un)directed. Default  undirected
+    - output : str
+        Outputs path
+    - seed : int
+        Seed (int) for random distribution extractions
+    - dimensions : int
+        Number of dimensions for node2vec. Default 128
+    - walk_length : int
+        ength of walk per source. Default 80
+    - num_walks : int
+        number of walks per source. Default 10
+    - window_size : int
+        context size for optimization. Default 10
+    - iiter : int
+        number of epochs in SGD
+    - workers : int
+        number of parallel workers. Default   8
+    - p : float
+        manually set BFS parameter
+    - q : float
+        manually set DFS parameter
+    - norm : bool
+      choose if interests have to be normalize (True) or not (False)
+    - transl : bool
+      choose if interests have to be translated to positive axes
+    - reduce : bool
+        if True reduces dimensions with NMF
+
+
+
+    Notes
+    -----
+    - Arrays are translated in order to have non-negative entries
+    - Dimension is reduced to the number of topics using NMF, which mantains
+      positivity
+    '''
+    # seed
+    if seed != None:
+        random.seed(seed)
+        np.random.seed(seed)
+    if topics >= dimensions:
+        print('Topics have to be less than dimensions')
+        sys.exit()
+    
+    nx_graph = read_graph(weighted=weighted, graph=graph, directed=directed)
+    
+    emb = n2i_nx_graph(
+         nx_graph=nx_graph,
+         topics=topics,
+         weighted=weighted, directed=directed,
+         fast=fast,
+         seed=seed,
+         dimensions=dimensions,
+         walk_length=walk_length,
+         num_walks=num_walks,
+         window_size=window_size,
+         iiter=iiter,
+         workers=workers,
+         p=p, q=q,
+         normalize=normalize,
+         translate=translate,
+         reduce=reduce,
+         verbose=verbose)
 
     save_emb(emb=emb, path=output, verbose=verbose)
 
