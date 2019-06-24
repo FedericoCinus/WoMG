@@ -24,10 +24,6 @@ def read_graph(weighted, graph, directed):
         G = nx.read_edgelist(graph, nodetype=int, create_using=nx.DiGraph())
         for edge in G.edges():
             G[edge[0]][edge[1]]['weight'] = 1
-
-    if not directed:
-        G = G.to_undirected()
-
     return G
 
 def learn_embeddings(walks, dimensions, window_size, workers, iiter):
@@ -50,7 +46,8 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
         nx_G = read_graph(weighted, graph, directed)
     else:
         nx_G = graph
-    G = Graph(nx_G, directed, p, q, verbose=verbose)
+    G = Graph(nx_G, directed, weighted, p, q, verbose=verbose)
+    G.format_graph()
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
     emb_model = learn_embeddings(walks, dimensions, window_size,
