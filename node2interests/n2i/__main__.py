@@ -1,16 +1,6 @@
-'''
-Reference implementation of node2vec.
-
-Author: Aditya Grover
-
-For more details, refer to the paper:
-node2vec: Scalable Feature Learning for Networks
-Aditya Grover and Jure Leskovec
-Knowledge Discovery and Data Mining (KDD), 2016
-'''
+import pathlib
 import sys
 import click
-import pathlib
 import random
 import numpy as np
 import networkx as nx
@@ -32,7 +22,7 @@ def n2i_nx_graph(nx_graph,
          translate=True,
          reduce=True,
          verbose=False):
-    
+
     # Embeddings
     emb = {}
     # Final matrix
@@ -132,7 +122,7 @@ def n2i_nx_graph(nx_graph,
                 for topic in range(dimensions):
                     emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
                 M.append(emb[int(node)])
-                
+
     return emb
 
 def n2i_main(topics=15,
@@ -213,9 +203,9 @@ def n2i_main(topics=15,
     if topics >= dimensions:
         print('Topics have to be less than dimensions')
         sys.exit()
-    
+
     nx_graph = read_graph(weighted=weighted, graph=graph, directed=directed)
-    
+
     emb = n2i_nx_graph(
          nx_graph=nx_graph,
          topics=topics,
