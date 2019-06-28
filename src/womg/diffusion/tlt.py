@@ -1,4 +1,4 @@
-# /Diffusion/tlt.py
+ # /Diffusion/tlt.py
 # Implementation of TLT model
 import pathlib
 import pickle
@@ -98,7 +98,7 @@ class TLT(DiffusionModel):
         3. Save results contained in public attributes: new activated nodes
         '''
         self.saver.save_propagation(self.propagations, step)
-        
+
         if step == 0:
             for item in range(self._numb_docs):
                 new_active_nodes = self.active_nodes[item]

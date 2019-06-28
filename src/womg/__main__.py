@@ -195,6 +195,7 @@ def womg_main(numb_topics, numb_docs,
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
 
+    finally:
         save(network_model=network_model,
              topic_model=topic_model,
              diffusion_model=diffusion_model,
@@ -203,8 +204,7 @@ def womg_main(numb_topics, numb_docs,
              save_int=save_int,
              save_infl=save_infl,
              save_keyw=save_keyw)
-    finally:
-        cleaning()
+
 
 @click.command()
 @click.option('--topics', metavar='K', default=15,
