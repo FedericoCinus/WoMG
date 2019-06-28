@@ -4,12 +4,33 @@ from tqdm import tqdm
 
 
 class Graph():
-    def __init__(self, nx_G, is_directed, p, q, verbose):
+    def __init__(self, nx_G, is_directed, is_weighted, p, q, verbose):
         self.G = nx_G
         self.is_directed = is_directed
+        self.is_weighted = is_weighted
         self.p = p
         self.q = q
         self.verbose = verbose
+        self.graph_dict = {}
+        self.setup()
+
+    def setup(self):
+        '''
+        Check if the nx obj in input is directed and weighted
+        '''
+        if not self.is_directed:
+            self.G = self.G.to_undirected()
+        test_u, test_v = list(self.G.edges())[0]
+        if (not self.is_weighted) and (not 'weight' in self.G[test_u][test_v]):
+            for edge in self.G.edges():
+                self.G[edge[0]][edge[1]]['weight'] = 1
+
+    def format_graph(self):
+        '''
+        Sets the graph_dict attribute as the nx object in a dictionary format
+        '''
+        for node in self.G.nodes():
+            self.graph_dict[node] = np.array([ _ for _ in sorted(self.G.neighbors(node))])
 
     def node2vec_walk(self, walk_length, start_node):
         '''
@@ -23,7 +44,7 @@ class Graph():
 
         while len(list(walk)) < walk_length:
             cur = walk[-1]
-            cur_nbrs = sorted(G.neighbors(cur))
+            cur_nbrs = self.graph_dict[cur]
             if len(list(cur_nbrs)) > 0:
                 if len(list(walk)) == 1:
                     walk.append(cur_nbrs[alias_draw(alias_nodes[cur][0], alias_nodes[cur][1])])
@@ -68,7 +89,7 @@ class Graph():
         q = self.q
 
         unnormalized_probs = []
-        for dst_nbr in sorted(G.neighbors(dst)):
+        for dst_nbr in self.graph_dict[dst]:
             if dst_nbr == src:
                 unnormalized_probs.append(G[dst][dst_nbr]['weight']/p)
             elif G.has_edge(dst_nbr, src):
@@ -88,13 +109,16 @@ class Graph():
         is_directed = self.is_directed
 
         alias_nodes = {}
-        
+
         nodes = G.nodes()
         if self.verbose:
             nodes = tqdm(nodes)
-        
+
         for node in nodes:
-            unnormalized_probs = [G[node][nbr]['weight'] for nbr in sorted(G.neighbors(node))]
+            if self.is_weighted:
+                unnormalized_probs = [G[node][nbr]['weight'] for nbr in self.graph_dict[node]]
+            else:
+                unnormalized_probs = [1 for nbr in range(len(self.graph_dict[node]))]
             norm_const = sum(unnormalized_probs)
             normalized_probs =  [float(u_prob)/norm_const for u_prob in unnormalized_probs]
             alias_nodes[node] = alias_setup(normalized_probs)
@@ -105,7 +129,7 @@ class Graph():
         edges = G.edges()
         if self.verbose:
             edges = tqdm(edges)
-        
+
         if is_directed:
             for edge in edges:
                 alias_edges[edge] = self.get_alias_edge(edge[0], edge[1])
