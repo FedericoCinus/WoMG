@@ -8,10 +8,13 @@ node2vec: Scalable Feature Learning for Networks
 Aditya Grover and Jure Leskovec
 Knowledge Discovery and Data Mining (KDD), 2016
 '''
+
+from n2i.tfoptimizer import Word2vec as TfWord2vec
+
 import pathlib
 import networkx as nx
 from n2i.graph import Graph
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec as GensimWord2Vec
 
 def read_graph(weighted, graph, directed):
     '''
@@ -30,16 +33,19 @@ def read_graph(weighted, graph, directed):
 
     return G
 
-def learn_embeddings(walks, dimensions, window_size, workers, iiter):
+def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, iiter, use_tf=False,
+    verbose=True):
     '''
     Learn embeddings by optimizing the Skipgram objective using SGD.
     '''
-    walks = [list(map(str, walk)) for walk in walks]
-    model = Word2Vec(walks, size=dimensions, window=window_size, min_count=0,
-                     sg=1, workers=workers, iter=iiter)
-    #model.wv.save_word2vec_format(args.output)
-
-    return model.wv
+    if use_tf:
+        model = TfWord2vec(number_of_nodes, embedding_size=dimensions)
+        return model.run(walks, iiter=iiter, skip_window=window_size, verbose=verbose)
+    else:
+        walks = [list(map(str, walk)) for walk in walks]
+        model = GensimWord2Vec(walks, size=dimensions, window=window_size, min_count=0,
+                         sg=1, workers=workers, iter=iiter)
+        return model.wv
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
                   dimensions, window_size, workers, iiter, verbose):
@@ -53,8 +59,8 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     G = Graph(nx_G, directed, p, q, verbose=verbose)
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
-    emb_model = learn_embeddings(walks, dimensions, window_size,
-                                 workers, iiter)
+    emb_model = learn_embeddings(G.number_of_nodes(), walks, dimensions, window_size,
+                                 workers, iiter, verbose=verbose)
 
     return emb_model
 
