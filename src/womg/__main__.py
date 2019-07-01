@@ -43,11 +43,11 @@ def save(network_model, topic_model, diffusion_model,
 
 def womg_main(numb_topics, numb_docs,
               numb_steps, homophily,
-              actives_perc, virality,
+              gn_strength, virality,
               graph_path,
               fast,
               weighted, directed,
-              god_node, docs_path,
+              docs_path,
               items_descr_path,
               path_out,
               seed,
@@ -89,9 +89,8 @@ def womg_main(numb_topics, numb_docs,
         1-H is degree of influence between nodes;
         reccommended values are: 0, 0.5, 1. Default 0.5
 
-    actives_perc : float
-        maximum percentage of active nodes in first step of simulation on an item
-        with respect to the number of nodes. Default 0.05
+    gn_strength : float
+        god node influence stength. Default 1
 
     virality : float
         exponent of the powerlaw distribution for documents viralities.
@@ -170,9 +169,9 @@ def womg_main(numb_topics, numb_docs,
     try:
         set_seed(seed)
         network_model = TN(numb_topics=numb_topics, homophily=homophily,
-                            god_node=False,
                             weighted=weighted, directed=directed,
                             graph_path=graph_path,
+                            gn_strength=gn_strength,
                             p=p, q=q,
                             num_walks=num_walks, walk_length=walk_length,
                             dimensions=dimensions, window_size=window_size,
@@ -189,7 +188,6 @@ def womg_main(numb_topics, numb_docs,
 
         diffusion_model = TLT(network_model=network_model,
                               topic_model=topic_model,
-                              actives_perc=actives_perc,
                               path_out=path_out,
                               progress_bar=progress_bar)
         diffusion_model.diffusion_setup()
@@ -219,8 +217,8 @@ def womg_main(numb_topics, numb_docs,
 @click.option('--homophily', metavar='H', default=0.5,
                     help='0<=H<=1 :degree of homophily decoded from the given network. 1-H is degree of influence between nodes; reccommended values are: 0, 0.5, 1. Default 0.5',
                     type=float)
-@click.option('--actives', metavar='A', default=0.5,
-                    help='Maximum percentage of active nodes in first step of simulation on an item with respect to the number of nodes. Default 0.5',
+@click.option('--gn_strength', default=1,
+                    help='Influence strength of the god node for initial configuration. Default 1',
                     type=float)
 @click.option('--virality', metavar='V', default=1,
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
@@ -292,10 +290,11 @@ def womg_main(numb_topics, numb_docs,
                     help='if True WoMG saves all non-optional outputs',
                     default=False)
 
-def main_cli(topics, docs, steps, homophily, actives,
+def main_cli(topics, docs, steps, homophily,
              virality, graph, fast,
              weighted, directed, docs_folder,
              items_descr_path,
+             gn_strength,
              output, seed,
              dimensions, walk_length,
              num_walks, window_size,
@@ -318,11 +317,11 @@ def main_cli(topics, docs, steps, homophily, actives,
     '''
     womg_main(numb_topics=topics, numb_docs=docs,
               numb_steps=steps, homophily=homophily,
-              actives_perc=actives, virality=virality,
+              gn_strength=gn_strength, virality=virality,
               graph_path=graph,
               fast=fast,
               weighted=weighted, directed=directed,
-              god_node=False, docs_path=docs_folder,
+              docs_path=docs_folder,
               items_descr_path=items_descr_path,
               path_out=output,
               seed=seed,

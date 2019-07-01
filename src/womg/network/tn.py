@@ -31,8 +31,9 @@ class TN(TLTNetworkModel):
         value <- _numb_topics dimension array in numpy format
     - _nx_obj : NetworkX object
         networkx instance of the input network
-    - _godNode : dict
-        dictionary containing all the links of the god node that is out connected
+    - godNode_links : dict
+        dictionary containing all the links of the god node;
+        god node is out connected
         to all the nodes but does not have in connections;
         god node index (id) is -1; format will be:
         key <- (-1, node id) [all int]
@@ -46,7 +47,7 @@ class TN(TLTNetworkModel):
     Methods
     -------
     - set_graph()
-    - set_godNode()
+    - set_godNode_links()
     - set_interests()
     - set_influence()
     - node2interests(): generates realistic latent interests of the nodes starting
@@ -65,7 +66,7 @@ class TN(TLTNetworkModel):
 
     def __init__(self, numb_topics, homophily,
                  weighted, directed, graph_path,
-                 god_node,
+                 gn_strength,
                  p, q, num_walks,
                  walk_length, dimensions,
                  window_size, workers, iiter,
@@ -78,8 +79,8 @@ class TN(TLTNetworkModel):
         self._weighted = weighted
         self._directed = directed
         self._graph_path = graph_path
-        self._godNode = {}
-        self._god_node = god_node
+        self.godNode_links = {}
+        self._godNode_strenght = gn_strength
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self._p = p
         self._q = q
@@ -99,7 +100,7 @@ class TN(TLTNetworkModel):
         '''
         - Sets the graph atribute using set_graph() method
         - Sets the info attribute using set_info() method
-        - Sets the _godNode attribute using set_godNode() method
+        - Sets the godNode_links attribute using set_godNode_links() method
         - Sets the interests vectors using set_interests() method
         - Sets the influnce vecotrs using set_influence() mehtod
         - Sets the new graph weights using update_weights() method
@@ -116,9 +117,7 @@ class TN(TLTNetworkModel):
             self._graph_path = pathlib.Path(self._graph_path)
             self._nx_obj = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
         self.set_graph()
-
-        if self._god_node:
-            self.set_godNode()
+        self.set_godNode_links()
         self.set_interests(fast)
         self.set_influence()
         #print('updating weights')
@@ -157,7 +156,7 @@ class TN(TLTNetworkModel):
 
 
 
-    def set_godNode(self, weight=1, nodes=None):
+    def set_godNode_links(self, weight=1, nodes=None):
         '''
         Sets the godNode's links weights in the graph
 
@@ -173,21 +172,21 @@ class TN(TLTNetworkModel):
             (Defalut None)
 
         Example:
-        tn_instance.set_godNode() :
+        tn_instance.set_godNode_links() :
         all the links weights (from godNode to each node) are set to 1
         '''
         if nodes is None:
             print('Setting god node')
             for node in self._progress_bar(self._nx_obj.nodes()):
-                self._godNode[(-1, node)] = weight
-                self.graph.update(self._godNode)
+                self.godNode_links[(-1, node)] = weight
+                self.graph.update(self.godNode_links)
         if isinstance(nodes, int):
-            self._godNode[(-1, nodes)] = weight
-            self.graph.update(self._godNode)
+            self.godNode_links[(-1, nodes)] = weight
+            self.graph.update(self.godNode_links)
         if isinstance(nodes, collections.Iterable):
             for node in nodes:
-                self._godNode[(-1, node)] = weight
-                self.graph.update(self._godNode)
+                self.godNode_links[(-1, node)] = weight
+                self.graph.update(self.godNode_links)
 
     def set_interests(self, fast):
         '''
@@ -350,7 +349,7 @@ class TN(TLTNetworkModel):
         return scale_fact*influence_vec
 
 
-    def graph_weights_vecs_generation(self, god_node_weight=7):
+    def graph_weights_vecs_generation(self):
         '''
         Creates weights vectors (numb_topcis dimension) for each direct link
         and update the graph attribute; a link weight is defined as:
@@ -365,8 +364,9 @@ class TN(TLTNetworkModel):
         for link in self.graph.keys():
             # god node
             if link[0] == -1:
-                out_influence_vec = np.array([god_node_weight for i in range(self._numb_topics)])
-                self.set_link_weight(link, out_influence_vec)
+                out_influence_vec = np.array([self._godNode_strenght for i in range(self._numb_topics)])
+                in_interest_vec = self.users_interests[link[1]]
+                self.set_link_weight(link, out_influence_vec + in_interest_vec)
             else:
                 out_influence_vec = self.users_influence[link[0]]
                 in_interest_vec = self.users_interests[link[1]]

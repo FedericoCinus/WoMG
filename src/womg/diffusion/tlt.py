@@ -5,7 +5,6 @@ import pickle
 import numpy as np
 from tqdm import tqdm, tqdm_notebook
 
-from utils.distributions import random_initial_active_set
 from diffusion.diffusion_model import DiffusionModel
 from utils.saver import TxtSaver
 
@@ -53,7 +52,6 @@ class TLT(DiffusionModel):
     '''
 
     def __init__(self, network_model, topic_model,
-                 actives_perc,
                  path_out,
                  progress_bar=False):
         super().__init__()
@@ -67,7 +65,6 @@ class TLT(DiffusionModel):
         self._numb_nodes = 0
         self._numb_docs = 0
         self._numb_topics = 0
-        self._actives = actives_perc
         if progress_bar:
             self._progress_bar = tqdm_notebook
         else:
@@ -86,7 +83,6 @@ class TLT(DiffusionModel):
         for i in range(self._numb_docs):
             self._stall_count[i] = 0
         self.set_sets()
-
 
 
     def iteration(self, step):
@@ -158,7 +154,6 @@ class TLT(DiffusionModel):
 
         for v in neighbors:
             if v != node and  v in self.active_nodes[item]:
-
                 v_sum += np.array(self.network_model.graph[(v, node)])
                 node_check = True
         if node_check:
@@ -219,7 +214,7 @@ class TLT(DiffusionModel):
             current new activated nodes set is equal to the active one
         '''
         for item in range(self._numb_docs):
-            self.active_nodes[item] = random_initial_active_set(self, max_active_perc=self._actives)
+            self.active_nodes[item] = self.godNode_influence_config(item)
             if self.active_nodes[item] == set():
                 self._stall_count[item] += 1
             self.inactive_nodes[item] = set(self.network_model._nx_obj.nodes())
@@ -236,6 +231,30 @@ class TLT(DiffusionModel):
             stall_factor *= (self._stall_count[item] >= 1)
         return stall_factor
 
+
+    def godNode_influence_config(self, item):
+        '''
+        Returns the activated nodes for the initial configuration for a given item;
+        the god node (connected with all nodes) influences all the others for the
+        given item evaluating the tlt parameter
+
+        Parameters
+        ----------
+        item : int
+            item index
+
+        Returns
+        -------
+        list of active nodes for the given item
+        '''
+        actives_config = []
+        for u, v in self.network_model.godNode_links:
+            curr_weight = self.network_model.graph[(u, v)]
+            threshold = 1/self.topic_model.viralities[item]
+            z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
+            if (1/(np.exp(- z_sum)+1)) >= threshold:
+                actives_config.append(v)
+        return set(actives_config)
 
 
     @staticmethod
