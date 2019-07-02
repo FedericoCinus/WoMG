@@ -35,6 +35,7 @@ def n2i_nx_graph(nx_graph,
                                 graph=nx_graph,
                                 directed=directed,
                                 p=p, q=q,
+                                tf=tf, 
                                 num_walks=num_walks,
                                 walk_length=walk_length,
                                 dimensions=dimensions,
@@ -123,11 +124,13 @@ def n2i_nx_graph(nx_graph,
                 for topic in range(dimensions):
                     emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
                 M.append(emb[int(node)])
-
+    '''
     for node in sorted(interests_model.wv.vocab):
-        for topic in range(dimensions):
+        for topic in range(len(emb[int(node)])):
             if emb[int(node)][topic] < 0:
                 raise ZeroError('Negative embeddings')
+    '''
+
     return emb
 
 def n2i_main(topics=15,

@@ -32,7 +32,7 @@ def learn_embeddings(walks, dimensions, window_size, workers, iiter):
     Learn embeddings by optimizing the Skipgram objective using SGD.
     '''
     walks = [list(map(str, walk)) for walk in walks]
-    model = Word2Vec(walks, size=dimensions, window=window_size, min_count=0,
+    model = Word2Vec(walks, size=dimensions, skip_window=window_size, min_count=0,
                      sg=1, workers=workers, iter=iiter)
     #model.wv.save_word2vec_format(args.output)
 
@@ -50,14 +50,14 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     G = Graph(nx_G, directed, weighted, p, q, verbose=verbose)
     G.format_graph()
     G.preprocess_transition_probs()
-    walks = G.simulate_walks(num_walks, walk_length)
+    walks = G.simulate_walks(num_walks, walk_length)    
     if tf:
-        tf = Word2vec(number_of_nodes=G.number_of_nodes(),
+        tf = Word2vec(number_of_nodes=G.G.number_of_nodes(),
                       embedding_size=dimensions)
         emb_model = tf.run(walks)
     else:
         emb_model = learn_embeddings(walks, dimensions, window_size,
-                                    workers, iiter)
+                                     workers, iiter)
 
     return emb_model
 
