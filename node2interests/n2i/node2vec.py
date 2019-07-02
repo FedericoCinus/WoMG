@@ -52,7 +52,8 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
     if tf:
-        tf = Word2vec(number_of_nodes=G.number_of_nodes())
+        tf = Word2vec(number_of_nodes=G.number_of_nodes(),
+                      embedding_size=dimensions)
         emb_model = tf.run(walks)
     else:
         emb_model = learn_embeddings(walks, dimensions, window_size,
@@ -103,3 +104,6 @@ def make_filename(name, output_dir, new_file=True):
         sim_numb-=1
         filename = output_dir / str(name + str(sim_numb) + ".txt")
         return filename
+
+class ZeroError(Exception):
+    pass

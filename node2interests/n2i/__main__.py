@@ -6,7 +6,7 @@ import numpy as np
 import networkx as nx
 from tqdm import tqdm
 from sklearn.decomposition import NMF
-from n2i.node2vec import node2vec, read_graph, save_emb
+from n2i.node2vec import node2vec, read_graph, save_emb, ZeroError
 
 curr_path = str(pathlib.Path.cwd())
 
@@ -124,6 +124,10 @@ def n2i_nx_graph(nx_graph,
                     emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
                 M.append(emb[int(node)])
 
+    for node in sorted(interests_model.wv.vocab):
+        for topic in range(dimensions):
+            if emb[int(node)][topic] < 0:
+                raise ZeroError('Negative embeddings')
     return emb
 
 def n2i_main(topics=15,
