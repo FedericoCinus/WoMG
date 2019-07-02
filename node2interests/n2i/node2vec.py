@@ -56,7 +56,7 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     G.format_graph()
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
-    emb_model = learn_embeddings(G.G.number_of_nodes(), walks, dimensions, window_size,
+    emb_model = learn_embeddings(nx_G.number_of_nodes(), walks, dimensions, window_size,
                                  workers, iiter, verbose=verbose)
 
     return emb_model
