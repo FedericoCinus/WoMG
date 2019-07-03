@@ -35,7 +35,7 @@ def n2i_nx_graph(nx_graph,
                                 graph=nx_graph,
                                 directed=directed,
                                 p=p, q=q,
-                                tf=tf, 
+                                tf=tf,
                                 num_walks=num_walks,
                                 walk_length=walk_length,
                                 dimensions=dimensions,
@@ -268,7 +268,7 @@ def n2i_main(topics=15,
 @click.option('--num_walks', metavar='nw', type=int, default=10,
                     help='number of walks per source. Default 10')
 
-@click.option('--window_size', metavar='ws', type=int, default=10,
+@click.option('--window_size', metavar='ws', type=int, default=5,
                     help='context size for optimization. Default 10')
 
 @click.option('--iiter', default=1, type=int,

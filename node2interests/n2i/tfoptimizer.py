@@ -110,6 +110,8 @@ class Word2vec():
         # Preprocess args.
         if num_skips is None:
             num_skips = 2 * window
+            while batch_size % num_skips != 0:
+                num_skips -= 1
         span = 2 * window + 1
 
         # Initialize Training.
@@ -121,6 +123,7 @@ class Word2vec():
                 pbar = tqdm(total=(iiter * examples_per_epoch), desc="Learning embeddings")
 
             # Training.
+            print('batch_size ', batch_size, 'num_skips ', num_skips)
             for _epoch in range(iiter):
                 for inputs, labels in generate_batch(walks,
                                                      batch_size=batch_size,
