@@ -33,6 +33,11 @@ def n2i_nx_graph(nx_graph,
          reduce=True,
          verbose=False):
     
+    # seed
+    if seed != None:
+        random.seed(seed)
+        np.random.seed(seed)
+    
     # Embeddings
     emb = {}
     # Final matrix
@@ -206,10 +211,6 @@ def n2i_main(topics=15,
     - Dimension is reduced to the number of topics using NMF, which mantains
       positivity
     '''
-    # seed
-    if seed != None:
-        random.seed(seed)
-        np.random.seed(seed)
     if topics >= dimensions:
         print('Topics have to be less than dimensions')
         sys.exit()
