@@ -14,6 +14,7 @@ from n2i.tfoptimizer import Word2vec as TfWord2vec
 import pathlib
 import networkx as nx
 from n2i.graph import Graph
+import numpy as np
 from gensim.models import Word2Vec as GensimWord2Vec
 
 def read_graph(weighted, graph, directed):
@@ -45,10 +46,15 @@ def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, i
         walks = [list(map(str, walk)) for walk in walks]
         model = GensimWord2Vec(walks, size=dimensions, window=window_size, min_count=0,
                          sg=1, workers=workers, iter=iiter)
-        return model.wv
+
+        embeddings = []
+        for node in range(number_of_nodes):
+            curr_emb = np.array([model.wv[str(node)][_] for _ in range(dimensions)])
+            embeddings.append(curr_emb)
+        return np.array(embeddings)
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
-                  dimensions, window_size, workers, iiter, verbose, use_tf=False):
+             dimensions, window_size, workers, iiter, verbose, use_tf=False):
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''

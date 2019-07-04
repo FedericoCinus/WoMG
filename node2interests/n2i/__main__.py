@@ -31,114 +31,51 @@ def n2i_nx_graph(nx_graph,
          normalize=False,
          translate=True,
          reduce=True,
-         verbose=False):
-    
+         verbose=False,
+         use_tf=False):
+
     # seed
     if seed != None:
         random.seed(seed)
         np.random.seed(seed)
-    
-    # Embeddings
-    emb = {}
-    # Final matrix
-    M = []
-    # Node2Vec
-    #print(graph)
+
     numb_nodes = nx.number_of_nodes(nx_graph)
-    interests_model = node2vec(weighted=weighted,
-                                graph=nx_graph,
-                                directed=directed,
-                                p=p, q=q,
-                                num_walks=num_walks,
-                                walk_length=walk_length,
-                                dimensions=dimensions,
-                                window_size=window_size,
-                                workers=workers,
-                                iiter=iiter,
-                                verbose=verbose)
+    model = node2vec(weighted=weighted,
+                    graph=nx_graph,
+                    directed=directed,
+                    p=p, q=q,
+                    num_walks=num_walks,
+                    walk_length=walk_length,
+                    dimensions=dimensions,
+                    window_size=window_size,
+                    workers=workers,
+                    iiter=iiter,
+                    verbose=verbose,
+                    use_tf=use_tf)
 
     if reduce:
         # Translation
-        if translate:
+        if not use_tf:
             # translation constant
-            minim = 0.
-            for i in interests_model.wv.vocab:
-                if min(interests_model.wv[str(i)]) < minim:
-                    minim = min(interests_model.wv[str(i)])
-            ##
-            if verbose:
-                print("Computing interest vectors: ")
-                for node in tqdm(sorted(interests_model.wv.vocab)):
-                    emb[int(node)] = np.array([])
-                    for topic in range(dimensions):
-                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
-                    # Normalization
-                    if normalize:
-                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
-                    M.append(emb[int(node)])
-            else:
-                for node in sorted(interests_model.wv.vocab):
-                    emb[int(node)] = np.array([])
-                    for topic in range(dimensions):
-                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
-                    # Normalization
-                    if normalize:
-                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
-                    M.append(emb[int(node)])
-        # NO Translation
-        else:
-            for node in sorted(interests_model.wv.vocab):
-                emb[int(node)] = np.array([])
-                for topic in range(dimensions):
-                    emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
-                M.append(emb[int(node)])
-
+            minim = np.amin(model)
+            model = model + abs(minim)
         # NMF Reduction
         if verbose:
             print('Reducing dimensions from ', dimensions,' to ', topics)
         nmf = NMF(n_components=topics, random_state=42, max_iter=1000)
-        right = nmf.fit(M).components_
-        left = nmf.transform(M)
-        for node, index in zip(sorted(interests_model.wv.vocab), range(numb_nodes)):
-            emb[int(node)] = left[int(index)]
+        _right = nmf.fit(model).components_
+        left = nmf.transform(model)
+        embeddings = left
 
     # NO REDUCTION
     else:
-        if translate:
+        if translate and not use_tf:
             # translation constant
-            minim = 0.
-            for i in interests_model.wv.vocab:
-                if min(interests_model.wv[str(i)]) < minim:
-                    minim = min(interests_model.wv[str(i)])
-            ##
-            if verbose:
-                print("Computing interest vectors: ")
-                for node in tqdm(sorted(interests_model.wv.vocab)):
-                    emb[int(node)] = np.array([])
-                    for topic in range(dimensions):
-                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
-                    # Normalization
-                    if normalize:
-                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
-                    M.append(emb[int(node)])
-            else:
-                for node in sorted(interests_model.wv.vocab):
-                    emb[int(node)] = np.array([])
-                    for topic in range(dimensions):
-                        emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic] + abs(minim))
-                    # Normalization
-                    if normalize:
-                        emb[int(node)] = emb[int(node)] / emb[int(node)].sum()
-                    M.append(emb[int(node)])
-        # NO Translation
-        else:
-            for node in sorted(interests_model.wv.vocab):
-                emb[int(node)] = np.array([])
-                for topic in range(dimensions):
-                    emb[int(node)] = np.append(emb[int(node)], interests_model.wv[node][topic])
-                M.append(emb[int(node)])
-                
-    return emb
+            minim = np.amin(model)
+            model = model + abs(minim)
+        embeddings = model
+
+    return embeddings
 
 def n2i_main(topics=15,
          graph=None, fast=False,
@@ -214,9 +151,9 @@ def n2i_main(topics=15,
     if topics >= dimensions:
         print('Topics have to be less than dimensions')
         sys.exit()
-    
+
     nx_graph = read_graph(weighted=weighted, graph=graph, directed=directed)
-    
+
     emb = n2i_nx_graph(
          nx_graph=nx_graph,
          topics=topics,
