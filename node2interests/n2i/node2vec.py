@@ -40,7 +40,7 @@ def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, i
     '''
     if use_tf:
         model = TfWord2vec(number_of_nodes, embedding_size=dimensions)
-        return model.run(walks, iiter=iiter, skip_window=window_size, verbose=verbose)
+        return model.run(walks, iiter=iiter, window=window_size, verbose=verbose)
     else:
         walks = [list(map(str, walk)) for walk in walks]
         model = GensimWord2Vec(walks, size=dimensions, window=window_size, min_count=0,
@@ -48,7 +48,7 @@ def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, i
         return model.wv
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
-                  dimensions, window_size, workers, iiter, verbose):
+                  dimensions, window_size, workers, iiter, verbose, use_tf=False):
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''
@@ -60,7 +60,7 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
     emb_model = learn_embeddings(G.G.number_of_nodes(), walks, dimensions, window_size,
-                                 workers, iiter, verbose=verbose)
+                                 workers, iiter, verbose=verbose, use_tf=use_tf)
 
     return emb_model
 
