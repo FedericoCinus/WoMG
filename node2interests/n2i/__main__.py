@@ -32,7 +32,8 @@ def n2i_nx_graph(nx_graph,
          translate=True,
          reduce=True,
          verbose=False,
-         use_tf=False):
+         use_tf=False,
+         beta=0):
 
     # seed
     if seed != None:
@@ -51,7 +52,8 @@ def n2i_nx_graph(nx_graph,
                     workers=workers,
                     iiter=iiter,
                     verbose=verbose,
-                    use_tf=use_tf)
+                    use_tf=use_tf,
+                    beta=beta)
 
     if reduce:
         # Translation
@@ -85,6 +87,7 @@ def n2i_main(topics=15,
          num_walks=10, window_size=10,
          iiter=1, workers=8,
          p=1, q=1,
+         beta=0,
          normalize=False,
          translate=True,
          reduce=True,
@@ -167,6 +170,7 @@ def n2i_main(topics=15,
          iiter=iiter,
          workers=workers,
          p=p, q=q,
+         beta=beta,
          normalize=normalize,
          translate=translate,
          reduce=reduce,
@@ -226,6 +230,8 @@ def n2i_main(topics=15,
 @click.option('--translate', is_flag=True,
                     help='translate embeddings to potsitive axes',
                     default=True)
+@click.option('--beta', type=int, default=0,
+                    help='beta parameter for Beta-VAE loss term. Default  0')
 @click.option('--reduce', is_flag=True,
                     help='reduce dimension with NMF',
                     default=True)
@@ -240,6 +246,7 @@ def main_cli(topics,
          num_walks, window_size,
          iiter, workers,
          p, q,
+         beta,
          normalize,
          translate,
          reduce,
@@ -263,6 +270,7 @@ def main_cli(topics,
              num_walks=num_walks, window_size=window_size,
              iiter=iiter, workers=workers,
              p=p, q=q,
+             beta=beta,
              normalize=normalize,
              translate=translate,
              reduce=reduce,
