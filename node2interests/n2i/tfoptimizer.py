@@ -2,7 +2,6 @@
     by default we generate non-negative embeddings.
 """
 
-from tensorflow.contrib.layers import xavier_initializer as w_init
 import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
@@ -38,6 +37,20 @@ def generate_batch(walks, batch_size, num_skips, window):
                     labels[i * num_skips + j, 0] = buffer[context_word]
             yield batch, labels
 
+EPSILON = 1E-04
+def beta_kl_divergence(sample, prior_alpha, prior_beta):
+    mu = tf.math.reduce_mean(sample)
+    var = tf.reduce_mean(tf.squared_difference(sample, mu)) + EPSILON
+    observed_alpha = ((1. - mu) / var - (1. / (mu + EPSILON))) * tf.square(mu)
+    observed_beta = observed_alpha * (1. / (mu + EPSILON) - 1)
+    return (
+        tf.lgamma(prior_alpha + prior_beta)
+        - (tf.lgamma(prior_alpha) + tf.lgamma(prior_beta))
+        - (tf.lgamma(observed_alpha + observed_beta + EPSILON))
+        + (tf.lgamma(observed_alpha + EPSILON) + tf.lgamma(observed_beta + EPSILON))
+        + (prior_alpha - observed_alpha) * (tf.digamma(prior_alpha) - tf.digamma(prior_alpha + prior_beta))
+        + (prior_beta - observed_beta) * (tf.digamma(prior_beta) - tf.digamma(prior_alpha + prior_beta))
+    )
 
 class Word2vec:
     def __init__(self,
@@ -47,7 +60,8 @@ class Word2vec:
             cost_of_negatives=1.,
             batch_size=100,
             num_sampled=5, # Same default as Gensim.
-            beta=0
+            beta=0,
+            prior='half_norm'
     ):
         """
         Build the TensorFlow operation graph.
@@ -94,17 +108,29 @@ class Word2vec:
         else:
             self.loss = self.nce_loss
 
+
         # beta-vae constraint
         mu = tf.reduce_mean(self.embeddings, axis=0, name='mu')
         log_std = tf.log(tf.math.reduce_std(self.embeddings, axis=0, name='std'))
+        #print('mu: ', mu.shape, 'log_std: ', log_std.shape)
 
-        print('mu: ', mu.shape, 'log_std: ', log_std.shape)
+        if prior == 'half_norm':
+            # kl with half-normal distribution
+            kl = 0.5 * (tf.math.square(tf.exp(log_std) - 1)) - log_std
+        if prior == 'norm':
+            # kl with normal distribution
+            kl = 0.5 * (-log_std + tf.square(mu - 10) + tf.exp(log_std) - 1)
+        if prior == 'beta':
+            prior_alpha = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
+            prior_beta = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
+            kl = beta_kl_divergence(self.embeddings, prior_alpha, prior_beta)
 
-        kl = 0.5 * (-log_std + tf.square(mu - 10) + tf.exp(log_std) - 1)
+
         kl_penalty = tf.reduce_sum(kl)
 
-
+        #print('loss_before ', self.loss)
         self.loss += beta * kl_penalty
+        #print('loss_after ', self.loss)
 
         self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.1).minimize(
             self.loss

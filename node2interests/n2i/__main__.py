@@ -33,7 +33,8 @@ def n2i_nx_graph(nx_graph,
          reduce=True,
          verbose=False,
          use_tf=False,
-         beta=0):
+         beta=0,
+         prior='half_norm'):
 
     # seed
     if seed != None:
@@ -53,15 +54,17 @@ def n2i_nx_graph(nx_graph,
                     iiter=iiter,
                     verbose=verbose,
                     use_tf=use_tf,
-                    beta=beta)
-
+                    beta=beta,
+                    prior=prior)
     if reduce:
         # Translation
         if not use_tf:
             # translation constant
             minim = np.amin(model)
+            print('Translating')
             model = model + abs(minim)
         # NMF Reduction
+        print('Reducing')
         if verbose:
             print('Reducing dimensions from ', dimensions,' to ', topics)
         nmf = NMF(n_components=topics, random_state=42, max_iter=1000)
@@ -74,8 +77,10 @@ def n2i_nx_graph(nx_graph,
         if translate and not use_tf:
             # translation constant
             minim = np.amin(model)
+            print('Translating')
             model = model + abs(minim)
         embeddings = model
+
 
     return embeddings
 
@@ -88,6 +93,7 @@ def n2i_main(topics=15,
          iiter=1, workers=8,
          p=1, q=1,
          beta=0,
+         prior='half_norm',
          normalize=False,
          translate=True,
          reduce=True,
@@ -171,6 +177,7 @@ def n2i_main(topics=15,
          workers=workers,
          p=p, q=q,
          beta=beta,
+         prior=prior,
          normalize=normalize,
          translate=translate,
          reduce=reduce,
@@ -232,6 +239,8 @@ def n2i_main(topics=15,
                     default=True)
 @click.option('--beta', type=int, default=0,
                     help='beta parameter for Beta-VAE loss term. Default  0')
+@click.option('--prior', type=str, default='half_norm',
+                    help='prior function for Beta-VAE loss term. Default  half_norm')
 @click.option('--reduce', is_flag=True,
                     help='reduce dimension with NMF',
                     default=True)
@@ -247,6 +256,7 @@ def main_cli(topics,
          iiter, workers,
          p, q,
          beta,
+         prior,
          normalize,
          translate,
          reduce,
@@ -271,6 +281,7 @@ def main_cli(topics,
              iiter=iiter, workers=workers,
              p=p, q=q,
              beta=beta,
+             prior=prior,
              normalize=normalize,
              translate=translate,
              reduce=reduce,
