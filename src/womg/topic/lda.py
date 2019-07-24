@@ -137,7 +137,7 @@ class LDA(TLTTopicModel):
                 self.viralities[item] = viralities[item]
         if np.size(viralities) == 1:
             for item in range(self.numb_docs):
-                self.viralities[item] = viralities
+                self.viralities[item] = viralities[0]
         #print(viralities)
 
 

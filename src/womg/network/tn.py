@@ -7,6 +7,7 @@ import networkx as nx
 import numpy as np
 from tqdm import tqdm, tqdm_notebook
 from sklearn.decomposition import NMF
+from n2i.__main__ import n2i_main, n2i_nx_graph
 from node2vec_git.src.node2vec_main import node2vec_main
 from network.tlt_network_model import TLTNetworkModel
 from utils.utility_functions import read_edgelist
@@ -204,7 +205,22 @@ class TN(TLTNetworkModel):
             self.random_interests()
         else:
             print('Generating interests from graph in ')
-            self.node2interests(norm=False)
+            self._q = np.exp(4.60517*self._homophily)
+            self._p = np.exp(-4.60517*self._homophily)
+            emb = n2i_nx_graph(
+                        nx_graph=self._nx_obj,
+                        window_size=self._window_size,
+                        walk_length=self._walk_length,
+                        num_walks=self._num_walks,
+                        dimensions=self._numb_topics,
+                        p=self._p,
+                        q=self._q,
+                        beta=0.03,
+                        prior='beta'
+                   )
+            for node in range(self._numb_nodes):
+                self.users_interests[node] = emb[node]
+
 
 
     def set_influence(self, method='node2influence'):
@@ -227,7 +243,7 @@ class TN(TLTNetworkModel):
                 influence_vec = self.node2influence(scale_fact)
                 self.users_influence[node] = influence_vec
 
-    def node2interests(self, transl=True, norm=False):
+    def node2interests(self,  transl=True, norm=False):
         '''
         Create interests vector for each node using node2vec algorithm and
         directly saves interests vectors in attribute 'users_interests'.
@@ -262,11 +278,8 @@ class TN(TLTNetworkModel):
         M = []
         # Node2Vec
 
-        if self._homophily <= 0.5:
-            self._q = -6*self._homophily + 4
-        else:
-            self._q = -3./2*self._homophily + 7./4
-        self._p = 1
+        self._q = np.exp(4.60517*self._homophily)
+        self._p = np.exp(-4.60517*self._homophily)
         interests_model = node2vec_main(weighted=self._weighted,
                                         graph=self._graph_path,
                                         directed=self._directed,
