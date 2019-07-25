@@ -33,17 +33,18 @@ def read_graph(weighted, graph, directed):
     return G
 
 def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, iiter,
-                    beta=0, prior='half_norm',
+                    beta=0, prior='half_norm', alpha_value=2., beta_value=2.,
                     verbose=True):
     '''
     Learn embeddings by optimizing the Skipgram objective using SGD.
     '''
-    model = TfWord2vec(number_of_nodes, embedding_size=dimensions, beta=beta, prior=prior)
+    model = TfWord2vec(number_of_nodes, embedding_size=dimensions, beta=beta,
+                       prior=prior, alpha_value=alpha_value, beta_value=beta_value)
     return model.run(walks, iiter=iiter, window=window_size, verbose=verbose)
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
              dimensions, window_size, workers, iiter, verbose,
-             beta=0, prior='half_norm'):
+             beta=0, prior='half_norm', alpha_value=2., beta_value=2.):
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''
@@ -57,7 +58,7 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     emb_model = learn_embeddings(G.G.number_of_nodes(),
                                  walks, dimensions, window_size,
                                  workers, iiter, verbose=verbose, beta=beta,
-                                 prior=prior)
+                                 prior=prior, alpha_value=alpha_value, beta_value=beta_value)
 
     return emb_model
 

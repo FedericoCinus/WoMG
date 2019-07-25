@@ -61,6 +61,8 @@ class Word2vec:
             batch_size=100,
             num_sampled=5, # Same default as Gensim.
             beta=0,
+            alpha_value=2.,
+            beta_value=2.,
             prior='half_norm'
     ):
         """
@@ -121,8 +123,8 @@ class Word2vec:
             # kl with normal distribution
             kl = 0.5 * (-log_std + tf.square(mu - 10) + tf.exp(log_std) - 1)
         if prior == 'beta':
-            prior_alpha = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
-            prior_beta = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
+            prior_alpha = np.array([alpha_value for _ in range(embedding_size)], dtype=np.float32)
+            prior_beta = np.array([beta_value for _ in range(embedding_size)], dtype=np.float32)
             kl = beta_kl_divergence(self.embeddings, prior_alpha, prior_beta)
 
 

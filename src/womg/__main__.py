@@ -59,6 +59,8 @@ def womg_main(numb_topics, numb_docs,
               p, q,
               beta,
               norm_prior,
+              alpha_value,
+              beta_value,
               progress_bar,
               save_all,
               save_int,
@@ -183,7 +185,9 @@ def womg_main(numb_topics, numb_docs,
                             workers=workers, iiter=iiter,
                             progress_bar=progress_bar,
                             beta=beta,
-                            norm_prior=norm_prior)
+                            norm_prior=norm_prior,
+                            alpha_value=alpha_value,
+                            beta_value=beta_value)
         network_model.network_setup(fast=fast)
 
         topic_model = LDA(numb_topics=numb_topics,
@@ -289,6 +293,10 @@ def womg_main(numb_topics, numb_docs,
                     help='beta cost parameter for Beta-VAE loss term. Default  0.01')
 @click.option('--norm_prior', is_flag=True, default=False,
                     help='choose half normal distribution as prior function for Beta-VAE loss term. Default  beta distribution')
+@click.option('--alpha_value', type=float, default=2.,
+                    help='alpha value for the alpha vec of the Beta prior distribution. Default 2.')
+@click.option('--beta_value', type=float, default=2.,
+                    help='beta value for the beta vec of the Beta prior distribution. Default 2.')
 
 
 @click.option('--save_int', is_flag=True,
@@ -317,6 +325,8 @@ def main_cli(topics, docs, steps, homophily,
              p, q,
              beta,
              norm_prior,
+             alpha_value,
+             beta_value,
              progress_bar,
              save_all,
              save_int,
@@ -350,6 +360,8 @@ def main_cli(topics, docs, steps, homophily,
               p=p, q=q,
               beta=beta,
               norm_prior=norm_prior,
+              alpha_value=alpha_value,
+              beta_value=beta_value,
               progress_bar=progress_bar,
               save_all=save_all,
               save_int=save_int,

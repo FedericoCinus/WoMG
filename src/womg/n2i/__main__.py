@@ -29,7 +29,9 @@ def n2i_nx_graph(nx_graph,
          p=1, q=1,
          verbose=False,
          beta=0,
-         prior='half_norm'):
+         prior='half_norm',
+         alpha_value=2.,
+         beta_value=2.):
 
     # seed
     if seed != None:
@@ -50,7 +52,9 @@ def n2i_nx_graph(nx_graph,
                     iiter=iiter,
                     verbose=verbose,
                     beta=beta,
-                    prior=prior)
+                    prior=prior,
+                    alpha_value=alpha_value,
+                    beta_value=beta_value)
 
     return embeddings
 
@@ -64,6 +68,8 @@ def n2i_main(topics=15,
          p=1, q=1,
          beta=0,
          prior='half_norm',
+         alpha_value=2.,
+         beta_value=2.,
          verbose=False):
     '''
 
@@ -144,6 +150,8 @@ def n2i_main(topics=15,
                  p=p, q=q,
                  beta=beta,
                  prior=prior,
+                 alpha_value=alpha_value,
+                 beta_value=beta_value,
                  verbose=verbose)
 
     save_emb(emb=emb, path=output, verbose=verbose)
@@ -204,9 +212,10 @@ def n2i_main(topics=15,
                     help='beta parameter for Beta-VAE loss term. Default  0')
 @click.option('--prior', type=str, default='half_norm',
                     help='prior function for Beta-VAE loss term. Default  half_norm')
-@click.option('--reduce', is_flag=True,
-                    help='reduce dimension with NMF',
-                    default=True)
+@click.option('--alpha_val', type=float, default=2.,
+                    help='alpha value for the alpha vec of the Beta prior distribution. Default 2.')
+@click.option('--beta_val', type=float, default=2.,
+                    help='beta value for the beta vec of the Beta prior distribution. Default 2.')
 @click.option('--verbose', is_flag=True,
                     help='n2i rpivdes all prints',
                     default=False)
@@ -242,6 +251,8 @@ def main_cli(topics,
              p=p, q=q,
              beta=beta,
              prior=prior,
+             alpha_value=alpha_value,
+             beta_value=beta_value,
              verbose=verbose)
 
 if __name__ == '__main__':

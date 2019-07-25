@@ -73,6 +73,7 @@ class TN(TLTNetworkModel):
                  walk_length, dimensions,
                  window_size, workers, iiter,
                  beta, norm_prior,
+                 alpha_value, beta_value,
                  progress_bar=False):
         super().__init__()
         self.users_interests = {}
@@ -96,6 +97,8 @@ class TN(TLTNetworkModel):
         self._iiter = iiter
         self._beta = beta
         self._norm_prior = norm_prior
+        self._alpha_value = alpha_value
+        self._beta_value = beta_value
         if progress_bar:
             self._progress_bar = tqdm_notebook
         else:
@@ -222,7 +225,9 @@ class TN(TLTNetworkModel):
                         p=self._p,
                         q=self._q,
                         beta=self._beta,
-                        prior=prior
+                        prior=prior,
+                        alpha_value=self._alpha_value,
+                        beta_value=self._beta_value
                    )
             for node in range(self._numb_nodes):
                 self.users_interests[node] = emb[node]
@@ -251,6 +256,7 @@ class TN(TLTNetworkModel):
 
     def node2interests(self,  transl=True, norm=False):
         '''
+        FIRST VERSION
         Create interests vector for each node using node2vec algorithm and
         directly saves interests vectors in attribute 'users_interests'.
 
