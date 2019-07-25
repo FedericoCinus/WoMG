@@ -68,9 +68,11 @@ class TN(TLTNetworkModel):
     def __init__(self, numb_topics, homophily,
                  weighted, directed, graph_path,
                  gn_strength,
+                 infl_strength,
                  p, q, num_walks,
                  walk_length, dimensions,
                  window_size, workers, iiter,
+                 beta, norm_prior,
                  progress_bar=False):
         super().__init__()
         self.users_interests = {}
@@ -81,7 +83,8 @@ class TN(TLTNetworkModel):
         self._directed = directed
         self._graph_path = graph_path
         self.godNode_links = {}
-        self._godNode_strenght = gn_strength
+        self._godNode_strength = gn_strength
+        self._infl_strength = infl_strength
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self._p = p
         self._q = q
@@ -91,6 +94,8 @@ class TN(TLTNetworkModel):
         self._window_size = window_size
         self._workers = workers
         self._iiter = iiter
+        self._beta = beta
+        self._norm_prior = norm_prior
         if progress_bar:
             self._progress_bar = tqdm_notebook
         else:
@@ -207,6 +212,7 @@ class TN(TLTNetworkModel):
             print('Generating interests from graph in ')
             self._q = np.exp(4.60517*self._homophily)
             self._p = np.exp(-4.60517*self._homophily)
+            prior = 'half_norm' if self._norm_prior else 'beta'
             emb = n2i_nx_graph(
                         nx_graph=self._nx_obj,
                         window_size=self._window_size,
@@ -215,8 +221,8 @@ class TN(TLTNetworkModel):
                         dimensions=self._numb_topics,
                         p=self._p,
                         q=self._q,
-                        beta=0.03,
-                        prior='beta'
+                        beta=self._beta,
+                        prior=prior
                    )
             for node in range(self._numb_nodes):
                 self.users_interests[node] = emb[node]
@@ -236,7 +242,7 @@ class TN(TLTNetworkModel):
         norm_avg = 0.
         for node in self._nx_obj.nodes():
             norm_avg += np.linalg.norm(self.users_interests[int(node)])/self._numb_nodes
-        scale_fact = (1-self._homophily)*norm_avg
+        scale_fact = self._infl_strength*norm_avg
         # setting influence vec
         for node in self._nx_obj.nodes():
             if method == 'node2influence':
@@ -377,7 +383,7 @@ class TN(TLTNetworkModel):
         for link in self.graph.keys():
             # god node
             if link[0] == -1:
-                out_influence_vec = np.array([self._godNode_strenght for i in range(self._numb_topics)])
+                out_influence_vec = np.array([self._godNode_strength for i in range(self._numb_topics)])
                 in_interest_vec = self.users_interests[link[1]]
                 self.set_link_weight(link, out_influence_vec + in_interest_vec)
             else:

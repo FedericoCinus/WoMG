@@ -59,6 +59,7 @@ class DiffusionModel(abc.ABC):
             if not self.stop_criterior():
                 self.iteration(step=t)
             else:
+                #print('\n stop_criterior: ', self.stop_criterior(), '\n')
                 print('\n Simulation stopped at timestep ', str(t-1) ,
                         '\n Diffusion has been completed.'  )
                 break
