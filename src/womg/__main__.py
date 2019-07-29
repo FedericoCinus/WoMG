@@ -47,7 +47,7 @@ def womg_main(numb_topics, numb_docs,
               infl_strength,
               virality,
               graph_path,
-              fast,
+              int_mode,
               weighted, directed,
               docs_path,
               items_descr_path,
@@ -61,6 +61,7 @@ def womg_main(numb_topics, numb_docs,
               norm_prior,
               alpha_value,
               beta_value,
+              prop_steps,
               progress_bar,
               save_all,
               save_int,
@@ -103,10 +104,10 @@ def womg_main(numb_topics, numb_docs,
         P(x; a) = x^{-a}, 0 <= x <=1. Deafault a=1
 
 
-    fast : bool
+    int_mode : str
         defines the method for generating nodes' interests.
-        Two choices: 'node2interests', 'random'.
-        Default setting is True -> 'random'
+        3 choices: 'n2i', 'rand', 'prop_int'
+        Default setting is rand
 
 
     graph_path : str
@@ -154,6 +155,10 @@ def womg_main(numb_topics, numb_docs,
     q : float
         [node2vec param] manually set DFS parameter; else: it is set by H
 
+    prop_steps : int
+        [propagation of interests param] sets the number of steps in the propagation
+        high value imposes high homophily in the interests
+
     progress_bar : bool
         boolean for specifying the progress bar related to the environment
         if True progress_bar=tqdm_notebook -> Jupyter progress_bar;
@@ -187,8 +192,9 @@ def womg_main(numb_topics, numb_docs,
                             beta=beta,
                             norm_prior=norm_prior,
                             alpha_value=alpha_value,
-                            beta_value=beta_value)
-        network_model.network_setup(fast=fast)
+                            beta_value=beta_value,
+                            prop_steps=prop_steps)
+        network_model.network_setup(int_mode=int_mode)
 
         topic_model = LDA(numb_topics=numb_topics,
                           numb_docs=numb_docs,
@@ -241,9 +247,9 @@ def womg_main(numb_topics, numb_docs,
                     help='Input path of the graph edgelist', type=str)
 
 
-@click.option('--fast', is_flag=True,
-                    help="defines the method for generating nodes' interests. Two choices: 'node2interests', 'random'. Default setting is False -> 'node2interests",
-                    default=False)
+@click.option('--int_mode', type=str,
+                    help="defines the method for generating nodes' interests. 3 choices: 'n2i', 'rand', 'prop_int'. Default setting is False -> 'node2interests",
+                    default='rand')
 
 @click.option('--weighted', is_flag=True,
                     help='boolean specifying (un)weighted. Default  unweighted', default=False)
@@ -298,6 +304,8 @@ def womg_main(numb_topics, numb_docs,
 @click.option('--beta_value', type=float, default=2.,
                     help='beta value for the beta vec of the Beta prior distribution. Default 2.')
 
+@click.option('--prop_steps', type=int, default=5000,
+                    help='propagation steps for interests generation in propagation mode (--int_mode prop_int). Default 5000')
 
 @click.option('--save_int', is_flag=True,
                     help='if True WoMG saves the interests vector for each node',
@@ -313,7 +321,7 @@ def womg_main(numb_topics, numb_docs,
                     default=False)
 
 def main_cli(topics, docs, steps, homophily,
-             virality, graph, fast,
+             virality, graph, int_mode,
              weighted, directed, docs_folder,
              items_descr_path,
              gn_strength,
@@ -327,6 +335,7 @@ def main_cli(topics, docs, steps, homophily,
              norm_prior,
              alpha_value,
              beta_value,
+             prop_steps,
              progress_bar,
              save_all,
              save_int,
@@ -348,7 +357,7 @@ def main_cli(topics, docs, steps, homophily,
               infl_strength=infl_strength,
               virality=virality,
               graph_path=graph,
-              fast=fast,
+              int_mode=int_mode,
               weighted=weighted, directed=directed,
               docs_path=docs_folder,
               items_descr_path=items_descr_path,
@@ -362,6 +371,7 @@ def main_cli(topics, docs, steps, homophily,
               norm_prior=norm_prior,
               alpha_value=alpha_value,
               beta_value=beta_value,
+              prop_steps=prop_steps,
               progress_bar=progress_bar,
               save_all=save_all,
               save_int=save_int,

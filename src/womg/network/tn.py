@@ -74,7 +74,9 @@ class TN(TLTNetworkModel):
                  window_size, workers, iiter,
                  beta, norm_prior,
                  alpha_value, beta_value,
-                 progress_bar=False):
+                 prop_steps=5000,
+                 progress_bar=False
+                 ):
         super().__init__()
         self.users_interests = {}
         self.users_influence = {}
@@ -103,9 +105,10 @@ class TN(TLTNetworkModel):
             self._progress_bar = tqdm_notebook
         else:
             self._progress_bar = tqdm
+        self._prop_steps = prop_steps
 
 
-    def network_setup(self, fast):
+    def network_setup(self, int_mode):
         '''
         - Sets the graph atribute using set_graph() method
         - Sets the info attribute using set_info() method
@@ -127,7 +130,7 @@ class TN(TLTNetworkModel):
             self._nx_obj = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
         self.set_graph()
         self.set_godNode_links()
-        self.set_interests(fast)
+        self.set_interests(int_mode)
         self.set_influence()
         #print('updating weights')
         self.graph_weights_vecs_generation()
@@ -197,7 +200,7 @@ class TN(TLTNetworkModel):
                 self.godNode_links[(-1, node)] = weight
                 self.graph.update(self.godNode_links)
 
-    def set_interests(self, fast):
+    def set_interests(self, int_mode):
         '''
         Creates interests vectors (numb_topics dimension) for each node and
         save them in the users_interests class attribute.
@@ -208,10 +211,10 @@ class TN(TLTNetworkModel):
           name of the method for creating interests vectors
         '''
 
-        if fast:
-            print('Fast generation of interests:')
+        if int_mode == 'rand':
+            print('Random generation of interests:')
             self.random_interests()
-        else:
+        if int_mode == 'n2i':
             print('Generating interests from graph in ')
             self._q = np.exp(4.60517*self._homophily)
             self._p = np.exp(-4.60517*self._homophily)
@@ -231,6 +234,9 @@ class TN(TLTNetworkModel):
                    )
             for node in range(self._numb_nodes):
                 self.users_interests[node] = emb[node]
+
+        if int_mode == 'prop_int':
+            self.propag_interests()
 
 
 
@@ -355,7 +361,43 @@ class TN(TLTNetworkModel):
         '''
         if norm:
             for node in range(self._numb_nodes):
-                self.users_interests[int(node)] = np.random.rand(self._numb_topics)
+                self.users_interests[node] = np.random.rand(self._numb_topics)
+
+
+    def propag_interests(self):
+        '''
+        generates interests with the propagation method starting from "n" nodes
+        '''
+        # INITIALIZE
+        for i in list(self._nx_obj.nodes):
+            interests = np.random.dirichlet(np.ones(self._numb_topics)*1./self._numb_topics)
+            self.users_interests[i] = interests
+
+        # SELECT INFLUENCERS
+        # start with a random node
+        influencers = [np.random.choice(self._nx_obj.nodes)]
+
+        for i in range(14):
+            # calculate distances to current influencers
+            sp = {i: nx.shortest_path(self._nx_obj, i) for i in influencers}
+            distances = np.array([list(len(sp[j][i]) for j in influencers) for i in self._nx_obj.nodes()])
+            # select the node fartest from all influencers
+            influencers.append(distances.min(axis=1).argmax())
+
+        # PROPAGATION STEP
+        for c in range(self._prop_steps):
+            i = np.random.choice(self._numb_nodes)
+            interests_i = self.users_interests[i]
+            lr = 0.5 if i in influencers else 0.01
+            #lr = 0.1
+            for j in list(self._nx_obj.neighbors(i)):
+                if j in influencers:
+                    continue
+                interests_j = self.users_interests[j]
+                interests_j += interests_i * lr
+                interests_j /= interests_j.sum()
+                self.users_interests[j] = interests_j
+
 
 
     def node2influence(self, scale_fact, alpha_max=10):
