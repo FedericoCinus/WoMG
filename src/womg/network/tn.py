@@ -6,9 +6,8 @@ import collections
 import networkx as nx
 import numpy as np
 from tqdm import tqdm, tqdm_notebook
-from sklearn.decomposition import NMF
-from n2i.__main__ import n2i_main, n2i_nx_graph
-from node2vec_git.src.node2vec_main import node2vec_main
+from n2i.__main__ import n2i_nx_graph
+from utils.distributions import set_seed
 from network.tlt_network_model import TLTNetworkModel
 from utils.utility_functions import read_edgelist
 
@@ -70,12 +69,13 @@ class TN(TLTNetworkModel):
                  gn_strength,
                  infl_strength,
                  p, q, num_walks,
-                 walk_length, dimensions,
+                 walk_length,
                  window_size, workers, iiter,
                  beta, norm_prior,
                  alpha_value, beta_value,
                  prop_steps=5000,
-                 progress_bar=False
+                 progress_bar=False,
+                 seed=None
                  ):
         super().__init__()
         self.users_interests = {}
@@ -87,13 +87,15 @@ class TN(TLTNetworkModel):
         self._graph_path = graph_path
         self.godNode_links = {}
         self._godNode_strength = gn_strength
-        self._infl_strength = infl_strength
+        if infl_strength == None:
+            self._infl_strength = 1-self._homophily
+        else:
+            self._infl_strength = infl_strength
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self._p = p
         self._q = q
         self._num_walks = num_walks
         self._walk_length = walk_length
-        self._dimensions = dimensions
         self._window_size = window_size
         self._workers = workers
         self._iiter = iiter
@@ -106,6 +108,7 @@ class TN(TLTNetworkModel):
         else:
             self._progress_bar = tqdm
         self._prop_steps = prop_steps
+        self._seed = seed
 
 
     def network_setup(self, int_mode):
@@ -124,10 +127,10 @@ class TN(TLTNetworkModel):
         if self._graph_path == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
             self._graph_path = pathlib.Path("../") / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
-            self._nx_obj = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
+            self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
         else:
             self._graph_path = pathlib.Path(self._graph_path)
-            self._nx_obj = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
+            self._nx_obj, self.mapping = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
         self.set_graph()
         self.set_godNode_links()
         self.set_interests(int_mode)
@@ -210,7 +213,6 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
-
         if int_mode == 'rand':
             print('Random generation of interests:')
             self.random_interests()
@@ -230,9 +232,10 @@ class TN(TLTNetworkModel):
                         beta=self._beta,
                         prior=prior,
                         alpha_value=self._alpha_value,
-                        beta_value=self._beta_value
+                        beta_value=self._beta_value,
+                        seed=self._seed
                    )
-            for node in range(self._numb_nodes):
+            for node in self._nx_obj.nodes():
                 self.users_interests[node] = emb[node]
 
         if int_mode == 'prop_int':
@@ -252,100 +255,13 @@ class TN(TLTNetworkModel):
         # rescaling infleunce importance
         norm_avg = 0.
         for node in self._nx_obj.nodes():
-            norm_avg += np.linalg.norm(self.users_interests[int(node)])/self._numb_nodes
+            norm_avg += np.linalg.norm(self.users_interests[node])/self._numb_nodes
         scale_fact = self._infl_strength*norm_avg
         # setting influence vec
         for node in self._nx_obj.nodes():
             if method == 'node2influence':
                 influence_vec = self.node2influence(scale_fact)
                 self.users_influence[node] = influence_vec
-
-    def node2interests(self,  transl=True, norm=False):
-        '''
-        FIRST VERSION
-        Create interests vector for each node using node2vec algorithm and
-        directly saves interests vectors in attribute 'users_interests'.
-
-        3 steps:
-            1. finding node2vec embeddings
-            2. translation to positive axes of the embeddings
-            3. reduction with NMF to _numb_topics dimensions
-
-        Parameters
-        ----------
-        - method : string
-          'node2interests' uses the algorithm based on node2vec
-          (see node2interests() method)
-        - transl : bool
-          choose if interests have to be translated to positive axes
-        - norm : bool
-          choose if interests have to be normalize (True) or not (False)
-
-
-        Notes
-        -----
-        - Arrays are translated in order to have non-negative entries
-        - Dimension is reduced to the number of topics using NMF, which mantains
-          positivity
-        - Interests are the embeddings of the node2vec algorithm whose number
-          of features (or dimensions) is equal to the number of topics (_numb_topics)
-        - Method arg exists for a generalization aim: other method can be implemented
-        - p is fixed to 1, while q ranges from 0.25 (max homophily) to 4 (min homophily)
-        '''
-        # Final matrix
-        M = []
-        # Node2Vec
-
-        self._q = np.exp(4.60517*self._homophily)
-        self._p = np.exp(-4.60517*self._homophily)
-        interests_model = node2vec_main(weighted=self._weighted,
-                                        graph=self._graph_path,
-                                        directed=self._directed,
-                                        p=self._p, q=self._q,
-                                        num_walks=self._num_walks,
-                                        walk_length=self._walk_length,
-                                        dimensions=self._dimensions,
-                                        window_size=self._window_size,
-                                        workers=self._workers,
-                                        iiter=self._iiter)
-        #interests_model = node2vec.fit(window=10, min_count=1)
-        #print(interests_model.wv.vocab)
-
-        # Translation
-        if transl:
-            # translation constant
-            minim = 0.
-            for i in interests_model.wv.vocab:
-                if min(interests_model.wv[str(i)]) < minim:
-                    minim = min(interests_model.wv[str(i)])
-            ##
-            print("Computing interest vectors: ")
-            for node in self._progress_bar(sorted(interests_model.wv.vocab)):
-                self.users_interests[int(node)] = np.array([])
-                for topic in range(self._dimensions):
-                    self.users_interests[int(node)] = np.append(self.users_interests[int(node)],
-                                                                      interests_model.wv[node][topic] + abs(minim))
-                # Normalization
-                if norm:
-                    self.users_interests[int(node)] = self.users_interests[int(node)] / self.users_interests[int(node)].sum()
-                M.append(self.users_interests[int(node)])
-        # NO Translation
-        else:
-            for node in sorted(interests_model.wv.vocab):
-                self.users_interests[int(node)] = np.array([])
-                for topic in range(self._dimensions):
-                    self.users_interests[int(node)] = np.append(self.users_interests[int(node)],
-                                                                  interests_model.wv[node][topic])
-                M.append(self.users_interests[int(node)])
-
-        # NMF Reduction
-        print('Reducing dimensions from ', self._dimensions,' to ', self._numb_topics)
-        nmf = NMF(n_components=self._numb_topics, random_state=42, max_iter=1000)
-        right = nmf.fit(M).components_
-        left = nmf.transform(M)
-        for node, index in zip(sorted(interests_model.wv.vocab), range(self._numb_nodes)):
-            self.users_interests[int(node)] = left[int(index)]
-            #print(self.users_interests[int(node)])
 
 
     def random_interests(self, norm=True):
@@ -360,7 +276,7 @@ class TN(TLTNetworkModel):
 
         '''
         if norm:
-            for node in range(self._numb_nodes):
+            for node in self._nx_obj.nodes():
                 self.users_interests[node] = np.random.rand(self._numb_topics)
 
 
@@ -386,7 +302,7 @@ class TN(TLTNetworkModel):
 
         # PROPAGATION STEP
         for c in range(self._prop_steps):
-            i = np.random.choice(self._numb_nodes)
+            i = np.random.choice(self._nx_obj.nodes())
             interests_i = self.users_interests[i]
             lr = 0.5 if i in influencers else 0.01
             #lr = 0.1

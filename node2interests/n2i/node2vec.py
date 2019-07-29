@@ -34,16 +34,18 @@ def read_graph(weighted, graph, directed):
 
     return G
 
-def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, iiter, use_tf=False,
+def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, iiter, use_tf=True,
     beta=0, prior='half_norm',
     verbose=True):
     '''
     Learn embeddings by optimizing the Skipgram objective using SGD.
     '''
     if use_tf:
+        print('Using tf implementation')
         model = TfWord2vec(number_of_nodes, embedding_size=dimensions, beta=beta, prior=prior)
         return model.run(walks, iiter=iiter, window=window_size, verbose=verbose)
     else:
+        print('Using gensim implementation')
         walks = [list(map(str, walk)) for walk in walks]
         model = GensimWord2Vec(walks, size=dimensions, window=window_size, min_count=0,
                          sg=1, workers=workers, iter=iiter)
@@ -55,7 +57,7 @@ def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, i
         return np.array(embeddings)
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
-             dimensions, window_size, workers, iiter, verbose, use_tf=False,
+             dimensions, window_size, workers, iiter, verbose, use_tf=True,
              beta=0, prior='half_norm'):
     '''
     Pipeline for representational learning for all nodes in a graph.

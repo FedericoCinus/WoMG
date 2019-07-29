@@ -14,8 +14,6 @@ from n2i.tfoptimizer import Word2vec as TfWord2vec
 import pathlib
 import networkx as nx
 from n2i.graph import Graph
-import numpy as np
-from gensim.models import Word2Vec as GensimWord2Vec
 
 def read_graph(weighted, graph, directed):
     '''
@@ -34,28 +32,18 @@ def read_graph(weighted, graph, directed):
 
     return G
 
-def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, iiter, use_tf=True,
-    beta=0, prior='half_norm',
-    verbose=True):
+def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, iiter,
+                    beta=0, prior='half_norm', alpha_value=2., beta_value=2.,
+                    verbose=True):
     '''
     Learn embeddings by optimizing the Skipgram objective using SGD.
     '''
-    if use_tf:
-        model = TfWord2vec(number_of_nodes, embedding_size=dimensions, beta=beta, prior=prior)
-        return model.run(walks, iiter=iiter, window=window_size, verbose=verbose)
-    else:
-        walks = [list(map(str, walk)) for walk in walks]
-        model = GensimWord2Vec(walks, size=dimensions, window=window_size, min_count=0,
-                         sg=1, workers=workers, iter=iiter)
-
-        embeddings = []
-        for node in range(number_of_nodes):
-            curr_emb = np.array([model.wv[str(node)][_] for _ in range(dimensions)])
-            embeddings.append(curr_emb)
-        return np.array(embeddings)
+    model = TfWord2vec(number_of_nodes, embedding_size=dimensions, beta=beta,
+                       prior=prior, alpha_value=alpha_value, beta_value=beta_value)
+    return model.run(walks, iiter=iiter, window=window_size, verbose=verbose)
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
-             dimensions, window_size, workers, iiter, verbose, use_tf=True,
+             dimensions, window_size, workers, iiter, verbose,
              beta=0, prior='half_norm', alpha_value=2., beta_value=2.):
     '''
     Pipeline for representational learning for all nodes in a graph.
@@ -67,10 +55,10 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
     G = Graph(nx_G, directed, p, q, verbose=verbose)
     G.preprocess_transition_probs()
     walks = G.simulate_walks(num_walks, walk_length)
-    #print(walks)
-    emb_model = learn_embeddings(G.G.number_of_nodes(), walks, dimensions, window_size,
-                                 workers, iiter, verbose=verbose, use_tf=use_tf, beta=beta,
-                                 prior=prior)
+    emb_model = learn_embeddings(G.G.number_of_nodes(),
+                                 walks, dimensions, window_size,
+                                 workers, iiter, verbose=verbose, beta=beta,
+                                 prior=prior, alpha_value=alpha_value, beta_value=beta_value)
 
     return emb_model
 

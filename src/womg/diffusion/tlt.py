@@ -248,10 +248,11 @@ class TLT(DiffusionModel):
         list of active nodes for the given item
         '''
         actives_config = []
+        threshold = 1/self.topic_model.viralities[item]
         for u, v in self.network_model.godNode_links:
             curr_weight = self.network_model.graph[(u, v)]
-            threshold = 1/self.topic_model.viralities[item]
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
+            #print(1/(np.exp(- z_sum)+1), threshold)
             if (1/(np.exp(- z_sum)+1)) >= threshold:
                 actives_config.append(v)
         return set(actives_config)

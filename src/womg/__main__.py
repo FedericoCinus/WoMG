@@ -16,7 +16,6 @@ import click
 from network.tn import TN
 from topic.lda import LDA
 from diffusion.tlt import TLT
-from utils.utility_functions import cleaning
 from utils.distributions import set_seed
 from utils.saver import TxtSaver
 
@@ -36,37 +35,38 @@ def save(network_model, topic_model, diffusion_model,
     if save_keyw:
         saver.save_items_keyw(topic_model)
 
+    saver.save_mapping(network_model)
     saver.save_items_descript(topic_model)
     saver.save_topics_descript(topic_model)
 
 
 
-def womg_main(numb_topics, numb_docs,
-              numb_steps, homophily,
-              gn_strength,
-              infl_strength,
-              virality,
-              graph_path,
-              int_mode,
-              weighted, directed,
-              docs_path,
-              items_descr_path,
-              path_out,
-              seed,
-              dimensions, walk_length,
-              num_walks,  window_size,
-              iiter, workers,
-              p, q,
-              beta,
-              norm_prior,
-              alpha_value,
-              beta_value,
-              prop_steps,
-              progress_bar,
-              save_all,
-              save_int,
-              save_infl,
-              save_keyw):
+def womg_main(numb_topics=15, numb_docs=1,
+              numb_steps=100, homophily=1,
+              gn_strength=1,
+              infl_strength=0,
+              virality=1,
+              graph_path=None,
+              int_mode='rand',
+              weighted=False, directed=False,
+              docs_path=None,
+              items_descr_path=None,
+              path_out=None,
+              seed=None,
+              walk_length=100,
+              num_walks=10,  window_size=10,
+              iiter=1, workers=1,
+              p=1, q=1,
+              beta=0.01,
+              norm_prior=False,
+              alpha_value=2.,
+              beta_value=2.,
+              prop_steps=1000,
+              progress_bar=False,
+              save_all=False,
+              save_int=False,
+              save_infl=False,
+              save_keyw=False):
     '''
 
 
@@ -92,12 +92,18 @@ def womg_main(numb_topics, numb_docs,
         number of time steps for diffusion
 
     homophily : float
-        0<=H<=1 :degree of homophily decoded from the given network.
-        1-H is degree of influence between nodes;
-        reccommended values are: 0, 0.5, 1. Default 0.5
+        -1<=H<=1 :degree of homophily decoded from the given network.
+        Default 0.5
 
     gn_strength : float
         god node influence stength. Default 1
+
+    infl_strength : float
+        [0, 1]
+        relative strength of influence with respect to the interests avg norm.
+        If it is 1 then the influence vectors have the same norm as the interests.
+        If 0 the influence vectors take no part in the propagation formula.
+        Default: infl_strength = 1-H
 
     virality : float
         exponent of the powerlaw distribution for documents viralities.
@@ -131,9 +137,6 @@ def womg_main(numb_topics, numb_docs,
         seed (int) for random distribution extractions
 
 
-    dimensions : int
-        [node2vec param] number of dimensions. Default 128
-
     walk_length : int
         [node2vec param] length of walk per source. Default 80
 
@@ -154,6 +157,19 @@ def womg_main(numb_topics, numb_docs,
 
     q : float
         [node2vec param] manually set DFS parameter; else: it is set by H
+
+
+    beta : float
+        beta cost parameter for Beta-VAE loss term. Default  0.01
+
+    norm_prior : bool
+        choose half normal distribution as prior function for Beta-VAE loss term. Default False -> beta distribution
+
+    alpha_value : float
+        alpha value for the alpha vec of the Beta prior distribution. Default 2.
+    beta_value : float
+        beta value for the beta vec of the Beta prior distribution. Default 2.
+
 
     prop_steps : int
         [propagation of interests param] sets the number of steps in the propagation
@@ -186,14 +202,15 @@ def womg_main(numb_topics, numb_docs,
                             infl_strength=infl_strength,
                             p=p, q=q,
                             num_walks=num_walks, walk_length=walk_length,
-                            dimensions=dimensions, window_size=window_size,
+                            window_size=window_size,
                             workers=workers, iiter=iiter,
                             progress_bar=progress_bar,
                             beta=beta,
                             norm_prior=norm_prior,
                             alpha_value=alpha_value,
                             beta_value=beta_value,
-                            prop_steps=prop_steps)
+                            prop_steps=prop_steps,
+                            seed=seed)
         network_model.network_setup(int_mode=int_mode)
 
         topic_model = LDA(numb_topics=numb_topics,
@@ -232,12 +249,12 @@ def womg_main(numb_topics, numb_docs,
                     help='Number of time steps for diffusion',
                     type=int)
 @click.option('--homophily', metavar='H', default=0.5,
-                    help='-1<=H<=1 :degree of homophily decoded from the given network. 1-H is degree of influence between nodes. Default 0.5',
+                    help='-1<=H<=1 :degree of homophily decoded from the given network. Default 0.5',
                     type=click.FloatRange(-1, 1, clamp=True))
 @click.option('--gn_strength', default=1,
                     help='Influence strength of the god node for initial configuration. Default 1',
                     type=float)
-@click.option('--infl_strength', type=click.FloatRange(0, 1, clamp=True), default=1,
+@click.option('--infl_strength', type=click.FloatRange(0, 1, clamp=True), default=None,
                     help='Percentage of strength of the influence vecs with respect to interests vecs. Default 1')
 @click.option('--virality', metavar='V', default=1,
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
@@ -248,7 +265,7 @@ def womg_main(numb_topics, numb_docs,
 
 
 @click.option('--int_mode', type=str,
-                    help="defines the method for generating nodes' interests. 3 choices: 'n2i', 'rand', 'prop_int'. Default setting is False -> 'node2interests",
+                    help="defines the method for generating nodes' interests. 3 choices: 'n2i', 'rand', 'prop_int'. Default 'rand' ",
                     default='rand')
 
 @click.option('--weighted', is_flag=True,
@@ -269,9 +286,6 @@ def womg_main(numb_topics, numb_docs,
 
 
 
-@click.option('--dimensions', metavar='d', type=int, default=128,
-                    help='Number of dimensions for node2vec. Default 128')
-
 @click.option('--walk_length', metavar='w', type=int, default=80,
                     help='length of walk per source. Default 80')
 
@@ -285,7 +299,7 @@ def womg_main(numb_topics, numb_docs,
                   help='number of epochs in SGD')
 
 @click.option('--workers', type=int, default=8,
-                    help='number of parallel workers. Default   8')
+                    help='number of parallel workers. Default 8')
 
 @click.option('--p', type=float, default=1,
                     help='manually set BFS parameter; else: it is set by H')
@@ -327,7 +341,7 @@ def main_cli(topics, docs, steps, homophily,
              gn_strength,
              infl_strength,
              output, seed,
-             dimensions, walk_length,
+             walk_length,
              num_walks, window_size,
              iiter, workers,
              p, q,
@@ -363,7 +377,7 @@ def main_cli(topics, docs, steps, homophily,
               items_descr_path=items_descr_path,
               path_out=output,
               seed=seed,
-              dimensions=dimensions, walk_length=walk_length,
+              walk_length=walk_length,
               num_walks=num_walks, window_size=window_size,
               iiter=iiter, workers=workers,
               p=p, q=q,

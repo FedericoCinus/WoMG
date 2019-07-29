@@ -33,6 +33,7 @@ def generate_batch(walks, batch_size, num_skips, window):
                 else:
                     words_to_use = random.sample(context_words, num_skips)
                 for j, context_word in enumerate(words_to_use):
+                    print(buffer, window)
                     batch[i * num_skips + j] = buffer[window]
                     labels[i * num_skips + j, 0] = buffer[context_word]
             yield batch, labels
@@ -61,6 +62,8 @@ class Word2vec:
             batch_size=100,
             num_sampled=5, # Same default as Gensim.
             beta=0,
+            alpha_value=2.,
+            beta_value=2.,
             prior='half_norm'
     ):
         """
@@ -121,8 +124,8 @@ class Word2vec:
             # kl with normal distribution
             kl = 0.5 * (-log_std + tf.square(mu - 10) + tf.exp(log_std) - 1)
         if prior == 'beta':
-            prior_alpha = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
-            prior_beta = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
+            prior_alpha = np.array([alpha_value for _ in range(embedding_size)], dtype=np.float32)
+            prior_beta = np.array([beta_value for _ in range(embedding_size)], dtype=np.float32)
             kl = beta_kl_divergence(self.embeddings, prior_alpha, prior_beta)
 
 

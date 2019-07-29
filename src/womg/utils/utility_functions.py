@@ -33,7 +33,17 @@ def read_edgelist(self, path, weighted, directed):
     if not directed:
         G = G.to_undirected()
 
-    return G
+    # mapping labels
+    mapping = {}
+    identity_map = 0
+    for new_label, old_label in enumerate(sorted(G.nodes())):
+        if new_label == old_label:
+            identity_map += 1
+        mapping[old_label] = new_label
+    if identity_map == G.number_of_nodes():
+        return G, None
+    else:
+        return nx.relabel_nodes(G, mapping), mapping
 
 '''
 def def_numb_topics(numb_topics, numb_docs, docs_path):

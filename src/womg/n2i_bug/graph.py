@@ -9,6 +9,7 @@ class Graph():
         self.is_directed = is_directed
         self.p = p
         self.q = q
+        print('p: ',p, ' q: ', q)
         self.verbose = verbose
 
     def node2vec_walk(self, walk_length, start_node):
@@ -30,11 +31,10 @@ class Graph():
                 else:
                     prev = walk[-2]
                     next = cur_nbrs[alias_draw(alias_edges[(prev, cur)][0],
-                                    alias_edges[(prev, cur)][1])]
+                        alias_edges[(prev, cur)][1])]
                     walk.append(next)
             else:
                 break
-
         return walk
 
     def simulate_walks(self, num_walks, walk_length):
@@ -56,7 +56,7 @@ class Graph():
             for node in nodes:
                 walks.append(self.node2vec_walk(walk_length=walk_length, start_node=node))
 
-        #print(walks)
+        print(len(walks))
         return walks
 
     def get_alias_edge(self, src, dst):

@@ -1,7 +1,7 @@
 # Class for random distributions definition
 import random
 import numpy as np
-#import tensorflow as tf
+import tensorflow as tf
 
 def set_seed(seed):
     '''
@@ -10,7 +10,7 @@ def set_seed(seed):
     if seed != None:
         random.seed(seed)
         np.random.seed(seed)
-        #tf.set_random_seed(seed)
+        tf.set_random_seed(seed)
 
 def random_viralities_vec(gamma, dimensions):
     '''

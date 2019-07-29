@@ -103,6 +103,21 @@ class TxtSaver(Saver):
                 f.write(str(node) + ' ' +str(list(network_model.users_influence[node])) + '\n')
 
 
+    def save_mapping(self, network_model):
+        '''
+        Concrete method for saving the graph mapping
+        in a txt format
+        '''
+        output_dir = self.make_output_directory(self._path)
+        filename = self.make_filename("nodes_mapping", output_dir)
+
+        if network_model.mapping != None:
+            with open(filename, "w") as f:
+                f.write(str(network_model.mapping))
+        else:
+            pass
+
+
     def save_items_descript(self, topic_model):
         '''
         Concrete method for saving the topic model items description

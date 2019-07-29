@@ -30,7 +30,7 @@ class Graph():
                 else:
                     prev = walk[-2]
                     next = cur_nbrs[alias_draw(alias_edges[(prev, cur)][0],
-                        alias_edges[(prev, cur)][1])]
+                                    alias_edges[(prev, cur)][1])]
                     walk.append(next)
             else:
                 break

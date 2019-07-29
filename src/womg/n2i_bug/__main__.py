@@ -15,7 +15,6 @@ import random
 import numpy as np
 import networkx as nx
 from tqdm import tqdm
-import tensorflow as tf
 from n2i.node2vec import node2vec, read_graph, save_emb
 
 curr_path = str(pathlib.Path.cwd())
@@ -37,8 +36,6 @@ def n2i_nx_graph(nx_graph,
     if seed != None:
         random.seed(seed)
         np.random.seed(seed)
-        tf.set_random_seed(seed)
-
 
     numb_nodes = nx.number_of_nodes(nx_graph)
     embeddings = node2vec(
