@@ -56,13 +56,16 @@ class DiffusionModel(abc.ABC):
         '''
         print("Computing cascades: ")
         for t in self._progress_bar(range(numb_steps)):
-            if not self.stop_criterior():
-                self.iteration(step=t)
+            if t==0:
+                self.iteration(step=0)
             else:
-                #print('\n stop_criterior: ', self.stop_criterior(), '\n')
-                print('\n Simulation stopped at timestep ', str(t-1) ,
-                        '\n Diffusion has been completed.'  )
-                break
+                if not self.stop_criterior():
+                    self.iteration(step=t+1)
+                else:
+                    #print('\n stop_criterior: ', self.stop_criterior(), '\n')
+                    print('\n Simulation stopped at timestep ', str(t-1) ,
+                            '\n Diffusion has been completed.'  )
+                    break
 
 
     @abc.abstractmethod
