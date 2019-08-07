@@ -15,34 +15,34 @@ import random
 import numpy as np
 import networkx as nx
 from tqdm import tqdm
-from sklearn.decomposition import NMF
+import tensorflow as tf
 from n2i.node2vec import node2vec, read_graph, save_emb
 
 curr_path = str(pathlib.Path.cwd())
 
 def n2i_nx_graph(nx_graph,
-         topics=15,
          weighted=False, directed=False,
          fast=False, seed=None,
          dimensions=128, walk_length=80,
          num_walks=10, window_size=10,
          iiter=1, workers=8,
          p=1, q=1,
-         normalize=False,
-         translate=True,
-         reduce=True,
          verbose=False,
-         use_tf=False,
          beta=0,
-         prior='half_norm'):
+         prior='half_norm',
+         alpha_value=2.,
+         beta_value=2.):
 
     # seed
     if seed != None:
         random.seed(seed)
         np.random.seed(seed)
+        tf.set_random_seed(seed)
+
 
     numb_nodes = nx.number_of_nodes(nx_graph)
-    model = node2vec(weighted=weighted,
+    embeddings = node2vec(
+                    weighted=weighted,
                     graph=nx_graph,
                     directed=directed,
                     p=p, q=q,
@@ -53,34 +53,10 @@ def n2i_nx_graph(nx_graph,
                     workers=workers,
                     iiter=iiter,
                     verbose=verbose,
-                    use_tf=use_tf,
                     beta=beta,
-                    prior=prior)
-    if reduce:
-        # Translation
-        if not use_tf:
-            # translation constant
-            minim = np.amin(model)
-            print('Translating')
-            model = model + abs(minim)
-        # NMF Reduction
-        print('Reducing')
-        if verbose:
-            print('Reducing dimensions from ', dimensions,' to ', topics)
-        nmf = NMF(n_components=topics, random_state=42, max_iter=1000)
-        _right = nmf.fit(model).components_
-        left = nmf.transform(model)
-        embeddings = left
-
-    # NO REDUCTION
-    else:
-        if translate and not use_tf:
-            # translation constant
-            minim = np.amin(model)
-            print('Translating')
-            model = model + abs(minim)
-        embeddings = model
-
+                    prior=prior,
+                    alpha_value=alpha_value,
+                    beta_value=beta_value)
 
     return embeddings
 
@@ -94,9 +70,8 @@ def n2i_main(topics=15,
          p=1, q=1,
          beta=0,
          prior='half_norm',
-         normalize=False,
-         translate=True,
-         reduce=True,
+         alpha_value=2.,
+         beta_value=2.,
          verbose=False):
     '''
 
@@ -164,24 +139,22 @@ def n2i_main(topics=15,
     nx_graph = read_graph(weighted=weighted, graph=graph, directed=directed)
 
     emb = n2i_nx_graph(
-         nx_graph=nx_graph,
-         topics=topics,
-         weighted=weighted, directed=directed,
-         fast=fast,
-         seed=seed,
-         dimensions=dimensions,
-         walk_length=walk_length,
-         num_walks=num_walks,
-         window_size=window_size,
-         iiter=iiter,
-         workers=workers,
-         p=p, q=q,
-         beta=beta,
-         prior=prior,
-         normalize=normalize,
-         translate=translate,
-         reduce=reduce,
-         verbose=verbose)
+                 nx_graph=nx_graph,
+                 weighted=weighted, directed=directed,
+                 fast=fast,
+                 seed=seed,
+                 dimensions=dimensions,
+                 walk_length=walk_length,
+                 num_walks=num_walks,
+                 window_size=window_size,
+                 iiter=iiter,
+                 workers=workers,
+                 p=p, q=q,
+                 beta=beta,
+                 prior=prior,
+                 alpha_value=alpha_value,
+                 beta_value=beta_value,
+                 verbose=verbose)
 
     save_emb(emb=emb, path=output, verbose=verbose)
 
@@ -241,9 +214,10 @@ def n2i_main(topics=15,
                     help='beta parameter for Beta-VAE loss term. Default  0')
 @click.option('--prior', type=str, default='half_norm',
                     help='prior function for Beta-VAE loss term. Default  half_norm')
-@click.option('--reduce', is_flag=True,
-                    help='reduce dimension with NMF',
-                    default=True)
+@click.option('--alpha_val', type=float, default=2.,
+                    help='alpha value for the alpha vec of the Beta prior distribution. Default 2.')
+@click.option('--beta_val', type=float, default=2.,
+                    help='beta value for the beta vec of the Beta prior distribution. Default 2.')
 @click.option('--verbose', is_flag=True,
                     help='n2i rpivdes all prints',
                     default=False)
@@ -257,9 +231,8 @@ def main_cli(topics,
          p, q,
          beta,
          prior,
-         normalize,
-         translate,
-         reduce,
+         alpha_value,
+         beta_value,
          verbose):
     '''
 
@@ -282,9 +255,8 @@ def main_cli(topics,
              p=p, q=q,
              beta=beta,
              prior=prior,
-             normalize=normalize,
-             translate=translate,
-             reduce=reduce,
+             alpha_value=alpha_value,
+             beta_value=beta_value,
              verbose=verbose)
 
 if __name__ == '__main__':
