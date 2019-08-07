@@ -33,6 +33,8 @@ def generate_batch(walks, batch_size, num_skips, window):
                 else:
                     words_to_use = random.sample(context_words, num_skips)
                 for j, context_word in enumerate(words_to_use):
+                    print(len(buffer))
+                    print(window)
                     batch[i * num_skips + j] = buffer[window]
                     labels[i * num_skips + j, 0] = buffer[context_word]
             yield batch, labels

@@ -16,6 +16,7 @@ import networkx as nx
 from n2i.graph import Graph
 import numpy as np
 from gensim.models import Word2Vec as GensimWord2Vec
+from graph2vec import Node2Vec
 
 def read_graph(weighted, graph, directed):
     '''
@@ -64,11 +65,20 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
         nx_G = read_graph(weighted, graph, directed)
     else:
         nx_G = graph
+    '''
     G = Graph(nx_G, directed, p, q, verbose=verbose)
     G.preprocess_transition_probs()
+
     walks = G.simulate_walks(num_walks, walk_length)
+    '''
+    g2v = Node2Vec()
+    walks = g2v.simulate_walks(nx_G, walklen=walk_length,
+                                epochs=num_walks,
+                                return_weight=1/p,
+                                neighbor_weight=1/q,
+                                threads=workers)
     #print(walks)
-    emb_model = learn_embeddings(G.G.number_of_nodes(), walks, dimensions, window_size,
+    emb_model = learn_embeddings(nx_G.number_of_nodes(), walks, dimensions, window_size,
                                  workers, iiter, verbose=verbose, use_tf=use_tf, beta=beta,
                                  prior=prior)
 

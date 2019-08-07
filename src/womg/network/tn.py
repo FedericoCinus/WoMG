@@ -242,7 +242,6 @@ class TN(TLTNetworkModel):
             self.propag_interests()
 
 
-
     def set_influence(self, method='node2influence'):
         '''
         Sets influence vectors for all nodes
