@@ -65,7 +65,7 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
         nx_G = read_graph(weighted, graph, directed)
     else:
         nx_G = graph
-    '''
+
     G = Graph(nx_G, directed, p, q, verbose=verbose)
     G.preprocess_transition_probs()
 
@@ -78,6 +78,7 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
                                 neighbor_weight=1/q,
                                 threads=workers)
     #print(walks)
+    '''
     emb_model = learn_embeddings(nx_G.number_of_nodes(), walks, dimensions, window_size,
                                  workers, iiter, verbose=verbose, use_tf=use_tf, beta=beta,
                                  prior=prior)

@@ -31,7 +31,8 @@ def n2i_nx_graph(nx_graph,
          beta=0,
          prior='half_norm',
          alpha_value=2.,
-         beta_value=2.):
+         beta_value=2.,
+         sigma=1.):
 
     # seed
     if seed != None:
@@ -56,7 +57,8 @@ def n2i_nx_graph(nx_graph,
                     beta=beta,
                     prior=prior,
                     alpha_value=alpha_value,
-                    beta_value=beta_value)
+                    beta_value=beta_value,
+                    sigma=sigma)
 
     return embeddings
 
@@ -72,6 +74,7 @@ def n2i_main(topics=15,
          prior='half_norm',
          alpha_value=2.,
          beta_value=2.,
+         sigma=1.,
          verbose=False):
     '''
 
@@ -218,6 +221,8 @@ def n2i_main(topics=15,
                     help='alpha value for the alpha vec of the Beta prior distribution. Default 2.')
 @click.option('--beta_val', type=float, default=2.,
                     help='beta value for the beta vec of the Beta prior distribution. Default 2.')
+@click.option('--sigma', type=float, default=1.,
+                    help='standard deviation for the half normal prior. Default 1.')
 @click.option('--verbose', is_flag=True,
                     help='n2i rpivdes all prints',
                     default=False)
@@ -233,6 +238,7 @@ def main_cli(topics,
          prior,
          alpha_value,
          beta_value,
+         sigma,
          verbose):
     '''
 
@@ -257,6 +263,7 @@ def main_cli(topics,
              prior=prior,
              alpha_value=alpha_value,
              beta_value=beta_value,
+             sigma=sigma,
              verbose=verbose)
 
 if __name__ == '__main__':

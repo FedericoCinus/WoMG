@@ -36,13 +36,14 @@ def read_graph(weighted, graph, directed):
     return G
 
 def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, iiter, use_tf=True,
-    beta=0, prior='half_norm',
+    beta=0, prior='half_norm', alpha_value=2., beta_value=2., sigma=1.,
     verbose=True):
     '''
     Learn embeddings by optimizing the Skipgram objective using SGD.
     '''
     if use_tf:
-        model = TfWord2vec(number_of_nodes, embedding_size=dimensions, beta=beta, prior=prior)
+        model = TfWord2vec(number_of_nodes, embedding_size=dimensions, beta=beta, prior=prior,
+                            alpha_value=alpha_value, beta_value=beta_value, sigma=sigma)
         return model.run(walks, iiter=iiter, window=window_size, verbose=verbose)
     else:
         walks = [list(map(str, walk)) for walk in walks]
@@ -57,7 +58,7 @@ def learn_embeddings(number_of_nodes, walks, dimensions, window_size, workers, i
 
 def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
              dimensions, window_size, workers, iiter, verbose, use_tf=True,
-             beta=0, prior='half_norm', alpha_value=2., beta_value=2.):
+             beta=0, prior='half_norm', alpha_value=2., beta_value=2., sigma=1.):
     '''
     Pipeline for representational learning for all nodes in a graph.
     '''
@@ -65,7 +66,7 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
         nx_G = read_graph(weighted, graph, directed)
     else:
         nx_G = graph
-    '''
+
     G = Graph(nx_G, directed, p, q, verbose=verbose)
     G.preprocess_transition_probs()
 
@@ -78,10 +79,11 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
                                 neighbor_weight=1/q,
                                 threads=workers)
     #print(walks)
-    
+    '''
     emb_model = learn_embeddings(nx_G.number_of_nodes(), walks, dimensions, window_size,
                                  workers, iiter, verbose=verbose, use_tf=use_tf, beta=beta,
-                                 prior=prior)
+                                 prior=prior, alpha_value=alpha_value,
+                                 beta_value=beta_value, sigma=sigma)
 
     return emb_model
 

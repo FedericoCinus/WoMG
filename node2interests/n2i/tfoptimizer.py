@@ -63,7 +63,10 @@ class Word2vec:
             batch_size=100,
             num_sampled=5, # Same default as Gensim.
             beta=0,
-            prior='half_norm'
+            prior='half_norm',
+            alpha_value =2.,
+            beta_value=2.,
+            sigma=1.
     ):
         """
         Build the TensorFlow operation graph.
@@ -118,20 +121,19 @@ class Word2vec:
 
         if prior == 'half_norm':
             # kl with half-normal distribution
-            kl = 0.5 * (tf.math.square(tf.exp(log_std) - 1)) - log_std
+            kl = 0.5 * (tf.math.square(tf.exp(log_std)) - tf.math.square(sigma))/(tf.math.square(sigma)) - log_std + np.log(sigma)
         if prior == 'norm':
             # kl with normal distribution
             kl = 0.5 * (-log_std + tf.square(mu - 10) + tf.exp(log_std) - 1)
         if prior == 'beta':
-            prior_alpha = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
-            prior_beta = np.array([2. for _ in range(embedding_size)], dtype=np.float32)
+            prior_alpha = np.array([alpha_value for _ in range(embedding_size)], dtype=np.float32)
+            prior_beta = np.array([beta_value for _ in range(embedding_size)], dtype=np.float32)
             kl = beta_kl_divergence(self.embeddings, prior_alpha, prior_beta)
 
 
         kl_penalty = tf.reduce_sum(kl)
 
         #print('loss_before ', self.loss)
-        print('beta: ', beta)
         self.loss += beta * kl_penalty
         #print('loss_after ', self.loss)
 
