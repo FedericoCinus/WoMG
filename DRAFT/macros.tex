@@ -1,0 +1,139 @@
+\usepackage{graphicx}
+\usepackage[show]{chato-notes}
+\usepackage{amsmath,amssymb}
+\usepackage{bbm}
+\usepackage{epsfig}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+
+\hypersetup{
+    bookmarks=true,         % show bookmarks bar?
+    unicode=false,          % non-Latin characters in Acrobats bookmarks
+    pdftoolbar=true,        % show Acrobats toolbar?
+    pdfmenubar=true,        % show Acrobats menu?
+    pdffitwindow=false,     % window fit to page when opened
+    pdfstartview={FitH},    % fits the width of the page to the window
+    pdftitle={My title},    % title
+    pdfauthor={Author},     % author
+    pdfsubject={Subject},   % subject of the document
+    pdfcreator={Creator},   % creator of the document
+    pdfproducer={Producer}, % producer of the document
+    pdfnewwindow=true,      % links in new window
+    colorlinks=true,       % false: boxed links; true: colored links
+    linkcolor=black,          % color of internal links
+    citecolor=black,        % color of links to bibliography
+    filecolor=black,      % color of file links
+    urlcolor=black           % color of external links
+}
+
+\interfootnotelinepenalty=10000
+
+%% to save space around floating bodies ( = algorithms, figures, etc.)
+%\renewcommand\topfraction{0.85}
+%\renewcommand\bottomfraction{0.85}
+%\renewcommand\textfraction{0.1}
+%\renewcommand\floatpagefraction{0.1}
+%\setlength\floatsep{.05\baselineskip plus 3pt minus 4pt}
+%\setlength\textfloatsep{.15\baselineskip plus 3pt minus 2pt}
+%\setlength\intextsep{1.25\baselineskip plus 3pt minus 2 pt}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.1mm}}
+\newcommand{\missing}{\textbf{\textcolor{red}{[missing]}}}
+
+% Paragraphs
+\newcommand{\spara}[1]{\smallskip\noindent{\bf #1}}
+\newcommand{\mpara}[1]{\medskip\noindent{\bf #1}}
+\newcommand{\para}[1]{\noindent{\bf #1}}
+
+%Mathematical environments
+%Mathematical environments
+\newtheorem{mydefinition}{Definition}
+%\newtheorem{proposition}{Proposition}
+\newtheorem{myproperty}{Property}
+\newtheorem{mytheorem}{Theorem}
+%\refstepcounter{mytheorem}
+%\newtheorem{mytheoremnoindent}{\!\!\!Theorem}
+\newtheorem{mycorollary}{Corollary}
+%\newtheorem{claim}{Claim}
+\newtheorem{myexample}{Example}
+\newtheorem{mylemma}{Lemma}
+\newtheorem{problem}{Problem}
+\newtheorem{fact}{Fact}
+%\newtheorem{assumption}{Assumption}
+\newtheorem{observation}{Observation}
+
+\newcommand{\Abs}[1]{\left|#1\right|}
+\newcommand{\Tuple}[1]{\left<#1\right>}
+\newcommand{\Set}[1]{\left\{#1\right\}}
+\newcommand{\List}[1]{\left[#1\right]}
+\newcommand{\Paren}[1]{\left(#1\right)}
+\newcommand{\Binom}[2]{\left(#1 \atop #2\right)}
+\newcommand{\Floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\Ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\IntO}[1]{\left(#1\right)}
+\newcommand{\IntC}[1]{\left[#1\right]}
+\newcommand{\IntLO}[1]{\left(#1\right]}
+\newcommand{\IntRO}[1]{\left[#1\right)}
+\newcommand{\Choose}[2]{\left( #1 \atop #2\right)}
+
+\newcommand{\I}{\ensuremath{\mathcal{I}}}
+\newcommand{\D}{\ensuremath{\mathbb{D}}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\bigO}{\mathcal{O}}
+\newcommand{\omegatilde}{{\tilde{\Omega}}}
+\newcommand{\Nin}{\ensuremath{N_{\mathrm{in}}}}
+\newcommand{\Nout}{\ensuremath{N_{\mathrm{out}}}}
+\newcommand{\din}{\ensuremath{d_{\mathrm{in}}}}
+\newcommand{\dout}{\ensuremath{d_{\mathrm{out}}}}
+
+\newcommand{\NP}{$\mathbf{NP}$}
+\newcommand{\NPhard}{$\mathbf{NP}$-hard}
+\newcommand{\NPcomplete}{$\mathbf{NP}$-complete}
+\newcommand{\SPcomplete}{$\mathbf{\#P}$-complete}
+\newcommand{\SPhard}{$\mathbf{\#P}$-hard}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+%% tight spacing in item lists
+\newcommand{\squishlist}{
+ \begin{list}{$\bullet$}
+  {  \setlength{\itemsep}{0pt}
+     \setlength{\parsep}{3pt}
+     \setlength{\topsep}{3pt}
+     \setlength{\partopsep}{0pt}
+     \setlength{\leftmargin}{2em}
+     \setlength{\labelwidth}{1.5em}
+     \setlength{\labelsep}{0.5em}
+} }
+\newcommand{\squishlisttight}{
+ \begin{list}{$\bullet$}
+  { \setlength{\itemsep}{0pt}
+    \setlength{\parsep}{0pt}
+    \setlength{\topsep}{0pt}
+    \setlength{\partopsep}{0pt}
+    \setlength{\leftmargin}{2em}
+    \setlength{\labelwidth}{1.5em}
+    \setlength{\labelsep}{0.5em}
+} }
+
+\newcommand{\squishdesc}{
+ \begin{list}{}
+  {  \setlength{\itemsep}{0pt}
+     \setlength{\parsep}{3pt}
+     \setlength{\topsep}{3pt}
+     \setlength{\partopsep}{0pt}
+     \setlength{\leftmargin}{1em}
+     \setlength{\labelwidth}{1.5em}
+     \setlength{\labelsep}{0.5em}
+} }
+
+\newcommand{\squishend}{
+  \end{list}
+}

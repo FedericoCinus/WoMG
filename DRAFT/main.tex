@@ -1,0 +1,73 @@
+\documentclass[sigconf,anonymous=true,draft]{acmart}
+\input{macros.tex}
+% Copyright
+\setcopyright{none}
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+% DOI
+\acmDOI{}
+% ISBN
+\acmISBN{}
+%Conference
+\acmConference[The Web Conference'19]{}{May 13 - 17}{San Francisco, CA, USA}
+\acmYear{}
+\copyrightyear{}
+\acmArticle{}
+\acmPrice{}
+
+\begin{document}
+
+\title{A catchy title}
+
+\begin{abstract}
+A convincing abstract
+\end{abstract}
+\maketitle \sloppy
+
+\section{Introduction}
+\label{sec:intro}
+\input{intro.tex}
+
+\begin{itemize}
+  \item Motivations
+  \item Background
+  \item Contributions
+\end{itemize}
+
+\section{Background and related work}
+\label{sec:related}
+\input{related.tex}
+
+\section{Model}
+\label{sec:model}
+\input{model.tex}
+
+\begin{itemize}
+  \item WoMG from thesis
+\end{itemize}
+
+\section{Generating interests}
+\label{sec:interests}
+\input{interests.tex}
+
+\section{Implementation}
+\label{sec:implementation}
+\input{implementation.tex}
+
+\section{Experimental Assessment}
+\label{sec:experiments}
+\input{experiments.tex}
+
+\section{Conclusions and Future Work}
+\label{sec:conclusions}
+\input{conclusions.tex}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}
