@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.5.2)  18 AUG 2019 00:53
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.5.2)  29 AUG 2019 19:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1553,46 +1553,92 @@ LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/b/n' will be
 (Font)              scaled to size 8.0pt on input line 30.
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 8.0pt on input line 30.
- (./intro.tex) (./related.tex) (./model.tex) (./interests.tex)
-(./implementation.tex) (./experiments.tex
+ (./intro.tex) (./related.tex) (./model.tex
+\c@defn=\count175
+
+Underfull \hbox (badness 4765) in paragraph at lines 7--9
+\T1/LinuxLibertineT-TLF/m/n/9 These as-sump-tions en-tirely de-scribe a prop-a-
+ga-tion cas-cade
+ []
+
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 9.0pt on input line 8.
-) (./conclusions.tex) (./main.bbl
+(Font)              scaled to size 9.0pt on input line 9.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/sc' will be
+(Font)              scaled to size 9.0pt on input line 10.
+
+Package amsfonts Warning: Obsolete command \bold; \mathbf should be used instea
+d on input line 10.
+
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/sb/n' will be
+(Font)              scaled to size 9.0pt on input line 10.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/sb/n' will be
+(Font)              scaled to size 7.3pt on input line 10.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/sb/n' will be
+(Font)              scaled to size 5.5pt on input line 10.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/b/it' will be
+(Font)              scaled to size 9.0pt on input line 25.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 7.3pt on input line 25.
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
+(Font)              scaled to size 5.5pt on input line 25.
+) (./interests.tex) (./implementation.tex) (./experiments.tex
+Underfull \vbox (badness 1043) has occurred while \output is active []
+
+ [1.1{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+])
+(./conclusions.tex) (./main.bbl
 
 Package natbib Warning: Empty `thebibliography' environment on input line 40.
 
-) [1.1{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+)
+LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
+(Font)              scaled to size 9.0pt on input line 73.
+ [2.2
 
 ]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 73.
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 73.
-
-(./main.aux)
+ (./main.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 73.
 Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 73.
  ) 
 Here is how much of TeX's memory you used:
- 29798 strings out of 493089
- 540912 string characters out of 6134843
- 653843 words of memory out of 5000000
- 32538 multiletter control sequences out of 15000+600000
- 96103 words of font info for 70 fonts, out of 8000000 for 9000
+ 29887 strings out of 493089
+ 542344 string characters out of 6134843
+ 658858 words of memory out of 5000000
+ 32565 multiletter control sequences out of 15000+600000
+ 163987 words of font info for 129 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
- 60i,11n,94p,813b,389s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_7grukw.enc
-}{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_nh77jq.enc}
-{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc}{
-/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc}</
-usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinBiolinumTB.pf
-b></usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertine
-T.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLiber
-tineTB.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/Lin
-LibertineTI.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/txfonts/
-txsy.pfb>
-Output written on main.pdf (1 page, 283934 bytes).
+ 60i,11n,94p,813b,391s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc
+}{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/newtx/libertinealt.enc}{/u
+sr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_ki75ao.enc}{/us
+r/local/texlive/2015/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive
+/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_z254vq.enc}{/usr/local/texlive/
+2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_ncsllp.enc}{/usr/local/texlive/2
+015/texmf-dist/fonts/enc/dvips/libertine/lbtn_7grukw.enc}{/usr/local/texlive/20
+15/texmf-dist/fonts/enc/dvips/libertine/lbtn_nh77jq.enc}{/usr/local/texlive/201
+5/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc}</usr/local/texlive/2015
+/texmf-dist/fonts/type1/public/libertine/LinBiolinumT.pfb></usr/local/texlive/2
+015/texmf-dist/fonts/type1/public/libertine/LinBiolinumTB.pfb></usr/local/texli
+ve/2015/texmf-dist/fonts/type1/public/libertine/LinLibertineT.pfb></usr/local/t
+exlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertineTB.pfb></usr/lo
+cal/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertineTBI.pfb></
+usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertineTI.p
+fb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertin
+eTZ.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/newtx/fxlri-7let
+ters.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/txfonts/rtxmi.p
+fb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/newtx/rtxmi7.pfb></us
+r/local/texlive/2015/texmf-dist/fonts/type1/public/txfonts/rtxr.pfb></usr/local
+/texlive/2015/texmf-dist/fonts/type1/public/txfonts/txsy.pfb></usr/local/texliv
+e/2015/texmf-dist/fonts/type1/public/txfonts/txsyc.pfb></usr/local/texlive/2015
+/texmf-dist/fonts/type1/public/newtx/zxlr.pfb></usr/local/texlive/2015/texmf-di
+st/fonts/type1/public/newtx/zxlri.pfb>
+Output written on main.pdf (2 pages, 570964 bytes).
 PDF statistics:
- 43 PDF objects out of 1000 (max. 8388607)
- 26 compressed objects within 1 object stream
+ 110 PDF objects out of 1000 (max. 8388607)
+ 69 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  25 words of extra memory for PDF output out of 10000 (max. 10000000)
 

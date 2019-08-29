@@ -1,5 +1,49 @@
-1. Topic-aware influence analysis: hyp.
-2. graph model: charact.
-3. topic model notation
+Topic-aware influence propagation models share three main hypothesis: 
+\begin{itemize}
+\item[i] Users have different interests
+\item[ii] Items have different characteristics
+\item[iii] Similar items are likely to interest same users
+\end{itemize}
+These assumptions entirely describe a propagation cascade through a social influence which is  strictly dependent on the topics and interests. To account preferences we enrich the notion of node defining it with the following triplet:
+\newtheorem{defn}{Definition}
+\begin{defn}
+	(Node)  $\qquad <i,\: \bold{f}_{i},\: \bold{t}_{i}>$
+\end{defn}
+ where $i$ is the identification index while $\bold{f}_{i}$ and $\bold{t}_{i}$ are respectively the influence vector and interests vector of node $i$ in a $K$ dimensional topics space.
+
+\begin{defn} 
+(Influence vector) $ \qquad \bold{f}_i=[f_i^{1}, f_i^{2}, .. , f_i^{K}]$
+\end{defn}
+
+\begin{defn}
+(Interests vector) $ \qquad \bold{t}_i=[t_i^{1}, t_i^{2}, .. , t_i^{K}]  $
+\end{defn}
+Each component represents respectively the degree of influence that the node can exerts on a particular topic and the degree of interest of the node in that topic; for these reasons these entries are non-negative defined.
+
+The graph is defined by the set of nodes $V$ and the set of edges $E \subseteq V\times V$: $G=(V,E)$. The topic-aware perspective implies the generalization of its adjacency matrix entry:
+\begin{defn}
+(Link weight vector) $\textbf{p}_{uv} = [p_{vu}^{1}, p_{vu}^{2}, .., p_{vu}^K]$  
+\end{defn}
+where $vu$ is the direct link from $u$ to $v$, $z=1,..,K$ is the topic, and
+ $p_{vu}^{z} = t_u^z + f_v^z \in [0,+\infty)$. In this way the directed link from node $v$ to $u$ on a particular topic $z$ has an importance proportional to the interest of node $u$ on that topic, incremented by the amount of influence that node $v$ can exert on $u$.
+
+Moreover the necessity of initial conditions in the diffusion process is solved by introducing a special node in the network, called \textit{god node}; it is connected with all other nodes and denoted with a negative index \textit{-1}.
+\begin{defn}
+(God node) $v_{-1}\:|\:E^+(v_{-1})\equiv V \wedge E^-(v_{-1})\equiv\emptyset$
+\end{defn}
+where: $E^+(u):= \{v \in V | v \neq u \wedge e_{uv} \in E \}$ is the set of nodes followed by $u$, and symmetrically: $E^-(u):= \{v \in V | v \neq u \wedge e_{vu} \in E \}$.
+
+
+The corpus $I$, i.e. the set of items with cardinality $I$ involved in the cascades, is described by probability distributions. As a main concept LDA assumes that each topic is described by a superposition of words while a document can be statistical interpreted by a composition of topics. This particular model defines these distributions as Dirichlet distributions in order to incorporate in the model the assumption that few topics can well describe a text.
+
+Following the standard notation of the generative LDA model we have:
+\begin{itemize}
+\item $\bold{\alpha}_{z=1,..,K}:=$ $K$-dim vector of prior topic distribution
+\item $\bold{\beta}_{w=1,..,V}:=$ $V$-dim vector of prior word distribution
+\item $\bold{\gamma}_{i=1,..,|I|}:=$ $K$-dim vector of document's distribution over topics; each entry is the probability of topic $z$ occurring in document $i$: $p(k|i)$
+\item $\bold{\varphi}_{z=1,..,K}:=$ $V$-dim vector of topic's distribution over vocabulary words; each entry is the probability of word $w$ occurring in topic $z$: $p(w|z)$ 
+\end{itemize} 
+
+
 4. diffusion model: formula and definitions
 5. box summary
