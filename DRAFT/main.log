@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.5.2)  29 AUG 2019 19:23
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2016.5.2)  30 AUG 2019 19:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1581,13 +1581,11 @@ LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 7.3pt on input line 25.
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 5.5pt on input line 25.
-) (./interests.tex) (./implementation.tex) (./experiments.tex
-Underfull \vbox (badness 1043) has occurred while \output is active []
+) [1.1{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
- [1.1{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
-])
-(./conclusions.tex) (./main.bbl
+]
+(./interests.tex) (./implementation.tex) (./experiments.tex) (./conclusions.tex
+) (./main.bbl
 
 Package natbib Warning: Empty `thebibliography' environment on input line 40.
 
@@ -1604,13 +1602,13 @@ Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 73.
 Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 73.
  ) 
 Here is how much of TeX's memory you used:
- 29887 strings out of 493089
- 542344 string characters out of 6134843
- 658858 words of memory out of 5000000
- 32565 multiletter control sequences out of 15000+600000
- 163987 words of font info for 129 fonts, out of 8000000 for 9000
+ 29906 strings out of 493089
+ 542667 string characters out of 6134843
+ 661858 words of memory out of 5000000
+ 32569 multiletter control sequences out of 15000+600000
+ 176690 words of font info for 144 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
- 60i,11n,94p,813b,391s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,11n,94p,813b,433s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc
 }{/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/newtx/libertinealt.enc}{/u
 sr/local/texlive/2015/texmf-dist/fonts/enc/dvips/libertine/lbtn_ki75ao.enc}{/us
@@ -1627,18 +1625,21 @@ exlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertineTB.pfb></usr/lo
 cal/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertineTBI.pfb></
 usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertineTI.p
 fb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/libertine/LinLibertin
-eTZ.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/newtx/fxlri-7let
-ters.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/txfonts/rtxmi.p
-fb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/newtx/rtxmi7.pfb></us
-r/local/texlive/2015/texmf-dist/fonts/type1/public/txfonts/rtxr.pfb></usr/local
-/texlive/2015/texmf-dist/fonts/type1/public/txfonts/txsy.pfb></usr/local/texliv
-e/2015/texmf-dist/fonts/type1/public/txfonts/txsyc.pfb></usr/local/texlive/2015
-/texmf-dist/fonts/type1/public/newtx/zxlr.pfb></usr/local/texlive/2015/texmf-di
-st/fonts/type1/public/newtx/zxlri.pfb>
-Output written on main.pdf (2 pages, 570964 bytes).
+eTZ.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/newtx/fxlri-5let
+ters.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/newtx/fxlri-7le
+tters.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/txfonts/rtxmi.
+pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/newtx/rtxmi7.pfb></u
+sr/local/texlive/2015/texmf-dist/fonts/type1/public/txfonts/rtxr.pfb></usr/loca
+l/texlive/2015/texmf-dist/fonts/type1/public/newtx/txex-bar.pfb></usr/local/tex
+live/2015/texmf-dist/fonts/type1/public/txfonts/txex.pfb></usr/local/texlive/20
+15/texmf-dist/fonts/type1/public/txfonts/txsy.pfb></usr/local/texlive/2015/texm
+f-dist/fonts/type1/public/txfonts/txsyc.pfb></usr/local/texlive/2015/texmf-dist
+/fonts/type1/public/newtx/zxlr.pfb></usr/local/texlive/2015/texmf-dist/fonts/ty
+pe1/public/newtx/zxlri.pfb>
+Output written on main.pdf (2 pages, 662340 bytes).
 PDF statistics:
- 110 PDF objects out of 1000 (max. 8388607)
- 69 compressed objects within 1 object stream
+ 128 PDF objects out of 1000 (max. 8388607)
+ 80 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  25 words of extra memory for PDF output out of 10000 (max. 10000000)
 

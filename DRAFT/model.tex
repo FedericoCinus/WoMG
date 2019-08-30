@@ -34,16 +34,37 @@ Moreover the necessity of initial conditions in the diffusion process is solved 
 where: $E^+(u):= \{v \in V | v \neq u \wedge e_{uv} \in E \}$ is the set of nodes followed by $u$, and symmetrically: $E^-(u):= \{v \in V | v \neq u \wedge e_{vu} \in E \}$.
 
 
-The corpus $I$, i.e. the set of items with cardinality $I$ involved in the cascades, is described by probability distributions. As a main concept LDA assumes that each topic is described by a superposition of words while a document can be statistical interpreted by a composition of topics. This particular model defines these distributions as Dirichlet distributions in order to incorporate in the model the assumption that few topics can well describe a text.
+The corpus $I$, i.e. the set of items with cardinality $I$ involved in the cascades, is described by probability distributions and scalars. As a main concept LDA assumes that each topic is described by a superposition of words while a document can be statistical interpreted by a composition of topics. This particular model defines these distributions as Dirichlet distributions in order to incorporate in the model the assumption that few topics can well describe a text. The document (or \textit{item}) is entirely defined by its distribution over the topic space and a scalar value that defines its propensity to propagate, which we denote as \textit{virality} parameter.
 
 Following the standard notation of the generative LDA model we have:
 \begin{itemize}
-\item $\bold{\alpha}_{z=1,..,K}:=$ $K$-dim vector of prior topic distribution
-\item $\bold{\beta}_{w=1,..,V}:=$ $V$-dim vector of prior word distribution
-\item $\bold{\gamma}_{i=1,..,|I|}:=$ $K$-dim vector of document's distribution over topics; each entry is the probability of topic $z$ occurring in document $i$: $p(k|i)$
-\item $\bold{\varphi}_{z=1,..,K}:=$ $V$-dim vector of topic's distribution over vocabulary words; each entry is the probability of word $w$ occurring in topic $z$: $p(w|z)$ 
+\item $\bold{\alpha}:=$ prior topic distribution
+\item $\bold{\beta}:=$ prior word distribution
+\item $\bold{\gamma}:= $ document's distribution over topics; each entry is the probability of topic $z$ occurring in document $i$: $p(k|i)$
+\item $\bold{\varphi}:=$ topic's distribution over vocabulary words; each entry is the probability of word $w$ occurring in topic $z$: $p(w|z)$ 
 \end{itemize} 
 
+As a final step towards cascades modeling we extended the Topic-aware Linear Threshold Model. The activation process is driven by the exceeding of a deterministic threshold. Firstly, we considered the LDA output as item's topic distribution. Secondly, we defined the social pressure on a particular node proportional to her level of interests and the degree of influence of her neighboors. Finally, we bounded the activation parameter introducing a sigmoid function\footnote{$\Theta(x)=1/(1+e^{-x})$}. The activation parameter for node $u$ at time $t$ over item $i$ is:
+\begin{equation}
+W_i^t (u)= \Theta \left[ \sum_{z=1}^K \left(  \gamma_i^z \sum_{v \in F_{i}(u,t)} p_{vu}^z \right) \right]
+\end{equation}
+where:
+$\gamma_i^z$ is the item's distribution over the topics;
+$p_{v,u}^z$ is the strength of influence exerted by $v$ on $u$ on topic $z$;
+$F_{i}(u,t)$ is the set of users active on $i$ at time $t$ and that have a link with $u$. If $W_i^t(u)$ is greater or equal to $\theta_i$ threshold, it becomes active item $i$. A couple of considerations: [a] $\gamma_i^z$ is the z-th coefficient of item-$i$'s linear combination of topics; [b] $p_{vu}^z$ corresponds to the link weight of the directed graph from $u$ to $v$ for topic $z$ (\textit{def 4}), remember weights are $K$-dim vectors (one weight for each topic).
+Moreover we introduced a set of activation thresholds that is equal for each node: one item has the same threshold for each individual. This quantity is linked to what we call \textit{virality} parameter; in particular the item's threshold is the inverse of its virality. In this way we are introducing the independence of the diffusion strength of a document, which represents the real structural characteristics of the texts. 
 
-4. diffusion model: formula and definitions
-5. box summary
+The following box summarizes the presented variables:
+
+
+\framebox[7.5cm]{
+ \begin{minipage}{65mm}
+  $\textbf{f}_u$, $\textbf{t}_u$:influence and interests vectors of node u\\
+  $\alpha$, $\beta$: prior topic, word distribution\\ 
+  $\varphi$: topic's distribution over words\\
+  $\gamma$: item's distribution over topics\\
+  $p_v$: strength of influence exerted by $v$ on an other node; \\
+  $W^t$: node's influence weight at time $t$ for an item\\
+  $\theta_i$: item $i$ threshold (inverse of its virality)\\
+  $W^t_i(u)$: activation parameter for node $u$ at time $t$ on item $i$
+ \end{minipage}}
