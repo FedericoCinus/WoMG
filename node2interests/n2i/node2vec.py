@@ -78,8 +78,9 @@ def node2vec(weighted, graph, directed, p, q, num_walks, walk_length,
                                 return_weight=1/p,
                                 neighbor_weight=1/q,
                                 threads=workers)
-    #print(walks)
     '''
+
+    #print(walks)
     emb_model = learn_embeddings(nx_G.number_of_nodes(), walks, dimensions, window_size,
                                  workers, iiter, verbose=verbose, use_tf=use_tf, beta=beta,
                                  prior=prior, alpha_value=alpha_value,

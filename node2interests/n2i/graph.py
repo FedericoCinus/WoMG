@@ -23,6 +23,7 @@ class Graph():
 
         while len(list(walk)) < walk_length:
             cur = walk[-1]
+            #print(list(G.neighbors(cur)), cur)
             cur_nbrs = sorted(G.neighbors(cur))
             if len(list(cur_nbrs)) > 0:
                 if len(list(walk)) == 1:

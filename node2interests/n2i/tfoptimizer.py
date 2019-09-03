@@ -21,11 +21,13 @@ def generate_batch(walks, batch_size, num_skips, window):
     assert batch_size % num_skips == 0
     assert num_skips <= 2 * window
     span = 2 * window + 1  # [ window target window ]
+    #print(walks)
     for walk in walks:
         for data_index in range(0, len(walk), span):
             batch = np.ndarray(shape=(batch_size), dtype=np.int32)
             labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
             buffer = walk[data_index:data_index + span]
+            #print(len(buffer), window)
             for i in range(batch_size // num_skips):
                 context_words = [w for w in range(span) if w != window and w < len(buffer)]
                 if num_skips > len(context_words):
