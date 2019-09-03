@@ -7,16 +7,16 @@ Topic-aware influence propagation models share three main hypothesis:
 These assumptions entirely describe a propagation cascade through a social influence which is  strictly dependent on the topics and interests. To account preferences we enrich the notion of node defining it with the following triplet:
 \newtheorem{defn}{Definition}
 \begin{defn}
-	(Node)  $\qquad <i,\: \bold{f}_{i},\: \bold{t}_{i}>$
+	(Node)  $\qquad <i,\: \mathbf{f}_{i},\: \mathbf{t}_{i}>$
 \end{defn}
- where $i$ is the identification index while $\bold{f}_{i}$ and $\bold{t}_{i}$ are respectively the influence vector and interests vector of node $i$ in a $K$ dimensional topics space.
+ where $i$ is the identification index while $\mathbf{f}_{i}$ and $\mathbf{t}_{i}$ are respectively the influence vector and interests vector of node $i$ in a $K$ dimensional topics space.
 
 \begin{defn} 
-(Influence vector) $ \qquad \bold{f}_i=[f_i^{1}, f_i^{2}, .. , f_i^{K}]$
+(Influence vector) $ \qquad \mathbf{f}_i=[f_i^{1}, f_i^{2}, .. , f_i^{K}]$
 \end{defn}
 
 \begin{defn}
-(Interests vector) $ \qquad \bold{t}_i=[t_i^{1}, t_i^{2}, .. , t_i^{K}]  $
+(Interests vector) $ \qquad \mathbf{t}_i=[t_i^{1}, t_i^{2}, .. , t_i^{K}]  $
 \end{defn}
 Each component represents respectively the degree of influence that the node can exerts on a particular topic and the degree of interest of the node in that topic; for these reasons these entries are non-negative defined.
 
@@ -38,10 +38,10 @@ The corpus $I$, i.e. the set of items with cardinality $I$ involved in the casca
 
 Following the standard notation of the generative LDA model we have:
 \begin{itemize}
-\item $\bold{\alpha}:=$ prior topic distribution
-\item $\bold{\beta}:=$ prior word distribution
-\item $\bold{\gamma}:= $ document's distribution over topics; each entry is the probability of topic $z$ occurring in document $i$: $p(k|i)$
-\item $\bold{\varphi}:=$ topic's distribution over vocabulary words; each entry is the probability of word $w$ occurring in topic $z$: $p(w|z)$ 
+\item $\mathbf{\alpha}:=$ prior topic distribution
+\item $\mathbf{\beta}:=$ prior word distribution
+\item $\mathbf{\gamma}:= $ document's distribution over topics; each entry is the probability of topic $z$ occurring in document $i$: $p(k|i)$
+\item $\mathbf{\varphi}:=$ topic's distribution over vocabulary words; each entry is the probability of word $w$ occurring in topic $z$: $p(w|z)$ 
 \end{itemize} 
 
 As a final step towards cascades modeling we extended the Topic-aware Linear Threshold Model. The activation process is driven by the exceeding of a deterministic threshold. Firstly, we considered the LDA output as item's topic distribution. Secondly, we defined the social pressure on a particular node proportional to her level of interests and the degree of influence of her neighboors. Finally, we bounded the activation parameter introducing a sigmoid function\footnote{$\Theta(x)=1/(1+e^{-x})$}. The activation parameter for node $u$ at time $t$ over item $i$ is:
