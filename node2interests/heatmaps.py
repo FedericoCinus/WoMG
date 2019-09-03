@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from tqdm import tqdm
+from n2i.__main__ import n2i_nx_graph
 from scipy.spatial import distance
 
 # similarity between connected nodes
