@@ -193,7 +193,7 @@ with open("comparison-methods.csv", "w") as f:
     f.write('method,num_dim,H,seed,s_in,s_out\n')
     for args in tqdm(hyperparams):
         for run in (run_clpa, run_n2v, run_nmf):
-            result = run(args)
+            result = run(*args)
             f.write(','.join([str(r) for r in result]) + '\n')
             f.flush()
             
