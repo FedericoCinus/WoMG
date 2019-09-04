@@ -45,7 +45,7 @@ for edge in G.edges():
     G[edge[0]][edge[1]]['weight'] = 1
 
 
-H_val = [0, 0.5, 1]
+H_val = np.arange(0, 1.05, 0.1)
 dimensions = [10]
 hyperparams = []
 nr_experiments = 10
