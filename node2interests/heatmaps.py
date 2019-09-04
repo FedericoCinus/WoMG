@@ -80,7 +80,7 @@ def run_experiment(*args):
         G.node[i]['interests'] = G_emb[i]
     si = sim_in(G)
     so = sim_out(G)
-    return args + [si, so]
+    return list(args) + [si, so]
     
 result = list(map(lambda x: run_experiment(*x), tqdm(args_list)))
 df = pd.DataFrame(result, columns=['d', 'wk', 'n', 'wi', 'ii', 'p', 'q', 'seed', 'si', 'so'])
