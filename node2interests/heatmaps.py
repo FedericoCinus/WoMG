@@ -44,8 +44,8 @@ print("G density:", nx.density(G))
 for edge in G.edges():
     G[edge[0]][edge[1]]['weight'] = 1
     
-p_val = [0.05, 0.25, 0.5, 1, 5, 25, 50]
-q_val = [0.05, 0.25, 0.5, 1, 5, 25, 50]
+p_val = [10 ** i for i in range(-2, 3)]
+q_val = [10 ** i for i in range(-2, 3)]
 
 dimensions=[10]
 walk_length=[80]
