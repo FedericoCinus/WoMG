@@ -45,7 +45,7 @@ for edge in G.edges():
     G[edge[0]][edge[1]]['weight'] = 1
 
 
-H_val = [0, 0.5, 1]
+H_val = np.arange(0, 1.05, 0.1)
 dimensions = [10]
 hyperparams = []
 nr_experiments = 10
@@ -193,7 +193,7 @@ with open("comparison-methods.csv", "w") as f:
     f.write('method,num_dim,H,seed,s_in,s_out\n')
     for args in tqdm(hyperparams):
         for run in (run_clpa, run_n2v, run_nmf):
-            result = run(args)
+            result = run(*args)
             f.write(','.join([str(r) for r in result]) + '\n')
             f.flush()
             
