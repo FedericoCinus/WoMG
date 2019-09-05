@@ -59,9 +59,9 @@ for d in dimensions:
 # Parameter H for node2vec
 h2pq = lambda h: (pow(10, -4*h+2), pow(10, 4*h-2))
 # Parameter H for CLPA
-h2clpa = lambda h: (int(pow(2, 7*h+3)), pow(2, 7*h-8))
+h2clpa = lambda h: (int(pow(10, 6*h)), pow(2, 7*h-8))
 # Parameter H for NMF
-h2nmf = lambda h: 16-16*h
+h2nmf = lambda h: 16 - 15.875*h
 
 def run_n2v(d, h, seed):
     '''
@@ -73,7 +73,7 @@ def run_n2v(d, h, seed):
     G_emb = n2i_nx_graph(nx_graph=G,
              dimensions=d, walk_length=wk,
              num_walks=n, window_size=wi,
-             iiter=ii, p=pow(10, -4*h+2), q=pow(10, 4*h-2),
+             iiter=ii, p=p, q=q,
              beta=5,
              alpha_value=0.5,
              beta_value=0.5,
