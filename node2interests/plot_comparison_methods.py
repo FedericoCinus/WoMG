@@ -56,6 +56,12 @@ for d in dimensions:
             args = [d, h, seed]
             hyperparams.append(args)
 
+# Parameter H for node2vec
+h2pq = lambda h: (pow(10, -4*h+2), pow(10, 4*h-2))
+# Parameter H for CLPA
+h2clpa = lambda h: (int(pow(10, 6*h)), pow(2, 7*h-8))
+# Parameter H for NMF
+h2nmf = lambda h: 16 - 15.875*h
 
 def run_n2v(d, h, seed):
     '''
@@ -63,10 +69,11 @@ def run_n2v(d, h, seed):
     '''
     wk, n, wi, ii = 80, 10, 10, 1
     d, h, seed = args
+    p, q = h2pq(h)
     G_emb = n2i_nx_graph(nx_graph=G,
              dimensions=d, walk_length=wk,
              num_walks=n, window_size=wi,
-             iiter=ii, p=pow(10, -4*h+2), q=pow(10, 4*h-2),
+             iiter=ii, p=p, q=q,
              beta=5,
              alpha_value=0.5,
              beta_value=0.5,
@@ -132,8 +139,9 @@ def run_clpa(d, h, seed):
     Returns list of results with H param instead of steps and percentange of influencers
     '''
     d, h, seed = args
+    steps, perc_influencers = h2clpa(h)
     G_emb =  propag_emb(G, nr_nodes, nr_topics=d,
-                        steps=int(pow(2, 7*h+3)), perc_influencers=pow(2, 7*h-8),
+                        steps=steps, perc_influencers=perc_influencers,
                         seed=seed+int(1000*(h)))
     for i in G.nodes:
         G.node[i]['interests'] = G_emb[i]
@@ -179,8 +187,9 @@ def nmf_emb(G, dimensions, seed, eta=0.5, beta=0.):
 
 def run_nmf(d, h, seed):
     d, h, seed = args
+    beta = h2nmf(h)
     G_emb =  nmf_emb(G, dimensions=d,
-                        eta=2, beta=16-16*h,
+                        eta=2, beta=beta,
                         seed=seed)
     for i in G.nodes:
         G.node[i]['interests'] = G_emb[i]
