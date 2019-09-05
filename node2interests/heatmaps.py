@@ -28,24 +28,21 @@ def select_notedge(G):
 #             return a, b
 
 # similarity between disconnected nodes
-def sim_out(G, samples):
+def sim_out(G, samples=5000):
     sims_out = []
     for c in range(samples):
         i, j = select_notedge(G)
         sims_out.append(1 - distance.cosine(G.nodes[i]['interests'], G.nodes[j]['interests']))
     return np.mean(sims_out)
 
-def homophily(G):
-    return sim_in(G) / sim_out(G, 10000)
-    
 G = nx.barabasi_albert_graph(200, m=2)
 print("G density:", nx.density(G))
 
 for edge in G.edges():
     G[edge[0]][edge[1]]['weight'] = 1
     
-p_val = [0.05, 0.25, 0.5, 1, 5, 25, 50]
-q_val = [0.05, 0.25, 0.5, 1, 5, 25, 50]
+p_val = [10 ** i for i in range(-2, 3)]
+q_val = [10 ** i for i in range(-2, 3)]
 
 dimensions=[10]
 walk_length=[80]
@@ -82,9 +79,9 @@ def run_experiment(*args):
     for i in G.nodes:
         G.node[i]['interests'] = G_emb[i]
     si = sim_in(G)
-    so = sim_out(G, 50)
-    return args + (si/so,)
+    so = sim_out(G)
+    return list(args) + [si, so]
     
 result = list(map(lambda x: run_experiment(*x), tqdm(args_list)))
-df = pd.DataFrame(result, columns=['d', 'wk', 'n', 'wi', 'ii', 'p', 'q', 'seed', 'hom'])
+df = pd.DataFrame(result, columns=['d', 'wk', 'n', 'wi', 'ii', 'p', 'q', 'seed', 'si', 'so'])
 df.to_csv("node2vec-heatmap.csv")
