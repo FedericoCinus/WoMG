@@ -91,10 +91,7 @@ class TN(TLTNetworkModel):
         self._interests_path = interests_path
         self.godNode_links = {}
         self._godNode_strength = gn_strength
-        if infl_strength == None:
-            self._infl_strength = 1-self._homophily
-        else:
-            self._infl_strength = infl_strength
+        self._infl_strength = infl_strength
         self._rand = 16 -15.875*self._homophily
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self._p = p
@@ -264,9 +261,13 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
-        #
-        for node in self._nx_obj.nodes():
-            self.users_influence[node] = [0. for _ in range(self._numb_topics)]
+        if self._infl_strength is None:
+            for node in self._nx_obj.nodes():
+                self.users_influence[node] = [0. for _ in range(self._numb_topics)]
+        else:
+            fitness = 1 + np.random.pareto(a=self._infl_strength, size=self._nx_obj.number_of_nodes())
+            for node in self._nx_obj.nodes():
+                self.users_influence[node] = fitness[node] * self.users_interests[node]
         '''
         random_powerlaw_vec(gamma=self._rho, self._numb_topics)
         # rescaling infleunce importance

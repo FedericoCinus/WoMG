@@ -258,7 +258,7 @@ def womg_main(numb_topics=15, numb_docs=1,
 @click.option('--gn_strength', default=0,
                     help='Influence strength of the god node for initial configuration. Default 0',
                     type=float)
-@click.option('--infl_strength', type=click.FloatRange(0, 1, clamp=True), default=None,
+@click.option('--infl_strength', type=float, default=None,
                     help='Percentage of strength of the influence vecs with respect to interests vecs. Default 1')
 @click.option('--virality', metavar='V', default=1.5,
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
