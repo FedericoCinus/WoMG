@@ -53,7 +53,7 @@ class TLT(DiffusionModel):
 
     def __init__(self, network_model, topic_model,
                  path_out,
-                 progress_bar=False):
+                 progress_bar=False, single_activator=False):
         super().__init__()
         self.network_model = network_model
         self.topic_model = topic_model
@@ -65,6 +65,8 @@ class TLT(DiffusionModel):
         self._numb_nodes = 0
         self._numb_docs = 0
         self._numb_topics = 0
+        self._single_activator = single_activator
+        print("single_activator:", single_activator)
         if progress_bar:
             self._progress_bar = tqdm_notebook
         else:
@@ -250,12 +252,25 @@ class TLT(DiffusionModel):
         '''
         actives_config = []
         threshold = 1/self.topic_model.viralities[item]
+        max_interested = -np.inf
+        max_v = None
         for u, v in self.network_model.godNode_links:
             curr_weight = self.network_model.graph[(u, v)]
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
             #print(1/(np.exp(- z_sum)+1), threshold)
-            if (1/(np.exp(- z_sum)+1)) >= threshold:
-                actives_config.append(v)
+            interested = (1/(np.exp(- z_sum)+1))
+            if interested >= threshold:
+                if self._single_activator:
+                    if max_interested < interested:
+                        max_interested = interested
+                        max_v = v
+                else:
+                    actives_config.append(v)
+                    
+        if self._single_activator:
+            if max_v is not None:
+                actives_config.append(max_v)
+        
         return set(actives_config)
 
 
