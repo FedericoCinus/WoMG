@@ -47,6 +47,7 @@ def womg_main(numb_topics=15, numb_docs=1,
               infl_strength=0,
               virality=1,
               graph_path=None,
+              interests_path=None,
               int_mode='rand',
               weighted=False, directed=False,
               docs_path=None,
@@ -92,7 +93,7 @@ def womg_main(numb_topics=15, numb_docs=1,
         number of time steps for diffusion
 
     homophily : float
-        -1<=H<=1 :degree of homophily decoded from the given network.
+        0<=H<=1 :degree of homophily decoded from the given network.
         Default 0.5
 
     gn_strength : float
@@ -198,6 +199,7 @@ def womg_main(numb_topics=15, numb_docs=1,
         network_model = TN(numb_topics=numb_topics, homophily=homophily,
                             weighted=weighted, directed=directed,
                             graph_path=graph_path,
+                            interests_path=interests_path,
                             gn_strength=gn_strength,
                             infl_strength=infl_strength,
                             p=p, q=q,
@@ -249,20 +251,21 @@ def womg_main(numb_topics=15, numb_docs=1,
                     help='Number of time steps for diffusion',
                     type=int)
 @click.option('--homophily', metavar='H', default=0.5,
-                    help='-1<=H<=1 :degree of homophily decoded from the given network. Default 0.5',
-                    type=click.FloatRange(-1, 1, clamp=True))
+                    help='0<=H<=1 :degree of homophily decoded from the given network. Default 0.5',
+                    type=click.FloatRange(0, 1, clamp=True))
 @click.option('--gn_strength', default=1,
                     help='Influence strength of the god node for initial configuration. Default 1',
                     type=float)
 @click.option('--infl_strength', type=click.FloatRange(0, 1, clamp=True), default=None,
                     help='Percentage of strength of the influence vecs with respect to interests vecs. Default 1')
-@click.option('--virality', metavar='V', default=1,
+@click.option('--virality', metavar='V', default=1.5,
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
                     type=float)
 
 @click.option('--graph', default=None,
                     help='Input path of the graph edgelist', type=str)
-
+@click.option('--interests_path', default=None,
+                    help='Input path of the ginterests table', type=str)
 
 @click.option('--int_mode', type=str,
                     help="defines the method for generating nodes' interests. 3 choices: 'n2i', 'rand', 'prop_int'. Default 'rand' ",
@@ -335,7 +338,10 @@ def womg_main(numb_topics=15, numb_docs=1,
                     default=False)
 
 def main_cli(topics, docs, steps, homophily,
-             virality, graph, int_mode,
+             virality,
+             graph,
+             interests_path,
+             int_mode,
              weighted, directed, docs_folder,
              items_descr_path,
              gn_strength,
@@ -371,6 +377,7 @@ def main_cli(topics, docs, steps, homophily,
               infl_strength=infl_strength,
               virality=virality,
               graph_path=graph,
+              interests_path=interests_path,
               int_mode=int_mode,
               weighted=weighted, directed=directed,
               docs_path=docs_folder,

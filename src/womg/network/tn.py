@@ -5,11 +5,12 @@ import pathlib
 import collections
 import networkx as nx
 import numpy as np
+from sklearn.decomposition import NMF
 from tqdm import tqdm, tqdm_notebook
 from n2i.__main__ import n2i_nx_graph
-from utils.distributions import set_seed
 from network.tlt_network_model import TLTNetworkModel
 from utils.utility_functions import read_edgelist
+from utils.distributions import random_powerlaw_vec
 
 
 
@@ -65,7 +66,9 @@ class TN(TLTNetworkModel):
     '''
 
     def __init__(self, numb_topics, homophily,
-                 weighted, directed, graph_path,
+                 weighted, directed,
+                 graph_path,
+                 interests_path,
                  gn_strength,
                  infl_strength,
                  p, q, num_walks,
@@ -85,12 +88,14 @@ class TN(TLTNetworkModel):
         self._weighted = weighted
         self._directed = directed
         self._graph_path = graph_path
+        self._interests_path = interests_path
         self.godNode_links = {}
         self._godNode_strength = gn_strength
         if infl_strength == None:
             self._infl_strength = 1-self._homophily
         else:
             self._infl_strength = infl_strength
+        self._beta = 16 -16*self._homophily
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self._p = p
         self._q = q
@@ -109,6 +114,7 @@ class TN(TLTNetworkModel):
             self._progress_bar = tqdm
         self._prop_steps = prop_steps
         self._seed = seed
+
 
 
     def network_setup(self, int_mode):
@@ -241,8 +247,15 @@ class TN(TLTNetworkModel):
         if int_mode == 'prop_int':
             self.propag_interests()
 
+        if int_mode == 'nmf':
+            self.nmf_interests()
 
-    def set_influence(self, method='node2influence'):
+        if int_mode == 'load' or self._interests_path != None:
+            print('Loading interests from: ', self._interests_path)
+            self.load_interests()
+
+
+    def set_influence(self):
         '''
         Sets influence vectors for all nodes
 
@@ -251,6 +264,11 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
+        #
+        for node in self._nx_obj.nodes():
+            self.users_influence[node] = [0. for _ in range(self._numb_topics)]
+        '''
+        random_powerlaw_vec(gamma=self._rho, self._numb_topics)
         # rescaling infleunce importance
         norm_avg = 0.
         for node in self._nx_obj.nodes():
@@ -258,10 +276,9 @@ class TN(TLTNetworkModel):
         scale_fact = self._infl_strength*norm_avg
         # setting influence vec
         for node in self._nx_obj.nodes():
-            if method == 'node2influence':
-                influence_vec = self.node2influence(scale_fact)
-                self.users_influence[node] = influence_vec
-
+            influence_vec = self.node2influence(scale_fact)
+            self.users_influence[node] = influence_vec
+        '''
 
     def random_interests(self, norm=True):
         '''
@@ -313,6 +330,43 @@ class TN(TLTNetworkModel):
                 interests_j /= interests_j.sum()
                 self.users_interests[j] = interests_j
 
+
+
+    def overlap_generator(self):
+        """
+        Function to generate a neighbourhood overlap matrix (second-order proximity matrix).
+        :param G: Graph object.
+        :return laps: Overlap matrix.
+        """
+        G = self._nx_obj
+        degrees = nx.degree(G)
+        sets = {node:set(G.neighbors(node)) for node in nx.nodes(G)}
+        laps = np.array([[float(len(sets[node_1].intersection(sets[node_2])))/(float(degrees[node_1]*degrees[node_2])**0.5) if node_1 != node_2 else 0.0 for node_1 in nx.nodes(G)] for node_2 in nx.nodes(G)],dtype = np.float64)
+        return laps
+
+    def nmf_interests(self, eta=2.):
+        '''
+        Generates interests according to non-negative matrix factorization
+        method
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        '''
+        print('Generating interests with nmf ..')
+        A = nx.to_numpy_matrix(self._nx_obj)
+        S_0 = self.overlap_generator()
+        R = np.random.rand(self._nx_obj.number_of_nodes(), self._nx_obj.number_of_nodes())
+
+        S = eta*S_0 + A + self._beta*R
+        model = NMF(n_components=self._numb_topics, init='random', random_state=self._seed)
+        W = model.fit_transform(S)
+
+        for node in self._nx_obj.nodes():
+            self.users_interests[node] = W[node]
 
 
     def node2influence(self, scale_fact, alpha_max=10):
@@ -368,3 +422,13 @@ class TN(TLTNetworkModel):
           link
         '''
         self.graph[link] = new_weight
+
+
+    def load_interests(self):
+        '''
+        Loads interests vector from path
+        '''
+        with open(self._interests_path, 'r') as f:
+            for _ in f.readlines():
+                node, interests = _.split(' ', 1)[0], _.split(' ', 1)[1]
+                self.users_interests[int(node)] = np.array(eval(interests[:-1]))
