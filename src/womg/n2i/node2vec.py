@@ -16,7 +16,6 @@ import networkx as nx
 from n2i.graph import Graph
 import numpy as np
 from gensim.models import Word2Vec as GensimWord2Vec
-from graph2vec import Node2Vec
 
 def read_graph(weighted, graph, directed):
     '''

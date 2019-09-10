@@ -6,7 +6,7 @@ import gensim
 import numpy as np
 from topic.tlt_topic_model import TLTTopicModel
 from utils.utility_functions import count_files, read_docs, TopicsError, DocsError
-from utils.distributions import random_viralities_vec
+from utils.distributions import random_powerlaw_vec
 
 class LDA(TLTTopicModel):
     '''
@@ -130,7 +130,7 @@ class LDA(TLTTopicModel):
             Exponent of the powerlaw distribution for documents
             viralities. P(x; a) = x^{-a}, 0 <= x <=1
         '''
-        viralities = random_viralities_vec(gamma=virality, dimensions=self.numb_docs)
+        viralities = random_powerlaw_vec(gamma=virality, dimensions=self.numb_docs)
 
         if np.size(viralities) == self.numb_docs:
             for item in range(self.numb_docs):

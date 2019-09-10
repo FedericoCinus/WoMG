@@ -12,19 +12,14 @@ def set_seed(seed):
         np.random.seed(seed)
         tf.set_random_seed(seed)
 
-def random_viralities_vec(gamma, dimensions):
+def random_powerlaw_vec(gamma, dimensions):
     '''
     Returns the virality vector, which is a numb_docs dimension vector of integers
     extracted from a power law distribution with exponent equal to gamma paramself.
 
-    P(x; a) = x^{-a}, 0 <= x <=1
-
     We random extract from uniform distribution and we invert the previous eq
     '''
-    samples = []
-    for i in range(dimensions):
-        samples.append(np.float_power(random.random(), -gamma))
-    return samples
+    return list(np.random.pareto(gamma, dimensions) + 1)
 
 def random_initial_active_set(self, max_active_perc=0.5):
     '''Returns list of active nodes;
