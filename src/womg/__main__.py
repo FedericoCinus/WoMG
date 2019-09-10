@@ -253,8 +253,8 @@ def womg_main(numb_topics=15, numb_docs=1,
 @click.option('--homophily', metavar='H', default=0.5,
                     help='0<=H<=1 :degree of homophily decoded from the given network. Default 0.5',
                     type=click.FloatRange(0, 1, clamp=True))
-@click.option('--gn_strength', default=1,
-                    help='Influence strength of the god node for initial configuration. Default 1',
+@click.option('--gn_strength', default=0,
+                    help='Influence strength of the god node for initial configuration. Default 0',
                     type=float)
 @click.option('--infl_strength', type=click.FloatRange(0, 1, clamp=True), default=None,
                     help='Percentage of strength of the influence vecs with respect to interests vecs. Default 1')

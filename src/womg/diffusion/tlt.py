@@ -158,6 +158,7 @@ class TLT(DiffusionModel):
                 node_check = True
         if node_check:
             z_sum = np.dot(self.topic_model.items_descript[item], v_sum)
+            #print(1/(np.exp(- z_sum)+1), threshold)
             return (1/(np.exp(- z_sum)+1)) >= threshold
         else:
             return False

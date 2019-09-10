@@ -12,22 +12,18 @@ def set_seed(seed):
         np.random.seed(seed)
         tf.set_random_seed(seed)
 
-def f(x0, x1, gamma=1.5):
-    y = np.random.rand()
-    return pow(((pow(x1,gamma+1) - pow(x0,gamma+1))*y + pow(x0,gamma+1)),(1/(gamma+1)))
-
 def random_powerlaw_vec(gamma, dimensions):
     '''
     Returns the virality vector, which is a numb_docs dimension vector of integers
     extracted from a power law distribution with exponent equal to gamma paramself.
 
-    x = [(x1^(n+1) - x0^(n+1))*y + x0^(n+1)]^(1/(n+1))
-    where y is a uniform variate, n is the distribution power, x0 and x1 define
-    the range of the distribution, and x is your power-law distributed variate.
+    P(x; a) = x^{-a}, 0 <= x <=1
+
+    We random extract from uniform distribution and we invert the previous eq
     '''
     samples = []
     for i in range(dimensions):
-        samples.append(f(10E-7, 1, -gamma))
+        samples.append(np.float_power(random.random(), -gamma))
     return samples
 
 def random_initial_active_set(self, max_active_perc=0.5):

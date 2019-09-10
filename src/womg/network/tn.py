@@ -95,7 +95,7 @@ class TN(TLTNetworkModel):
             self._infl_strength = 1-self._homophily
         else:
             self._infl_strength = infl_strength
-        self._beta = 16 -16*self._homophily
+        self._rand = 16 -15.875*self._homophily
         #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self._p = p
         self._q = q
@@ -361,7 +361,7 @@ class TN(TLTNetworkModel):
         S_0 = self.overlap_generator()
         R = np.random.rand(self._nx_obj.number_of_nodes(), self._nx_obj.number_of_nodes())
 
-        S = eta*S_0 + A + self._beta*R
+        S = eta*S_0 + A + self._rand*R
         model = NMF(n_components=self._numb_topics, init='random', random_state=self._seed)
         W = model.fit_transform(S)
 
