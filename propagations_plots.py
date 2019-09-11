@@ -51,11 +51,12 @@ def run_one_experiment(arguments):
     df = pd.read_csv(file_prop, sep=' ', names=['time', 'item', 'node'])
     item_per_node = df.groupby('node').item.nunique().values
     node_per_item = df.groupby('item').node.nunique().values
+    time_per_item = df.groupby('item').time.max().values + 1
     
     # Write results
     new_row = pd.DataFrame([[single_activator, infl_strength, h, v, seed, 
-        np.mean(item_per_node), np.mean(node_per_item), 
-        item_per_node, node_per_item
+        np.mean(item_per_node), np.mean(node_per_item), np.mean(time_per_item),
+        item_per_node, node_per_item, time_per_item
     ]])
     with open(results_path, 'a') as f:
         new_row.to_csv(f, header=False)
@@ -65,9 +66,9 @@ if __name__ == '__main__':
     os.mkdir(simulat_path)
     
     with open(results_path, 'w') as f:
-        f.write('single_activator, infl_strength, homophily, virality_exp, seed, '
-                'mean_item_per_node, mean_node_per_item, '
-                'item_per_node, node_per_item\n')
+        f.write('single_activator,infl_strength,homophily,virality_exp,seed,'
+                'mean_item_per_node,mean_node_per_item,mean_max_time,'
+                'item_per_node,node_per_item,time_per_item\n')
 
     args = []
     for seed in range(nr_experiments):
