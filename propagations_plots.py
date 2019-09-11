@@ -21,7 +21,7 @@ for single_activator in (False, True):
         
         print("Experiment with: ", single_activator, infl_strength)
         topics = [10]
-        docs = [200]
+        docs = [50]
         steps = [100] 
         homophily = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         virality = [0.25, 0.5, 1, 1.5, 2, 4]
@@ -64,16 +64,16 @@ for single_activator in (False, True):
 
         ## -------- analysis --------
 
-        file_prop = path_out / str("Propagations"+str(0)+".txt")
-        file_topic = path_out / str("Topics_descript"+str(0)+".txt")
+        file_prop = path_out + ("Propagations"+str(0)+".txt")
+        file_topic = path_out + ("Topics_descript"+str(0)+".txt")
         df = pd.read_csv(file_prop, sep=' ', names=['time', 'item', 'node'])
 
 
         def statistics(path):
             result = []
             for _ in range(len(args_list)):
-                file_prop = path / str("Propagations"+str(_)+".txt")
-                file_topic = path / str("Topics_descript"+str(_)+".txt")
+                file_prop = path + str("Propagations"+str(_)+".txt")
+                file_topic = path + str("Topics_descript"+str(_)+".txt")
                 df = pd.read_csv(file_prop, sep=' ', names=['time', 'item', 'node'])
                 mean_items_act = round(df.groupby('item').node.nunique().mean(), 2)
                 mean_users_act = round(df.groupby('node').item.nunique().mean(), 2)
