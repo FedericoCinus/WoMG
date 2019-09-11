@@ -4,12 +4,21 @@ import pathlib
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 from tqdm import tqdm
 from womg.__main__ import womg_main
 
 
 for single_activator in (False, True):
     for infl_strength in (None, .5, 1, 2):
+        god_label = "single-act" if single_activator else "god-node"
+        infl_label = "byinterests" if infl_strength is None else f"byinfl-{infl_strength}"
+        path_out = f'sim-{god_label}-prop-{infl_label}'
+        try:
+            os.mkdir(path_out)
+        except FileExistsError:
+            pass
+        
         print("Experiment with: ", single_activator, infl_strength)
         topics = [10]
         docs = [200]
@@ -23,7 +32,7 @@ for single_activator in (False, True):
         graph_path = '/home/corradom/projects/WoMG/src/womg/high-clustered-sf.nx'
         #graph_path = None
         directed = False
-        path_out = pathlib.Path('sim')
+        
         #influence_strength = [0] 
 
         args_list = []
@@ -59,7 +68,6 @@ for single_activator in (False, True):
         file_topic = path_out / str("Topics_descript"+str(0)+".txt")
         df = pd.read_csv(file_prop, sep=' ', names=['time', 'item', 'node'])
 
-        df.head()
 
         def statistics(path):
             result = []
@@ -74,9 +82,6 @@ for single_activator in (False, True):
             return result
 
         stat = statistics(path_out)
-        
-        god_label = "single-act" if single_activator else "god-node"
-        infl_label = "byinterests" if infl_strength is None else f"byinfl-{infl_strength}"
         
         df = pd.DataFrame(stat, columns=['t', 'd', 's', 'H', 'virality_exp', 'g', 'seed', 'cascade size', 'node activation'])
         df['virality'] = df.virality_exp.apply(vir2text.__getitem__)
