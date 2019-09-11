@@ -37,7 +37,7 @@ for single_activator in (False, True):
 
         args_list = []
 
-        nr_experiments = 1 
+        nr_experiments = 10 
 
         for t in topics:
             for d in docs:
