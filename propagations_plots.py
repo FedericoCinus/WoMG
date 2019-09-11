@@ -1,10 +1,12 @@
 import sys
+sys.path = ['/home/corradom/projects/WoMG/src'] + sys.path
 import pathlib
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from tqdm import tqdm_notebook
+from tqdm import tqdm
 from womg.__main__ import womg_main
+
 
 for single_activator in (False, True):
     for infl_strength in (None, .5, 1, 2):
@@ -16,10 +18,11 @@ for single_activator in (False, True):
         virality = [0.5, 1, 1.5, 2]
         god_node_strength = [0] 
         int_mode = 'nmf'              
-        graph_path = '../data/graph/barabasi/barabasi_edgelist.txt'
+        # graph_path = '../data/graph/barabasi/barabasi_edgelist.txt'
+        graph_path = '/home/corradom/projects/WoMG/src/womg/high-clustered-sf.nx'
         #graph_path = None
         directed = False
-        path_out = pathlib.Path('../Simulation_barabasi')
+        path_out = pathlib.Path('sim')
         #influence_strength = [0] 
 
         args_list = []
@@ -51,7 +54,6 @@ for single_activator in (False, True):
 
         ## -------- analysis --------
 
-        path_out = pathlib.Path('../Simulation_barabasi')
         file_prop = path_out / str("Propagations"+str(0)+".txt")
         file_topic = path_out / str("Topics_descript"+str(0)+".txt")
         df = pd.read_csv(file_prop, sep=' ', names=['time', 'item', 'node'])
@@ -87,12 +89,12 @@ for single_activator in (False, True):
         sns.set_context("paper", font_scale=1.7)
         plt.figure(figsize=(7,5))
         sns.pointplot(data=df[df.H < 1], x='H', y='cascade size', hue='virality')
-        plt.savefig(f'../node2interests/Plots/{god_label}-prop-{infl_label}_left.pdf')
+        plt.savefig(f'plots/{god_label}-prop-{infl_label}_left.pdf')
     #     plt.show()
 
         plt.tight_layout()
         sns.set_context("paper", font_scale=1.7)
         plt.figure(figsize=(7,5))
         sns.pointplot(data=df, x='H', y='node activation', hue='virality')
-        plt.savefig(f'../node2interests/Plots/{god_label}-prop-{infl_label}_right.pdf')
+        plt.savefig(f'plots/{god_label}-prop-{infl_label}_right.pdf')
     #     plt.show()
