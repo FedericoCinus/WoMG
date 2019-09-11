@@ -15,7 +15,8 @@ for single_activator in (False, True):
         docs = [200]
         steps = [100] 
         homophily = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-        virality = [0.5, 1, 1.5, 2]
+        virality = [0.25, 0.5, 1, 1.5, 2, 4]
+        vir2text = {0.25: "Very high", 0.5: "High", 1: "Medium", 1.5: "Medium-Low", 2.: "Low", 4: "Very low"}
         god_node_strength = [0] 
         int_mode = 'nmf'              
         # graph_path = '../data/graph/barabasi/barabasi_edgelist.txt'
@@ -27,7 +28,7 @@ for single_activator in (False, True):
 
         args_list = []
 
-        nr_experiments = 20 
+        nr_experiments = 1 
 
         for t in topics:
             for d in docs:
@@ -73,17 +74,14 @@ for single_activator in (False, True):
             return result
 
         stat = statistics(path_out)
-        df = pd.DataFrame(stat, columns=['t', 'd', 's', 'H', 'virality_exp', 'g', 'seed', 'cascade size', 'node activation'])
-
-        df.head()
-
-        vir2text = {0.5: "High", 1: "Medium", 1.5: "Medium-Low", 2.: "Low"}
-        df['virality'] = df.virality_exp.apply(vir2text.__getitem__)
-
-
+        
         god_label = "single-act" if single_activator else "god-node"
         infl_label = "byinterests" if infl_strength is None else f"byinfl-{infl_strength}"
-
+        
+        df = pd.DataFrame(stat, columns=['t', 'd', 's', 'H', 'virality_exp', 'g', 'seed', 'cascade size', 'node activation'])
+        df['virality'] = df.virality_exp.apply(vir2text.__getitem__)
+        df.to_csv('plots/{god_label}-prop-{infl_label}.csv')
+        
         # average items activations
         plt.tight_layout()
         sns.set_context("paper", font_scale=1.7)
