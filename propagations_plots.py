@@ -28,7 +28,7 @@ for single_activator in (False, True):
 
         args_list = []
 
-        nr_experiments = 1 
+        nr_experiments = 10 
 
         for t in topics:
             for d in docs:
@@ -80,7 +80,7 @@ for single_activator in (False, True):
         
         df = pd.DataFrame(stat, columns=['t', 'd', 's', 'H', 'virality_exp', 'g', 'seed', 'cascade size', 'node activation'])
         df['virality'] = df.virality_exp.apply(vir2text.__getitem__)
-        df.to_csv('plots/{god_label}-prop-{infl_label}.csv')
+        df.to_csv(f'plots/{god_label}-prop-{infl_label}.csv')
         
         # average items activations
         plt.tight_layout()
