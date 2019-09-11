@@ -345,7 +345,7 @@ class TN(TLTNetworkModel):
         laps = np.array([[float(len(sets[node_1].intersection(sets[node_2])))/(float(degrees[node_1]*degrees[node_2])**0.5) if node_1 != node_2 else 0.0 for node_1 in nx.nodes(G)] for node_2 in nx.nodes(G)],dtype = np.float64)
         return laps
 
-    def nmf_interests(self, eta=2.):
+    def nmf_interests(self, eta=64.):
         '''
         Generates interests according to non-negative matrix factorization
         method
