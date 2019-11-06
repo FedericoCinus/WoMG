@@ -1,10 +1,12 @@
 # /Topic/lda.py
 # Implementation of LDA topic-model
+import os
+import womg_core
 import pathlib
 import numpy as np
-from topic.tlt_topic_model import TLTTopicModel
-from utils.utility_functions import read_docs, TopicsError
-from utils.distributions import random_powerlaw_vec
+from womg_core.topic.tlt_topic_model import TLTTopicModel
+from womg_core.utils.utility_functions import read_docs, TopicsError
+from womg_core.utils.distributions import random_powerlaw_vec
 
 class LDA(TLTTopicModel):
     '''
@@ -73,8 +75,8 @@ class LDA(TLTTopicModel):
             mode = 'load'
             if self._items_descr_path == None:
                 # pre-trained topic model with 15 topics and 50 docs
-                self._items_descr_path = pathlib.Path.cwd().parent / 'data' / 'topic_model' / 'Items_descript.txt'
-                self._topics_descr_path = pathlib.Path.cwd().parent / 'data' / 'topic_model' / 'Topics_descript.txt'
+                self._items_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'data' / 'topic_model' / 'Items_descript.txt'
+                self._topics_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'data' / 'topic_model' / 'Topics_descript.txt'
                 self.topics_descript = self.load_topics_descr(self._topics_descr_path)
             else:
                 pass

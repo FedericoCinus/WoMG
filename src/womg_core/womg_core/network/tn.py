@@ -1,5 +1,7 @@
 # /network/tn.py
 # Implementation of the Topic-aware Network model
+import os
+import womg_core
 import random
 import pathlib
 import collections
@@ -7,9 +9,11 @@ import networkx as nx
 import numpy as np
 from sklearn.decomposition import NMF
 from tqdm import tqdm, tqdm_notebook
-from network.tlt_network_model import TLTNetworkModel
-from utils.utility_functions import read_edgelist
-from utils.distributions import random_powerlaw_vec
+from womg_core.network.tlt_network_model import TLTNetworkModel
+from womg_core.utils.utility_functions import read_edgelist
+from womg_core.utils.distributions import random_powerlaw_vec
+
+
 
 
 
@@ -128,7 +132,7 @@ class TN(TLTNetworkModel):
         '''
         if self._graph_path == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self._graph_path = pathlib.Path("../") / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+            self._graph_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21]) / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
             self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
         else:
             self._graph_path = pathlib.Path(self._graph_path)

@@ -5,8 +5,8 @@ import pickle
 import numpy as np
 from tqdm import tqdm, tqdm_notebook
 
-from diffusion.diffusion_model import DiffusionModel
-from utils.saver import TxtSaver
+from womg_core.diffusion.diffusion_model import DiffusionModel
+from womg_core.utils.saver import TxtSaver
 
 
 class TLT(DiffusionModel):
@@ -266,11 +266,11 @@ class TLT(DiffusionModel):
                         max_v = v
                 else:
                     actives_config.append(v)
-                    
+
         if self._single_activator:
             if max_v is not None:
                 actives_config.append(max_v)
-        
+
         return set(actives_config)
 
 

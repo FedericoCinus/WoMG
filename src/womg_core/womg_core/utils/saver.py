@@ -31,7 +31,7 @@ class Saver():
         - in case path is given -> it check that parent folders exist
         '''
         if path in (None, ''):
-            output_dir = pathlib.Path.cwd().parent / "Output"
+            output_dir = pathlib.Path.cwd() / "Output"
         else:
             output_dir = pathlib.Path(path)
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)

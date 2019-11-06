@@ -1,23 +1,23 @@
 #dealing with path (WoMG is not a library for now)
-
+'''
 import os
 import pathlib
+print(pathlib.Path.cwd())
 if not str(pathlib.Path.cwd()).endswith('src'):
-  src_path = pathlib.Path.cwd() / "src" / "womg"
+  src_path = pathlib.Path.cwd() / "src" / "womg_core"
   os.sys.path.insert(0, str(src_path))
 if str(pathlib.Path.cwd()).endswith('examples'):
-  src_path = pathlib.Path.cwd().parent / "src" / "womg"
+  src_path = pathlib.Path.cwd().parent / "src" / "womg_core"
   os.sys.path.insert(0, str(src_path))
 #print(pathlib.Path.cwd())
-
+'''
 ##################################################
-
 import click
-from network.tn import TN
-from topic.lda import LDA
-from diffusion.tlt import TLT
-from utils.distributions import set_seed
-from utils.saver import TxtSaver
+from womg_core.network.tn import TN
+from womg_core.topic.lda import LDA
+from womg_core.diffusion.tlt import TLT
+from womg_core.utils.distributions import set_seed
+from womg_core.utils.saver import TxtSaver
 
 
 
@@ -41,7 +41,7 @@ def save(network_model, topic_model, diffusion_model,
 
 
 
-def womg_main(numb_topics=15, numb_docs=1,
+def womg_main(numb_topics=15, numb_docs=None,
               numb_steps=100, homophily=1,
               gn_strength=1,
               infl_strength=0,
@@ -247,7 +247,7 @@ def womg_main(numb_topics=15, numb_docs=1,
                     help='Number of topics in the topic model. Default 15. K<d ',
                     type=int)
 @click.option('--docs', metavar='D', default=None,
-                    help='Number of docs to be generated. Default 100',
+                    help='Number of docs to be generated',
                     type=int)
 @click.option('--steps', metavar='T', default=100,
                     help='Number of time steps for diffusion',
