@@ -3,7 +3,7 @@
 
 We propose a model for the synthetic generation of information cascades in social media. In our model the information “memes” propagating in the social network are characterized by a probability distribution in a topic space, accompanied by a textual description, i.e., a bag of keywords coherent with the topic distribution. Similarly, every person is described by a vector of interests defined over the same topic space. Information cascades are governed by the topic of the meme, its level of virality, the interests of each person, community pressure, and social influence.
 
-This repository provides a reference implementation of *WoMG* as described in the:<br>
+This repository provides a reference implementation of *WoMG* as described in:<br>
 > Generating realistic interest-driven information cascades.<br>
 > Federico Cinus, Francesco Bonchi, André Panisson, Corrado Monti.<br>
 > <Insert paper link>
@@ -29,11 +29,8 @@ $ pip install -e .
 
 
 
-## Usage
-The WoMG package provides a Python module and a command-line method.
-
-### Quickstart
- To run *WoMG* on a **demo** mode, execute the following command from Terminal:<br/>
+## Quickstart
+The WoMG package provides a Python module and a command-line method. To run *WoMG* on a **demo** mode, execute the following command from Terminal:<br/>
 
 ```bash
 $ womg
@@ -41,14 +38,14 @@ $ womg
 
 It will generates 100 documents to be spread over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
-### Options
+#### Options
 You can check out the other options available to use with *WoMG* using:<br/>
 
 ```bash
 $ womg --help
 ```
 
-### Input
+#### Input
 1. [Network] The supported input format is an edgelist (txt extension):
 	
 		node1_id_int node2_id_int <weight_float, optional>
@@ -69,11 +66,18 @@ $ womg --docs_folder /this/is/an/example/path/Corpus_Folder
  
 If no documents folder path is given, *WoMG* will be set to generative mode.
   
-### Output
-Diffusion output file is in a dict format: 
+#### Output (default)
+1. [Propagations] The output format is: 
 
-	time; item; node
+		time; item; node
+2. [Items descriptions] :
 
+		item; [topic-dim vector]
+		
+3. [Topic descriptions] :
+
+		(topic_index, linear combination of words)
+	
 You can specify the output folder path:
 
 ```bash
@@ -81,6 +85,8 @@ $ womg --output /this/is/an/example/path/Output_Folder
 ```
 
 
+
+-----------------------------------------------------------------------------------------------
 
 
 ## WoMG extended (TBD)
