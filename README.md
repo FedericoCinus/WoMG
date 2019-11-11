@@ -46,7 +46,7 @@ $ womg --help
 ```
 
 #### Input
-1. [Network] The supported input format is an edgelist (txt extension):
+[Network] The supported input format is an edgelist (txt extension):
 	
 		node1_id_int node2_id_int <weight_float, optional>
 		
