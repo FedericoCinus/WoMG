@@ -11,7 +11,7 @@ This repository provides a reference implementation of *WoMG* as described in th
 *WoMG* generates synthetic datasets of documents cascades on network. 
 It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network.
 
-<img src="./WoMG.pdf" height="480px" />
+<img src="./womg.png" height="480px" />
 
 
 ## Installation
