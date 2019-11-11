@@ -21,7 +21,7 @@ Download or clone the GitHub repository: <br>
 $ git clone https://github.com/FedericoCinus/WoMG.git
 ```
 
-In order to install the core package, move to the *src/womg_core/* directory, which constains the *setup.py* file, and install typing: <br>
+In order to install the core package, move to the ``src/womg_core/`` directory, which constains the ``setup.py`` file, and install typing: <br>
 
 ```bash
 $ pip install -e .
@@ -36,7 +36,7 @@ The WoMG package provides a Python module and a command-line method. To run *WoM
 $ womg
 ```
 
-It will generates 100 documents to be spread over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
+It loads 50 documents and their topic distributions located in ``/data`` and it spreads them over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
 #### Options
 You can check out the other options available to use with *WoMG* using:<br/>
