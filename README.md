@@ -1,29 +1,42 @@
 # WoMG: Word of Mouth Generator
+*WoMG* is a Python library for **Word-of-Mouth** Cascades **Generation**.
 
-This repository provides a reference implementation of *WoMG* as described in the thesis:<br>
-> WoMG: A synthetic Word-of-Mouth cascades Generator.<br>
-> Federico Cinus.<br>
-> M.Sc. Physics of Complex Systems, Università degli studi di Torino, Turin, 2017-2018.<br>
+We propose a model for the synthetic generation of information cascades in social media. In our model the information “memes” propagating in the social network are characterized by a probability distribution in a topic space, accompanied by a textual description, i.e., a bag of keywords coherent with the topic distribution. Similarly, every person is described by a vector of interests defined over the same topic space. Information cascades are governed by the topic of the meme, its level of virality, the interests of each person, community pressure, and social influence.
+
+This repository provides a reference implementation of *WoMG* as described in the:<br>
+> Generating realistic interest-driven information cascades.<br>
+> Federico Cinus, Francesco Bonchi, André Panisson, Corrado Monti.<br>
 > <Insert paper link>
 
-The *WoMG* software generates synthetic datasets of documents cascades on network. 
-It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network. 
-Diffusion process is guided by the nodes underlying preferences. Please check the [project page]() for more details. 
+*WoMG* generates synthetic datasets of documents cascades on network. 
+It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network.
 
-## Basic Usage
+Immage
 
-### Example
-WoMG can be used both in command line and Jupyter notebook; check out the tutorial notebook in the **example** folder. 
-To run *WoMG* on a **demo** mode, execute the following command from the src directory:<br/>
 
-``python womg``
+## Installation
+Download or clone the GitHub repository. 
+``git clone https://github.com/FedericoCinus/WoMG.git``
+
+In order to install the core package, move to the *src/womg_core/* directory, which constains the *setup.py* file, and install typing:
+``pip install -e .``
+
+
+
+## Usage
+The WoMG package provides a Python module and a command-line method.
+
+### Quickstart
+ To run *WoMG* on a **demo** mode, execute the following command from Terminal:<br/>
+
+``womg``
 
 It will generates 100 documents to be spread over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
 ### Options
 You can check out the other options available to use with *WoMG* using:<br/>
 
-``python womg --help``
+``womg --help``
 
 ### Input
 1. [Network] The supported input format is an edgelist (txt extension):
@@ -32,29 +45,29 @@ You can check out the other options available to use with *WoMG* using:<br/>
 		
 You can specify the edgelist path using the *graph* argument:
 
-``python womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+``womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
 
 If no path is given the default network is *Les Miserables* network.
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
- ``python womg --docs_folder /this/is/an/example/path/Corpus_Folder``
+ ``womg --docs_folder /this/is/an/example/path/Corpus_Folder``
  
 If no documents folder path is given, *WoMG* will be set to generative mode.
   
 ### Output
 Diffusion output file is in a dict format: 
 
-	{time: {doc: [activating nodes]}}
+	time; item; node
 
 You can specify the output folder path:
 
-  ``python womg --output /this/is/an/example/path/Output_Folder``
+  `` womg --output /this/is/an/example/path/Output_Folder``
 
 
 
 
-## Usage for researchers
+## WoMG extended (TBD)
 *WoMG* is an open source reasearch project. More details of the software are reported below:
 
 ### Input
