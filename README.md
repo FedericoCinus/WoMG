@@ -11,14 +11,14 @@ This repository provides a reference implementation of *WoMG* as described in th
 *WoMG* generates synthetic datasets of documents cascades on network. 
 It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network.
 
-Immage
+<img src="WoMG.pdf" height="480px" />
 
 
 ## Installation
-Download or clone the GitHub repository. 
+Download or clone the GitHub repository: <br> 
 ``git clone https://github.com/FedericoCinus/WoMG.git``
 
-In order to install the core package, move to the *src/womg_core/* directory, which constains the *setup.py* file, and install typing:
+In order to install the core package, move to the *src/womg_core/* directory, which constains the *setup.py* file, and install typing: <br>
 ``pip install -e .``
 
 
