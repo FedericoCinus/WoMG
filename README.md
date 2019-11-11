@@ -11,15 +11,21 @@ This repository provides a reference implementation of *WoMG* as described in th
 *WoMG* generates synthetic datasets of documents cascades on network. 
 It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network.
 
-<img src="WoMG.pdf" height="480px" />
+<img src="./WoMG.pdf" height="480px" />
 
 
 ## Installation
 Download or clone the GitHub repository: <br> 
-``git clone https://github.com/FedericoCinus/WoMG.git``
+
+```bash
+$ git clone https://github.com/FedericoCinus/WoMG.git
+```
 
 In order to install the core package, move to the *src/womg_core/* directory, which constains the *setup.py* file, and install typing: <br>
-``pip install -e .``
+
+```bash
+$ pip install -e .
+```
 
 
 
@@ -29,14 +35,18 @@ The WoMG package provides a Python module and a command-line method.
 ### Quickstart
  To run *WoMG* on a **demo** mode, execute the following command from Terminal:<br/>
 
-``womg``
+```bash
+$ womg
+```
 
 It will generates 100 documents to be spread over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
 ### Options
 You can check out the other options available to use with *WoMG* using:<br/>
 
-``womg --help``
+```bash
+$ womg --help
+```
 
 ### Input
 1. [Network] The supported input format is an edgelist (txt extension):
@@ -45,13 +55,17 @@ You can check out the other options available to use with *WoMG* using:<br/>
 		
 You can specify the edgelist path using the *graph* argument:
 
-``womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
+```bash
+$ womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt
+```
 
 If no path is given the default network is *Les Miserables* network.
 
 2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
 
- ``womg --docs_folder /this/is/an/example/path/Corpus_Folder``
+```bash
+$ womg --docs_folder /this/is/an/example/path/Corpus_Folder
+```
  
 If no documents folder path is given, *WoMG* will be set to generative mode.
   
@@ -62,7 +76,9 @@ Diffusion output file is in a dict format:
 
 You can specify the output folder path:
 
-  `` womg --output /this/is/an/example/path/Output_Folder``
+```bash
+$ womg --output /this/is/an/example/path/Output_Folder
+```
 
 
 
