@@ -58,13 +58,6 @@ $ womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt
 
 If no path is given the default network is *Les Miserables* network.
 
-2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
-
-```bash
-$ womg --docs_folder /this/is/an/example/path/Corpus_Folder
-```
- 
-If no documents folder path is given, *WoMG* will be set to generative mode.
   
 #### Output (default)
 1. [Propagations] The output format is: 
@@ -93,7 +86,7 @@ $ womg --output /this/is/an/example/path/Output_Folder
 *WoMG* is an open source reasearch project. More details of the software are reported below:
 
 ### Input
-[Network] The supported input format is an edgelist (txt extension):
+1. [Network] The supported input format is an edgelist (txt extension):
 	
 		node1_id_int node2_id_int <weight_float, optional>
 		
@@ -103,6 +96,13 @@ The graph is assumed to be undirected and unweighted by default. These options c
 
 If no path is given the default network is *Les Miserables* network.
 
+2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
+
+```bash
+$ womg --docs_folder /this/is/an/example/path/Corpus_Folder
+```
+ 
+If no documents folder path is given, *WoMG* will be set to generative mode.
   
 ### Output
 There are outputs for each class (or model)
