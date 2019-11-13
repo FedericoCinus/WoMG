@@ -1,5 +1,17 @@
-#!/usr/bin/env python
-
+#dealing with path (WoMG is not a library for now)
+'''
+import os
+import pathlib
+print(pathlib.Path.cwd())
+if not str(pathlib.Path.cwd()).endswith('src'):
+  src_path = pathlib.Path.cwd() / "src" / "womg_core"
+  os.sys.path.insert(0, str(src_path))
+if str(pathlib.Path.cwd()).endswith('examples'):
+  src_path = pathlib.Path.cwd().parent / "src" / "womg_core"
+  os.sys.path.insert(0, str(src_path))
+#print(pathlib.Path.cwd())
+'''
+##################################################
 import click
 from womg_core.network.tn import TN
 from womg_core.topic.lda import LDA

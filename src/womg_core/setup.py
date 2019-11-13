@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="womg-core", # Replace with your own username
-    version="0.0.1",
+    version="0.0.6",
     author="Federico Cinus",
     author_email="federico.cinus@isi.it",
     description="Word-of-Mouth cascades Generator",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github....",
+    url="https://github.com/FedericoCinus/WoMG.git",
     packages=setuptools.find_packages(include=['womg_core.*']),
     classifiers=[
         "Programming Language :: Python :: 3",
