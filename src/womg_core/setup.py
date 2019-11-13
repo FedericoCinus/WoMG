@@ -19,6 +19,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     #entry_points={'console_scripts': ['womg=womg_core.womg:womg_main']},
-    scripts=['bin/womg'],
+    scripts=['bin/womgc'],
     python_requires='>=3.6',
 )
