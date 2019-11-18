@@ -132,7 +132,7 @@ class TN(TLTNetworkModel):
         '''
         if self._graph_path == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self._graph_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21]) / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+            self._graph_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21]) / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
             self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
         else:
             self._graph_path = pathlib.Path(self._graph_path)

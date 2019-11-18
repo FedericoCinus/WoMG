@@ -35,7 +35,7 @@ class LDA(TLTTopicModel):
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
-        self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
+        self._training_path = pathlib.Path.cwd().parent / "womgdata" / "docs" / "training_corpus2"
 
 
     def fit(self):
@@ -75,8 +75,8 @@ class LDA(TLTTopicModel):
             mode = 'load'
             if self._items_descr_path == None:
                 # pre-trained topic model with 15 topics and 50 docs
-                self._items_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'data' / 'topic_model' / 'Items_descript.txt'
-                self._topics_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'data' / 'topic_model' / 'Topics_descript.txt'
+                self._items_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Items_descript.txt'
+                self._topics_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Topics_descript.txt'
                 self.topics_descript = self.load_topics_descr(self._topics_descr_path)
             else:
                 pass

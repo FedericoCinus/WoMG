@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import click
 from womg_core.network.tn import TN
 from womg_core.topic.lda import LDA
