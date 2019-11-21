@@ -8,35 +8,35 @@ This repository provides a reference implementation of *WoMG* as described in:<b
 > Federico Cinus, Francesco Bonchi, André Panisson, Corrado Monti.<br>
 > <Insert paper link>
 
-*WoMG* generates synthetic datasets of documents cascades on network. 
+*WoMG* generates synthetic datasets of documents cascades on network.
 It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network.
 
 <img src="./womg.png" height="480px" />
 
 
 ## Installation
-Download or clone the GitHub repository: <br> 
+Install using ``pip``: <br>
+
+```bash
+$ pip install womg-core
+```
+
+You can also download or clone the GitHub repository: <br>
 
 ```bash
 $ git clone https://github.com/FedericoCinus/WoMG.git
 ```
 
-In order to install the core package, move to the ``src/womg_core/`` directory, which constains the ``setup.py`` file, and install typing: <br>
-
-```bash
-$ pip install -e .
-```
-
 
 
 ## Quickstart
-The WoMG package provides a Python module and a command-line method. To run *WoMG* on a **demo** mode, execute the following command from Terminal:<br/>
+The WoMG package provides a Python module and a command-line method. To run *WoMG-core* on a **demo** mode, execute the following command from Terminal:<br/>
 
 ```bash
-$ womg
+$ womgc
 ```
 
-It loads 50 documents and their topic distributions located in ``/data`` and it spreads them over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
+It loads 50 documents and their topic distributions located in ``/womgdata`` and it spreads them over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
 #### Options
 You can check out the other options available to use with *WoMG* using:<br/>
@@ -47,9 +47,9 @@ $ womg --help
 
 #### Input
 [Network] The supported input format is an edgelist (txt extension):
-	
+
 		node1_id_int node2_id_int <weight_float, optional>
-		
+
 You can specify the edgelist path using the *graph* argument:
 
 ```bash
@@ -58,19 +58,19 @@ $ womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt
 
 If no path is given the default network is *Les Miserables* network.
 
-  
+
 #### Output (default)
-1. [Propagations] The output format is: 
+1. [Propagations] The output format is:
 
 		time; item; node
 2. [Items descriptions] :
 
 		item; [topic-dim vector]
-		
+
 3. [Topic descriptions] :
 
 		(topic_index, linear combination of words)
-	
+
 You can specify the output folder path:
 
 ```bash
@@ -87,9 +87,9 @@ $ womg --output /this/is/an/example/path/Output_Folder
 
 ### Input
 1. [Network] The supported input format is an edgelist (txt extension):
-	
+
 		node1_id_int node2_id_int <weight_float, optional>
-		
+
 The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You can specify the edgelist path using the *graph* argument):
 
 ``python womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
@@ -101,51 +101,51 @@ If no path is given the default network is *Les Miserables* network.
 ```bash
 $ womg --docs_folder /this/is/an/example/path/Corpus_Folder
 ```
- 
+
 If no documents folder path is given, *WoMG* will be set to generative mode.
-  
+
 ### Output
 There are outputs for each class (or model)
 
 1. [Diffusion] file could be in two formats:
 
-  list (default): 
-  
+  list (default):
+
 	time doc activating_node
-  dict : 
-  
+  dict :
+
   	{ time: { doc: [activating nodes] } }
 
 2. [Network] files:
-  [info] dict: 
-  
-	{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'} 
-	
-  [graph] dict: 
-  
+  [info] dict:
+
+	{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}
+
+  [graph] dict:
+
       {(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}
-      
+
   Key: link-tuple. Value: weight vector
 
   [interests and influence vectors] dict:
-  
+
 	{(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}
 
 3. [Topic] files:
 
   [topic distributions] dict:
-  
+
       {doc: [topic distribution]}
-      
+
   [viralities] dict:
-  
+
       {doc: virality}
 
 One can modify the outputs formats extension with the *format* argument:
 
   ``python womg --format pickle``
   ``python womg --format txt``
-  
+
 and specify the output folder path:
 
   ``python womg --output /this/is/an/example/path/Output_Folder``
@@ -184,7 +184,7 @@ and specify the output folder path:
 19.	``docs-folder``  Input path of the documents folder
 20.	``output``       Outputs path
 21.	``format``       Outputs format
-  
+
 22.	``seed``         Seed (int) for random distribution extraction
 
 
@@ -201,6 +201,6 @@ and specify the output folder path:
 
 ### Miscellaneous
 
-Please feel free .. 
+Please feel free ..
 
 *Note:* This is only a reference implementation analysis and more details are provided by the thesis.

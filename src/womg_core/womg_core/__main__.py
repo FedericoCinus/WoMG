@@ -114,7 +114,7 @@ def womg_main(numb_topics=15, numb_docs=None,
 
     int_mode : str
         defines the method for generating nodes' interests.
-        3 choices: 'n2i', 'rand', 'prop_int'
+        4 choices: 'n2i', 'rand', 'prop_int', 'nmf'
         Default setting is rand
 
 
@@ -270,7 +270,7 @@ def womg_main(numb_topics=15, numb_docs=None,
                     help='Input path of the ginterests table', type=str)
 
 @click.option('--int_mode', type=str,
-                    help="defines the method for generating nodes' interests. 3 choices: 'n2i', 'rand', 'prop_int'. Default 'rand' ",
+                    help="defines the method for generating nodes' interests. 4 choices: 'n2i', 'rand', 'prop_int', 'nmf'. Default 'rand' ",
                     default='rand')
 
 @click.option('--weighted', is_flag=True,
