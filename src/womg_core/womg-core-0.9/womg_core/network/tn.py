@@ -223,7 +223,7 @@ class TN(TLTNetworkModel):
             print('Random generation of interests:')
             self.random_interests()
         if int_mode == 'n2i':
-            print('\n Generating interests from graph in ')
+            print('Generating interests from graph in ')
             self._q = np.exp(4.60517*self._homophily)
             self._p = np.exp(-4.60517*self._homophily)
             prior = 'half_norm' if self._norm_prior else 'beta'
@@ -360,7 +360,7 @@ class TN(TLTNetworkModel):
         -------
 
         '''
-        print('\n Generating interests with nmf ..')
+        print('Generating interests with nmf ..')
         A = nx.to_numpy_matrix(self._nx_obj)
         S_0 = self.overlap_generator()
         R = np.random.rand(self._nx_obj.number_of_nodes(), self._nx_obj.number_of_nodes())

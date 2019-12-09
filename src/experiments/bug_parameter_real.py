@@ -14,7 +14,8 @@ N_DOCS = 3553 # Number of items is the same in reduced and not reduced Digg
 N_STEPS = 1000
 god_node_strength = 0
 int_mode = 'nmf'
-graph_path = '../womg_core/womgdata/graph/digg/graph_filtered.csv'
+#graph_path = '../womg_core/womgdata/graph/digg/graph_filtered.csv'
+graph_path = '../womg_core/womgdata/graph/lesmiserables/lesmiserables_edgelist.txt'
 #graph_path = '/home/corradom/projects/WoMG/src/womg/high-clustered-sf.nx'
 assert os.path.exists(graph_path)
 # graph_path = '../data/graph/barabasi/barabasi_edgelist.txt'

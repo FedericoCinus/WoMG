@@ -84,7 +84,6 @@ class TLT(DiffusionModel):
         self._stall_count = {}
         for i in range(self._numb_docs):
             self._stall_count[i] = 0
-        #print('Diffusion setup')
         self.set_sets()
 
 
@@ -251,7 +250,6 @@ class TLT(DiffusionModel):
         -------
         list of active nodes for the given item
         '''
-        #print('God node configuration')
         actives_config = []
         threshold = 1/self.topic_model.viralities[item]
         max_interested = -np.inf

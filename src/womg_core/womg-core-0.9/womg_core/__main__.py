@@ -37,7 +37,7 @@ def save(network_model, topic_model, diffusion_model,
 
     saver.save_mapping(network_model)
     saver.save_items_descript(topic_model)
-    #saver.save_topics_descript(topic_model)
+    saver.save_topics_descript(topic_model)
 
 
 
