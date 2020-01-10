@@ -232,6 +232,7 @@ def womg_main(numb_topics=15,
                               single_activator=single_activator)
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
+        diffusion_model.save_threshold_values(path_out)
 
     finally:
         save(network_model=network_model,
@@ -265,6 +266,7 @@ def womg_main(numb_topics=15,
 @click.option('--virality', metavar='V', default=1.5,
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
                     type=float)
+
 
 @click.option('--graph', default=None,
                     help='Input path of the graph edgelist', type=str)

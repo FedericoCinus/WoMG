@@ -128,7 +128,7 @@ class TxtSaver(Saver):
 
         with open(filename, "w") as f:
             for item in topic_model.items_descript.keys():
-                f.write(str(item) + ' ' +str(list(topic_model.items_descript[item])) + '\n')
+                f.write(str(item) + '; ' +str(list(topic_model.items_descript[item])) + '\n')
 
     def save_topics_descript(self, topic_model):
         '''

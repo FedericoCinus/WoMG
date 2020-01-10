@@ -71,8 +71,13 @@ class TLT(DiffusionModel):
             self._progress_bar = tqdm_notebook
         else:
             self._progress_bar = tqdm
+        self._thresholds_values = []
+        self._threshold_bias = 10#0.5+1E-10
 
 
+    def save_threshold_values(self, path_out):
+        with open(path_out+'/threshold_values.pickle', 'wb') as f:
+            pickle.dump(self._thresholds_values, f)
 
     def diffusion_setup(self):
         '''
@@ -84,7 +89,6 @@ class TLT(DiffusionModel):
         self._stall_count = {}
         for i in range(self._numb_docs):
             self._stall_count[i] = 0
-        #print('Diffusion setup')
         self.set_sets()
 
 
@@ -144,7 +148,7 @@ class TLT(DiffusionModel):
 
         '''
         #print(self.topic_model.viralities[item])
-        threshold = 1/self.topic_model.viralities[item]
+        threshold = 1/self.topic_model.viralities[item] #+ self._threshold_bias)
         # calculating the sum over active nodes on item linked with user
 
         v_sum = np.zeros(self._numb_topics)
@@ -158,11 +162,19 @@ class TLT(DiffusionModel):
         for v in neighbors:
             if v != node and  v in self.active_nodes[item]:
                 v_sum += np.array(self.network_model.graph[(v, node)])
+                if not all(np.isfinite(v_sum)):
+                    print('ATTENTION v_sum: ', v_sum, ' weight: ', self.network_model.graph[(v, node)], ' v: ', v, ' node: ', node)
                 node_check = True
         if node_check:
             z_sum = np.dot(self.topic_model.items_descript[item], v_sum)
             #print(1/(np.exp(- z_sum)+1), threshold)
-            return (1/(np.exp(- z_sum)+1)) >= threshold
+            self._thresholds_values.append((z_sum, threshold))
+            if not np.isfinite(z_sum):
+                print('ATTENTION node: ', node, 'z_sum: ', z_sum)
+            #print(self._thresholds_values)
+            #return (1/(np.exp(- z_sum+self._threshold_bias)+1)) >= threshold
+            #return (z_sum/(1.+z_sum)) >= threshold
+            return (np.log(z_sum+1)/(np.log(z_sum+1)+1)) >= threshold
         else:
             return False
 
@@ -251,22 +263,26 @@ class TLT(DiffusionModel):
         -------
         list of active nodes for the given item
         '''
-        #print('God node configuration')
         actives_config = []
-        threshold = 1/self.topic_model.viralities[item]
+        threshold = 1/self.topic_model.viralities[item] #+ self._threshold_bias)
         max_interested = -np.inf
         max_v = None
         for u, v in self.network_model.godNode_links:
             curr_weight = self.network_model.graph[(u, v)]
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
             #print(1/(np.exp(- z_sum)+1), threshold)
-            interested = (1/(np.exp(- z_sum)+1))
+            #interested = (1/(np.exp(- z_sum+self._threshold_bias)+1))
+            #interested = (z_sum/(1.+z_sum))
+            interested = (np.log(z_sum+1)/(np.log(z_sum+1)+1))
+            #print('ATTENTION: nodes:', u, v, ' z_sum:', z_sum, ' threshold:', threshold)
             if interested >= threshold:
                 if self._single_activator:
                     if max_interested < interested:
                         max_interested = interested
                         max_v = v
                 else:
+                    if np.all(curr_weight)==0:
+                        print('ATTENTION nodes: ', u, v, '  curr_weight:', curr_weight, ' z_sum:', z_sum, ' interested:', interested, ' threshold:', threshold)
                     actives_config.append(v)
 
         if self._single_activator:

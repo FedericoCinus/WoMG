@@ -20,6 +20,7 @@ def random_powerlaw_vec(gamma, dimensions):
     '''
     return list(np.random.pareto(gamma, dimensions) + 1)
 
+
 def random_initial_active_set(self, max_active_perc=0.5):
     '''Returns list of active nodes;
        max_active_perc is the maximum perc (of N) of active nodes on an item
