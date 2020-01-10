@@ -24,7 +24,7 @@ def find_files(folder, rec=True):
 ###############################################################################
 setuptools.setup(
     name="womg-core",
-    version="0.9.16",
+    version="0.9.45",
     author="Federico Cinus",
     author_email="federico.cinus@isi.it",
     description="Word-of-Mouth cascades Generator",
