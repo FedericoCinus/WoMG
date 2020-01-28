@@ -70,8 +70,7 @@ def womg_main(numb_topics=15,
               save_int=False,
               save_infl=False,
               save_keyw=False,
-              single_activator=False,
-              mixed_activation=False):
+              single_activator=False):
     '''
 
 
@@ -230,11 +229,9 @@ def womg_main(numb_topics=15,
                               topic_model=topic_model,
                               path_out=path_out,
                               progress_bar=progress_bar,
-                              single_activator=single_activator,
-                              mixed_activation=mixed_activation)
+                              single_activator=single_activator)
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
-        diffusion_model.save_threshold_values(path_out)
 
     finally:
         save(network_model=network_model,
@@ -268,7 +265,6 @@ def womg_main(numb_topics=15,
 @click.option('--virality', metavar='V', default=1.5,
                     help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
                     type=float)
-
 
 @click.option('--graph', default=None,
                     help='Input path of the graph edgelist', type=str)
@@ -347,10 +343,6 @@ def womg_main(numb_topics=15,
 @click.option('--single_activator', is_flag=True,
                     help='if True we have at most one activator per item, else god node will activate all nodes beyond threshold',
                     default=False)
-@click.option('--mixed_activation', is_flag=True,
-                    help='if True we god node + most interested nodes',
-                    default=False)
-
 
 def main_cli(topics, docs, steps, homophily,
              virality,
@@ -376,8 +368,7 @@ def main_cli(topics, docs, steps, homophily,
              save_all,
              save_int,
              save_infl,
-             save_keyw,
-             mixed_activation):
+             save_keyw):
     '''
 
 
@@ -415,8 +406,7 @@ def main_cli(topics, docs, steps, homophily,
               save_int=save_int,
               save_infl=save_infl,
               save_keyw=save_keyw,
-              single_activator=single_activator,
-              mixed_activation=mixed_activation)
+              single_activator=single_activator)
 
 
 if __name__ == '__main__':

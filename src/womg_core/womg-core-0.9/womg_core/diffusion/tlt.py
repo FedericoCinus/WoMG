@@ -71,8 +71,12 @@ class TLT(DiffusionModel):
             self._progress_bar = tqdm_notebook
         else:
             self._progress_bar = tqdm
+        self._thresholds_values = []
 
 
+    def save_threshold_values(self, path_out):
+        with open(path_out+'/threshold_values.pickle') as f:
+            pickle.dump(self._thresholds_values, f)
 
     def diffusion_setup(self):
         '''
@@ -161,6 +165,7 @@ class TLT(DiffusionModel):
         if node_check:
             z_sum = np.dot(self.topic_model.items_descript[item], v_sum)
             #print(1/(np.exp(- z_sum)+1), threshold)
+            self._thresholds_values.append((z_sum, threshold))
             return (1/(np.exp(- z_sum)+1)) >= threshold
         else:
             return False
