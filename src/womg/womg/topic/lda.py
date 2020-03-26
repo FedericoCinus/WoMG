@@ -1,12 +1,14 @@
 # /Topic/lda.py
 # Implementation of LDA topic-model
 import re
+import os
+import womg
 import pathlib
 import gensim
 import numpy as np
-from topic.tlt_topic_model import TLTTopicModel
-from utils.utility_functions import count_files, read_docs, TopicsError, DocsError
-from utils.distributions import random_powerlaw_vec
+from womg.topic.tlt_topic_model import TLTTopicModel
+from womg.utils.utility_functions import count_files, read_docs, TopicsError, DocsError
+from womg.utils.distributions import random_powerlaw_vec
 
 class LDA(TLTTopicModel):
     '''
@@ -35,7 +37,7 @@ class LDA(TLTTopicModel):
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
-        self._training_path = pathlib.Path.cwd().parent / "data" / "docs" / "training_corpus2"
+        self._training_path = pathlib.Path.cwd().parent / "womgdata" / "docs" / "training_corpus2"
 
 
     def fit(self):
@@ -47,6 +49,7 @@ class LDA(TLTTopicModel):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
+        print('\n In fit method there are ', self.numb_docs, self._docs_path, self._items_descr_path)
         mode = self.set_lda_mode()
         if mode == 'load':
             self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
@@ -57,7 +60,7 @@ class LDA(TLTTopicModel):
             self.get_items_keyw(path=self._docs_path)
         if mode == 'gen':
             self.topics_descript = self.get_topics_descript(lda_model)
-            self.gen_items_descript(model=lda_model)
+            self.gen_items_descript()
             self.gen_items_keyw(model=lda_model)
 
 
@@ -80,20 +83,21 @@ class LDA(TLTTopicModel):
             if False: it will use lda for generating docs
 
         '''
+        print(self.numb_docs, self._docs_path, self._items_descr_path, flush=True)
         # setting mode
         if self.numb_docs == None and self._docs_path == None:
             mode = 'load'
             if self._items_descr_path == None:
                 # pre-trained topic model with 15 topics and 50 docs
-                self._items_descr_path = pathlib.Path.cwd().parent / 'data' / 'topic_model' / 'Items_descript.txt'
-                self._topics_descr_path = pathlib.Path.cwd().parent / 'data' / 'topic_model' / 'Topics_descript.txt'
+                self._items_descr_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Items_descript.txt'
+                self._topics_descr_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Topics_descript.txt'
                 self.topics_descript = self.load_topics_descr(self._topics_descr_path)
             else:
                 pass
             print('Loading items descriptions (topic distrib for each doc) in: ', self._items_descr_path)
 
 
-        if self.numb_docs == None and self._docs_path != None and self._items_descr_path == None:
+        elif self.numb_docs == None and self._docs_path != None and self._items_descr_path == None:
             mode = 'get'
             path = pathlib.Path(self._docs_path)
             numb_docs = count_files(path)
@@ -103,7 +107,7 @@ class LDA(TLTTopicModel):
             else:
                 print('No txt file in: ', path)
 
-        if self.numb_docs != None and self._docs_path != None and self._items_descr_path == None:
+        elif self.numb_docs != None and self._docs_path != None and self._items_descr_path == None:
             mode = 'get'
             path = pathlib.Path(self._docs_path)
             numb_docs = count_files(path)
@@ -112,7 +116,7 @@ class LDA(TLTTopicModel):
             else:
                 print('Extracting topic distribution from docs in ', path)
 
-        if self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
+        elif self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
             mode = 'gen'
             print('Setting LDA in generative mode: ', self.numb_docs, ' documents, with ', self.numb_topics, ' topics.')
             print('Training the LDA model ..')
@@ -140,6 +144,17 @@ class LDA(TLTTopicModel):
                 self.viralities[item] = viralities[0]
         #print(viralities)
 
+    def gen_items_descript(self):
+        '''
+        Generates the topic distribution for each item
+        and stores it in the items_descript attribute
+        '''
+        #print('Genereting items descriptions')
+        alpha =  [1.0 / self.numb_topics for i in range(self.numb_topics)]
+        gammas = {}
+        for item in range(self.numb_docs):
+            gammas[item] = np.random.dirichlet(alpha)
+        self.items_descript = gammas
 
     def get_items_descript(self, path, model):
         '''
@@ -166,17 +181,17 @@ class LDA(TLTTopicModel):
         self.items_descript = gammas
 
 
-    def gen_items_descript(self, model):
-        '''
-        Generates the topic distribution for each item
-        and stores it in the items_descript attribute
-        '''
-        alpha = model.alpha
-        #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
-        gammas = {}
-        for item in range(self.numb_docs):
-            gammas[item] = np.random.dirichlet(alpha)
-        self.items_descript = gammas
+    # def gen_items_descript(self, model):
+    #     '''
+    #     Generates the topic distribution for each item
+    #     and stores it in the items_descript attribute
+    #     '''
+    #     alpha = model.alpha
+    #     #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
+    #     gammas = {}
+    #     for item in range(self.numb_docs):
+    #         gammas[item] = np.random.dirichlet(alpha)
+    #     self.items_descript = gammas
 
 
     def get_items_keyw(self, path):

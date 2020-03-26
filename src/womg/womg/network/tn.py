@@ -1,16 +1,19 @@
 # /network/tn.py
 # Implementation of the Topic-aware Network model
+import os
+import womg
 import random
 import pathlib
 import collections
 import networkx as nx
 import numpy as np
-from sklearn.decomposition import NMF
+from scipy import sparse
 from tqdm import tqdm, tqdm_notebook
+from sklearn.decomposition import NMF
 from n2i.__main__ import n2i_nx_graph
-from network.tlt_network_model import TLTNetworkModel
-from utils.utility_functions import read_edgelist
-from utils.distributions import random_powerlaw_vec
+from womg.network.tlt_network_model import TLTNetworkModel
+from womg.utils.utility_functions import read_edgelist
+from womg.utils.distributions import random_powerlaw_vec
 
 
 
@@ -90,10 +93,10 @@ class TN(TLTNetworkModel):
         self._graph_path = graph_path
         self._interests_path = interests_path
         self.godNode_links = {}
+        assert gn_strength is None or np.isfinite(gn_strength)
         self._godNode_strength = gn_strength
         self._infl_strength = infl_strength
         self._rand = 16 -15.875*self._homophily
-        #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
         self._p = p
         self._q = q
         self._num_walks = num_walks
@@ -120,7 +123,7 @@ class TN(TLTNetworkModel):
         - Sets the info attribute using set_info() method
         - Sets the godNode_links attribute using set_godNode_links() method
         - Sets the interests vectors using set_interests() method
-        - Sets the influnce vecotrs using set_influence() mehtod
+        - Sets the influence vectors using set_influence() mehtod
         - Sets the new graph weights using update_weights() method
 
         Notes
@@ -129,14 +132,20 @@ class TN(TLTNetworkModel):
         '''
         if self._graph_path == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self._graph_path = pathlib.Path("../") / "data" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+            self._graph_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21]) / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
             self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
         else:
             self._graph_path = pathlib.Path(self._graph_path)
             self._nx_obj, self.mapping = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
         self.set_graph()
-        self.set_godNode_links()
+        if self._godNode_strength is not None:
+            self.set_godNode_links()
         self.set_interests(int_mode)
+        ##### check inf ##########################################
+        for node, interests in self.users_interests.items():
+            if not all(np.isfinite(interests)):
+                print('ATTENTION  node: ', node, '  interests: ', interests)
+        ###########################################################
         self.set_influence()
         #print('updating weights')
         self.graph_weights_vecs_generation()
@@ -196,7 +205,7 @@ class TN(TLTNetworkModel):
         if nodes is None:
             print('Setting god node')
             for node in self._progress_bar(self._nx_obj.nodes()):
-                self.godNode_links[(-1, node)] = weight
+                self.godNode_links[(-1, node)] = np.abs(np.random.randn())
                 self.graph.update(self.godNode_links)
         if isinstance(nodes, int):
             self.godNode_links[(-1, nodes)] = weight
@@ -220,7 +229,7 @@ class TN(TLTNetworkModel):
             print('Random generation of interests:')
             self.random_interests()
         if int_mode == 'n2i':
-            print('Generating interests from graph in ')
+            print('\nGenerating interests from graph in ')
             self._q = np.exp(4.60517*self._homophily)
             self._p = np.exp(-4.60517*self._homophily)
             prior = 'half_norm' if self._norm_prior else 'beta'
@@ -261,13 +270,24 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
+
         if self._infl_strength is None:
             for node in self._nx_obj.nodes():
                 self.users_influence[node] = [0. for _ in range(self._numb_topics)]
         else:
             fitness = 1 + np.random.pareto(a=self._infl_strength, size=self._nx_obj.number_of_nodes())
+            if np.any(np.isinf(fitness)):
+                print('Wrong parameter infl strenght')
+            fitness = np.minimum(fitness, 10E20)
             for node in self._nx_obj.nodes():
                 self.users_influence[node] = fitness[node] * self.users_interests[node]
+
+        if self._godNode_strength is not None:
+            self.users_influence[-1] = np.ones(self._numb_topics)
+
+        for node, value in self.users_influence.items():
+            if not all(np.isfinite(value)):
+                print('ATTENTION node: ', node, ' influences: ', value)
         '''
         random_powerlaw_vec(gamma=self._rho, self._numb_topics)
         # rescaling infleunce importance
@@ -333,42 +353,69 @@ class TN(TLTNetworkModel):
 
 
 
-    def overlap_generator(self):
+        # def overlap_generator(self):
+    #     """
+    #     Function to generate a neighbourhood overlap matrix (second-order proximity matrix).
+    #     :param G: Graph object.
+    #     :return laps: Overlap matrix.
+    #     """
+    #     G = self._nx_obj
+    #     degrees = nx.degree(G)
+    #     sets = {node:set(G.neighbors(node)) for node in nx.nodes(G)}
+    #     laps = np.array([[float(len(sets[node_1].intersection(sets[node_2])))/(float(degrees[node_1]*degrees[node_2])**0.5) if node_1 != node_2 else 0.0 for node_1 in nx.nodes(G)] for node_2 in nx.nodes(G)],dtype = np.float64)
+    #     return laps
+
+    def overlap_generator(self, A):
         """
-        Function to generate a neighbourhood overlap matrix (second-order proximity matrix).
-        :param G: Graph object.
-        :return laps: Overlap matrix.
+        Generate the second order overlap from a sparse adjacency matrix A.
         """
-        G = self._nx_obj
-        degrees = nx.degree(G)
-        sets = {node:set(G.neighbors(node)) for node in nx.nodes(G)}
-        laps = np.array([[float(len(sets[node_1].intersection(sets[node_2])))/(float(degrees[node_1]*degrees[node_2])**0.5) if node_1 != node_2 else 0.0 for node_1 in nx.nodes(G)] for node_2 in nx.nodes(G)],dtype = np.float64)
-        return laps
+        aat = A.dot(A.T)
+        d = aat.diagonal()
+        ndiag = sparse.diags(d, 0)
+        n = np.sqrt(ndiag.dot(aat>0).dot(ndiag))
+        n.data[:] = 1./n.data[:]
+        return aat.multiply(n) #- sparse.identity(aat.shape[0])
+
+
+    # def nmf_interests(self, eta=64.):
+    #     '''
+    #     Generates interests according to non-negative matrix factorization
+    #     method
+    #
+    #     Parameters
+    #     ----------
+    #
+    #     Returns
+    #     -------
+    #
+    #     '''
+    #     print('\n Generating interests with nmf ..')
+    #     A = nx.to_numpy_matrix(self._nx_obj)
+    #     S_0 = self.overlap_generator()
+    #     R = np.random.rand(self._nx_obj.number_of_nodes(), self._nx_obj.number_of_nodes())
+    #
+    #     S = eta*S_0 + A + self._rand*R
+    #     model = NMF(n_components=self._numb_topics, init='random', random_state=self._seed)
+    #     W = model.fit_transform(S)
+    #
+    #     for node in self._nx_obj.nodes():
+    #         self.users_interests[node] = W[node]
 
     def nmf_interests(self, eta=64.):
-        '''
-        Generates interests according to non-negative matrix factorization
-        method
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-
-        '''
-        print('Generating interests with nmf ..')
-        A = nx.to_numpy_matrix(self._nx_obj)
-        S_0 = self.overlap_generator()
+        #beta = self._homophily
+        A = nx.adjacency_matrix(self._nx_obj)
+        S_0 = self.overlap_generator(A)
         R = np.random.rand(self._nx_obj.number_of_nodes(), self._nx_obj.number_of_nodes())
-
+        #S = beta*(S_0 + A + sparse.identity(A.shape[0])) + (1-beta)*R
+        eta = 64.
         S = eta*S_0 + A + self._rand*R
-        model = NMF(n_components=self._numb_topics, init='random', random_state=self._seed)
+        model = NMF(n_components=self._numb_topics, init='nndsvd', random_state=self._seed)
         W = model.fit_transform(S)
+        if not np.all(np.isfinite(W)):
+            print('ATTENTION W contains infinites')
 
         for node in self._nx_obj.nodes():
             self.users_interests[node] = W[node]
-
 
     def node2influence(self, scale_fact, alpha_max=10):
         '''
@@ -401,9 +448,9 @@ class TN(TLTNetworkModel):
         for link in self.graph.keys():
             # god node
             if link[0] == -1:
-                out_influence_vec = np.array([self._godNode_strength for i in range(self._numb_topics)])
+                out_influence_vec = self.users_influence[-1]
                 in_interest_vec = self.users_interests[link[1]]
-                self.set_link_weight(link, out_influence_vec + in_interest_vec)
+                self.set_link_weight(link, in_interest_vec + self._godNode_strength * out_influence_vec)
             else:
                 out_influence_vec = self.users_influence[link[0]]
                 in_interest_vec = self.users_interests[link[1]]
@@ -422,6 +469,8 @@ class TN(TLTNetworkModel):
           numb_topic dimension array that is going to be the new attribute of the
           link
         '''
+        if not all(np.isfinite(new_weight)):
+            print('ATTENTION link ', link, ' weight: ', new_weight)
         self.graph[link] = new_weight
 
 

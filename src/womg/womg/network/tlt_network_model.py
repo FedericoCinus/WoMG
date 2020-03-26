@@ -1,7 +1,7 @@
 # /network/tlt_network_model.py
 # Abstract class defining the Network models
 import abc
-from network.network_model import NetworkModel
+from womg.network.network_model import NetworkModel
 
 class TLTNetworkModel(NetworkModel):
     '''
@@ -22,17 +22,5 @@ class TLTNetworkModel(NetworkModel):
         '''
         Generates numb_topics dim vectors for each link and put them as
         value of the graph dict attribute of the class
-        '''
-        pass
-
-    def validate_network_config(self):
-        '''
-        Checks the graph structure for the tlt model
-
-        graph attribute must be a dictionary in which:
-        - key : tuple
-          tuple of the link
-        - value : array
-          numb_topics dim array of weights
         '''
         pass

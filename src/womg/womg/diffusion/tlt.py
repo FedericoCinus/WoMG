@@ -1,12 +1,12 @@
  # /Diffusion/tlt.py
 # Implementation of TLT model
-import pathlib
+#import pathlib
 import pickle
 import numpy as np
 from tqdm import tqdm, tqdm_notebook
 
-from diffusion.diffusion_model import DiffusionModel
-from utils.saver import TxtSaver
+from womg.diffusion.diffusion.diffusion_model import DiffusionModel
+from womg.utils.utils.saver import TxtSaver
 
 
 class TLT(DiffusionModel):
@@ -52,7 +52,7 @@ class TLT(DiffusionModel):
     '''
 
     def __init__(self, network_model, topic_model,
-                 path_out,
+                 path_out, virality_coefficient,
                  progress_bar=False, single_activator=False):
         super().__init__()
         self.network_model = network_model
@@ -71,6 +71,14 @@ class TLT(DiffusionModel):
             self._progress_bar = tqdm_notebook
         else:
             self._progress_bar = tqdm
+        self._thresholds_values = []
+        self._threshold_bias = 10#0.5+1E-10
+        self._virality_coefficient = virality_coefficient
+
+
+    def save_threshold_values(self, path_out):
+        with open(path_out+'/threshold_values.pickle', 'wb') as f:
+            pickle.dump(self._thresholds_values, f)
 
 
 
@@ -143,7 +151,7 @@ class TLT(DiffusionModel):
 
         '''
         #print(self.topic_model.viralities[item])
-        threshold = 1/self.topic_model.viralities[item]
+        # threshold = 1/ #+ self._threshold_bias)
         # calculating the sum over active nodes on item linked with user
 
         v_sum = np.zeros(self._numb_topics)
@@ -157,13 +165,18 @@ class TLT(DiffusionModel):
         for v in neighbors:
             if v != node and  v in self.active_nodes[item]:
                 v_sum += np.array(self.network_model.graph[(v, node)])
+                if not all(np.isfinite(v_sum)):
+                    print('ATTENTION v_sum: ', v_sum, ' weight: ', self.network_model.graph[(v, node)], ' v: ', v, ' node: ', node)
                 node_check = True
         if node_check:
             z_sum = np.dot(self.topic_model.items_descript[item], v_sum)
-            #print(1/(np.exp(- z_sum)+1), threshold)
-            return (1/(np.exp(- z_sum)+1)) >= threshold
+            self._thresholds_values.append((z_sum, self.topic_model.viralities[item]))
+            if not np.isfinite(z_sum):
+                print('ATTENTION node: ', node, 'z_sum: ', z_sum)
+            return z_sum > self._virality_coefficient * self.topic_model.viralities[item]
         else:
             return False
+
 
 
     def update_sets(self, item, new_active_nodes):
@@ -251,26 +264,26 @@ class TLT(DiffusionModel):
         list of active nodes for the given item
         '''
         actives_config = []
-        threshold = 1/self.topic_model.viralities[item]
         max_interested = -np.inf
         max_v = None
         for u, v in self.network_model.godNode_links:
             curr_weight = self.network_model.graph[(u, v)]
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
-            #print(1/(np.exp(- z_sum)+1), threshold)
-            interested = (1/(np.exp(- z_sum)+1))
-            if interested >= threshold:
+            self._thresholds_values.append((z_sum, self.topic_model.viralities[item]))
+            if z_sum > self._virality_coefficient * self.topic_model.viralities[item]:
                 if self._single_activator:
-                    if max_interested < interested:
-                        max_interested = interested
+                    if max_interested < z_sum:
+                        max_interested = z_sum
                         max_v = v
                 else:
+                    if np.all(curr_weight)==0:
+                        print('ATTENTION nodes: ', u, v, '  curr_weight:', curr_weight, ' z_sum:', z_sum, ' interested:', interested, ' threshold:', threshold)
                     actives_config.append(v)
-                    
+
         if self._single_activator:
             if max_v is not None:
                 actives_config.append(max_v)
-        
+
         return set(actives_config)
 
 
@@ -302,20 +315,20 @@ class TLT(DiffusionModel):
         self._propagations = value
 
 
-    def read_class_pickle(self, model):
-        '''
-        Read the pickle file containing a class model instance
-
-        Parameters
-        ----------
-        model : string
-            'topic' or 'network'
-
-        Returns
-        -------
-        Loaded object of the correspondent class: TLTNetworkModel or TLTTopicModel
-        '''
-        file = pathlib.Path.cwd() / str('__'+model+'_model')
-        with open(file, 'rb') as f:
-            rfile = pickle.load(f)
-        return rfile
+    # def read_class_pickle(self, model):
+    #     '''
+    #     Read the pickle file containing a class model instance
+    #
+    #     Parameters
+    #     ----------
+    #     model : string
+    #         'topic' or 'network'
+    #
+    #     Returns
+    #     -------
+    #     Loaded object of the correspondent class: TLTNetworkModel or TLTTopicModel
+    #     '''
+    #     file = pathlib.Path.cwd() / str('__'+model+'_model')
+    #     with open(file, 'rb') as f:
+    #         rfile = pickle.load(f)
+    #     return rfile
