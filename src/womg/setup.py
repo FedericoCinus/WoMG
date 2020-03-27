@@ -6,7 +6,7 @@ import sys
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-requirements=['Click==7.0', 'networkx==2.3', 'numpy==1.17.3', 'scikit-learn==0.21.3', 'tqdm==4.32.1']
+requirements=['Click==7.0', 'networkx==2.3', 'numpy==1.17.3', 'scikit-learn==0.21.3', 'tqdm==4.32.1', 'gensim==3.8.0']
 
 
 def find_files(folder, rec=True):
@@ -23,8 +23,8 @@ def find_files(folder, rec=True):
 
 ###############################################################################
 setuptools.setup(
-    name="womg-core",
-    version="0.9.52",
+    name="womg",
+    version="0.9.1",
     author="Federico Cinus",
     author_email="federico.cinus@isi.it",
     description="Word-of-Mouth cascades Generator",
@@ -41,11 +41,11 @@ setuptools.setup(
     ],
     data_files   = find_files('womgdata'),
     install_requires=requirements,
-    py_modules=['womgc'],
+    py_modules=['womg'],
     entry_points='''
         [console_scripts]
-        womgc=womg_core.__main__:main_cli
+        womg=womg.__main__:main_cli
     ''',
-    #scripts=['bin/womgc'],
+    #scripts=['bin/womg'],
     python_requires='>=3.2',
 )

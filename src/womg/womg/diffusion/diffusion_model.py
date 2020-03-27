@@ -16,17 +16,34 @@ class DiffusionModel(abc.ABC):
 
     Methods
     -------
+    validate_config : concrete
+        validates the correct tlt components
     run : concrete
         run the iteration method steps time
     iteration : abstract
         defines the one step iteration
-    stop_criterior : abstract
+    stop_criterior
         defines how to stop simulation
+    save_model_attr
+        saves all the attributes
+    save_model_class
+        saves all the class in pickle file
+
+    Notes
+    -----
+    Hidden attributes names has to start with "_"
     '''
 
     def __init__(self):
         self.network_model = {}
         self.topic_model = {}
+
+
+    def validate_config(self):
+        '''
+        Concrete method for validate the tlt components
+        '''
+        print('I am validating')
 
     def run(self, numb_steps):
         '''

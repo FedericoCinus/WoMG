@@ -1,23 +1,23 @@
 #dealing with path (WoMG is not a library for now)
 
-import os
-import pathlib
-if not str(pathlib.Path.cwd()).endswith('src'):
-  src_path = pathlib.Path.cwd() / "src" / "womg"
-  os.sys.path.insert(0, str(src_path))
-if str(pathlib.Path.cwd()).endswith('examples'):
-  src_path = pathlib.Path.cwd().parent / "src" / "womg"
-  os.sys.path.insert(0, str(src_path))
+# import os
+# import pathlib
+# if not str(pathlib.Path.cwd()).endswith('src'):
+#   src_path = pathlib.Path.cwd() / "src" / "womg"
+#   os.sys.path.insert(0, str(src_path))
+# if str(pathlib.Path.cwd()).endswith('examples'):
+#   src_path = pathlib.Path.cwd().parent / "src" / "womg"
+#   os.sys.path.insert(0, str(src_path))
 #print(pathlib.Path.cwd())
 
 ##################################################
 
 import click
-from network.tn import TN
-from topic.lda import LDA
-from diffusion.tlt import TLT
-from utils.distributions import set_seed
-from utils.saver import TxtSaver
+from womg.network.tn import TN
+from womg.topic.lda import LDA
+from womg.diffusion.tlt import TLT
+from womg.utils.distributions import set_seed
+from womg.utils.saver import TxtSaver
 
 
 
@@ -41,11 +41,13 @@ def save(network_model, topic_model, diffusion_model,
 
 
 
-def womg_main(numb_topics=15, numb_docs=1,
-              numb_steps=100, homophily=1,
-              gn_strength=1,
-              infl_strength=0,
-              virality=1,
+def womg_main(numb_topics=15,
+              numb_docs=None,
+              numb_steps=100,
+              homophily=.5,
+              gn_strength=0,
+              infl_strength=None,
+              virality=1.5,
               graph_path=None,
               interests_path=None,
               int_mode='rand',
@@ -114,7 +116,7 @@ def womg_main(numb_topics=15, numb_docs=1,
 
     int_mode : str
         defines the method for generating nodes' interests.
-        3 choices: 'n2i', 'rand', 'prop_int'
+        4 choices: 'n2i', 'rand', 'prop_int', 'nmf'
         Default setting is rand
 
 
@@ -230,6 +232,7 @@ def womg_main(numb_topics=15, numb_docs=1,
                               single_activator=single_activator)
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
+        diffusion_model.save_threshold_values(path_out)
 
     finally:
         save(network_model=network_model,

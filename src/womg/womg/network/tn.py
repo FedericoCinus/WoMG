@@ -10,7 +10,7 @@ import numpy as np
 from scipy import sparse
 from tqdm import tqdm, tqdm_notebook
 from sklearn.decomposition import NMF
-from n2i.__main__ import n2i_nx_graph
+from womg.n2i.__main__ import n2i_nx_graph
 from womg.network.tlt_network_model import TLTNetworkModel
 from womg.utils.utility_functions import read_edgelist
 from womg.utils.distributions import random_powerlaw_vec
