@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: womg
+Version: 0.9.1
+Summary: Word-of-Mouth cascades Generator
+Home-page: https://github.com/FedericoCinus/WoMG.git
+Author: Federico Cinus
+Author-email: federico.cinus@isi.it
+License: UNKNOWN
+Description: # WoMG 
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.2
+Description-Content-Type: text/markdown
