@@ -41,19 +41,20 @@ def save(network_model, topic_model, diffusion_model,
 
 
 
-def womg_main(numb_topics=15,
+def womg_main(graph=None,
+              docs_path=None,
+              items_descr_path=None,
+              numb_topics=15,
               numb_docs=None,
               numb_steps=100,
               homophily=.5,
               gn_strength=0,
               infl_strength=None,
-              virality=1.5,
-              graph_path=None,
+              virality_exp=1.5,
+              virality_resistance=1.,
               interests_path=None,
               int_mode='rand',
               weighted=False, directed=False,
-              docs_path=None,
-              items_descr_path=None,
               path_out=None,
               seed=None,
               walk_length=100,
@@ -120,8 +121,8 @@ def womg_main(numb_topics=15,
         Default setting is rand
 
 
-    graph_path : str
-        input path of the graph edgelist
+    graph : str or nx obj
+        input path of the graph edgelist or nx object
 
     weighted : bool
         boolean specifying (un)weighted. Default  unweighted
@@ -199,9 +200,10 @@ def womg_main(numb_topics=15,
 
     try:
         set_seed(seed)
-        network_model = TN(numb_topics=numb_topics, homophily=homophily,
+        network_model = TN( graph=graph,
+                            numb_topics=numb_topics, homophily=homophily,
                             weighted=weighted, directed=directed,
-                            graph_path=graph_path,
+
                             interests_path=interests_path,
                             gn_strength=gn_strength,
                             infl_strength=infl_strength,
@@ -223,16 +225,18 @@ def womg_main(numb_topics=15,
                           docs_path=docs_path,
                           items_descr_path=items_descr_path)
         topic_model.fit()
-        topic_model.set_docs_viralities(virality=virality)
+        print(virality_exp)
+        topic_model.set_docs_viralities(virality_exp=virality_exp)
 
         diffusion_model = TLT(network_model=network_model,
                               topic_model=topic_model,
                               path_out=path_out,
                               progress_bar=progress_bar,
-                              single_activator=single_activator)
+                              single_activator=single_activator,
+                              virality_resistance=virality_resistance)
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
-        diffusion_model.save_threshold_values(path_out)
+        #diffusion_model.save_threshold_values(path_out)
 
     finally:
         save(network_model=network_model,
@@ -263,12 +267,15 @@ def womg_main(numb_topics=15,
                     type=float)
 @click.option('--infl_strength', type=float, default=None,
                     help='Percentage of strength of the influence vecs with respect to interests vecs. Default 1')
-@click.option('--virality', metavar='V', default=1.5,
-                    help='Exponent of the powerlaw distribution for documents viralities. P(x; a) = x^{-a}, 0 <= x <=1. Default a=1',
+@click.option('--virality_exp', metavar='V', default=1.5,
+                    help='Exponent of the pareto distribution for documents viralities.',
+                    type=float)
+@click.option('--virality_resistance', metavar='V', default=1.,
+                    help='Virality resistance factor r',
                     type=float)
 
 @click.option('--graph', default=None,
-                    help='Input path of the graph edgelist', type=str)
+                    help='Input path of the graph edgelist or nx object', type=str)
 @click.option('--interests_path', default=None,
                     help='Input path of the ginterests table', type=str)
 
@@ -345,13 +352,14 @@ def womg_main(numb_topics=15,
                     help='if True we have at most one activator per item, else god node will activate all nodes beyond threshold',
                     default=False)
 
-def main_cli(topics, docs, steps, homophily,
-             virality,
-             graph,
+def main_cli(graph,
+             items_descr_path,
+             topics, docs, steps, homophily,
+             virality_exp,
+             virality_resistance,
              interests_path,
              int_mode,
              weighted, directed, docs_folder,
-             items_descr_path,
              gn_strength,
              infl_strength,
              output, seed,
@@ -380,17 +388,18 @@ def main_cli(topics, docs, steps, homophily,
     Please check the github page for more details.
 
     '''
-    womg_main(numb_topics=topics, numb_docs=docs,
+    womg_main(graph=graph,
+              docs_path=docs_folder,
+              items_descr_path=items_descr_path,
+              numb_topics=topics, numb_docs=docs,
               numb_steps=steps, homophily=homophily,
               gn_strength=gn_strength,
               infl_strength=infl_strength,
-              virality=virality,
-              graph_path=graph,
+              virality_exp=virality_exp,
+              virality_resistance=virality_resistance,
               interests_path=interests_path,
               int_mode=int_mode,
               weighted=weighted, directed=directed,
-              docs_path=docs_folder,
-              items_descr_path=items_descr_path,
               path_out=output,
               seed=seed,
               walk_length=walk_length,

@@ -53,8 +53,8 @@ class TLT(DiffusionModel):
 
     def __init__(self, network_model, topic_model,
                  path_out,
-                 progress_bar=False, single_activator=False,
-                 mixed_activation=False):
+                 progress_bar, single_activator,
+                 virality_resistance):
         super().__init__()
         self.network_model = network_model
         self.topic_model = topic_model
@@ -73,8 +73,7 @@ class TLT(DiffusionModel):
         else:
             self._progress_bar = tqdm
         self._thresholds_values = []
-        self._threshold_bias = 10#0.5+1E-10
-        self._mixed_activation = mixed_activation
+        self._virality_resistance = virality_resistance
 
 
     def save_threshold_values(self, path_out):
@@ -122,35 +121,27 @@ class TLT(DiffusionModel):
         '''
         Calculate the tlt diffusion model parameter for a node on a item.
         [ Topic-aware Linear threshold model ]
-
              W(item, node) = topic_distr * ∑_v weight_v,node
-
         parameter is equal to the scalar product of topic distribution of the
         item with the sum over active nodes with out link directed to the
         given node.
-
         If this parameter is greater or equal to the threshold then parameter()
         returns True which means the given node will activate.
-
             threshold = 1/item_virality
-
-
         Parameters
         ----------
         item : int
             index of the item
         node : int
             index of the node
-
         Returns
         -------
         bool
             True if parameter is greater or equal to threshold, which means node
             is activating on that given item. Else False.
-
         '''
         #print(self.topic_model.viralities[item])
-        threshold = 1/self.topic_model.viralities[item] #+ self._threshold_bias)
+        # threshold = 1/ #+ self._threshold_bias)
         # calculating the sum over active nodes on item linked with user
 
         v_sum = np.zeros(self._numb_topics)
@@ -169,16 +160,13 @@ class TLT(DiffusionModel):
                 node_check = True
         if node_check:
             z_sum = np.dot(self.topic_model.items_descript[item], v_sum)
-            #print(1/(np.exp(- z_sum)+1), threshold)
-            self._thresholds_values.append((z_sum, threshold))
+            self._thresholds_values.append((z_sum, self.topic_model.viralities[item]))
             if not np.isfinite(z_sum):
                 print('ATTENTION node: ', node, 'z_sum: ', z_sum)
-            #print(self._thresholds_values)
-            #return (1/(np.exp(- z_sum+self._threshold_bias)+1)) >= threshold
-            #return (z_sum/(1.+z_sum)) >= threshold
-            return (np.log(z_sum+1)/(np.log(z_sum+1)+1)) >= threshold
+            return z_sum > self._virality_resistance * self.topic_model.viralities[item]
         else:
             return False
+
 
 
     def update_sets(self, item, new_active_nodes):
@@ -255,52 +243,35 @@ class TLT(DiffusionModel):
         Returns the activated nodes for the initial configuration for a given item;
         the god node (connected with all nodes) influences all the others for the
         given item evaluating the tlt parameter
-
         Parameters
         ----------
         item : int
             item index
-
         Returns
         -------
         list of active nodes for the given item
         '''
         actives_config = []
-        threshold = 1/self.topic_model.viralities[item] #+ self._threshold_bias)
         max_interested = -np.inf
         max_v = None
         for u, v in self.network_model.godNode_links:
             curr_weight = self.network_model.graph[(u, v)]
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
-            #print(1/(np.exp(- z_sum)+1), threshold)
-            #interested = (1/(np.exp(- z_sum+self._threshold_bias)+1))
-            #interested = (z_sum/(1.+z_sum))
-            interested = (np.log(z_sum+1)/(np.log(z_sum+1)+1))
-            #print('ATTENTION: nodes:', u, v, ' z_sum:', z_sum, ' threshold:', threshold)
-            # if interested >= threshold:
-            #     if self._single_activator or self._mixed_activation:
-            #         if max_interested < interested:
-            #             max_interested = interested
-            #             max_v = v
-            #     else:
-            #         if np.any(curr_weight)==0:
-            #             print('ATTENTION nodes: ', u, v, '  curr_weight:', curr_weight, ' z_sum:', z_sum, ' interested:', interested, ' threshold:', threshold)
-            #         actives_config.append(v)
-            if self._single_activator or self._mixed_activation: # ADESSO ANCHE SE NON SUPERA LA THRESHOLD SI ATTIVA ALMENO UN NODO PER ITEM IN SINGLE ACTIVATOR MODE
-                if max_interested < interested:
-                    max_interested = interested
-                    max_v = v
-                    #print('MAX INTERESTED: ', max_v)
-            else:
-                if np.any(curr_weight)==0:
-                    print('ATTENTION nodes: ', u, v, '  curr_weight:', curr_weight, ' z_sum:', z_sum, ' interested:', interested, ' threshold:', threshold)
-                if interested >= threshold:
+            self._thresholds_values.append((z_sum, self.topic_model.viralities[item]))
+            print('z_sum: ', z_sum, '  virality: ', self._virality_resistance *self.topic_model.viralities[item])
+            if z_sum > self._virality_resistance * self.topic_model.viralities[item]:
+                if self._single_activator:
+                    if max_interested < z_sum:
+                        max_interested = z_sum
+                        max_v = v
+                else:
+                    if all(v == 0 for v in curr_weight):
+                        print('ATTENTION nodes: ', u, v, '  curr_weight:', curr_weight, ' z_sum:', z_sum)
                     actives_config.append(v)
 
-        if self._single_activator or self._mixed_activation:
+        if self._single_activator:
             if max_v is not None:
                 actives_config.append(max_v)
-                #print('MAX INTERESTED inserted: ', max_v, ' for item:', item)
 
         return set(actives_config)
 
@@ -310,9 +281,7 @@ class TLT(DiffusionModel):
         '''
         Static method for converting the dict format of the propagations
         into a list format:
-
             'doc; activating_node \n'
-
         '''
         lista = []
         for key in dictio.keys():
@@ -336,12 +305,10 @@ class TLT(DiffusionModel):
     def read_class_pickle(self, model):
         '''
         Read the pickle file containing a class model instance
-
         Parameters
         ----------
         model : string
             'topic' or 'network'
-
         Returns
         -------
         Loaded object of the correspondent class: TLTNetworkModel or TLTTopicModel

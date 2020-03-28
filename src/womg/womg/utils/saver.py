@@ -87,7 +87,11 @@ class TxtSaver(Saver):
 
         with open(filename, "w") as f:
             for node in network_model.users_influence.keys():
-                f.write(str(node) + ' ' +str(list(network_model.users_interests[node])) + '\n')
+                if node != -1: #god node
+                    vec = ''
+                    for entry in list(network_model.users_interests[node]):
+                        vec += (str(entry)+', ')
+                    f.write(str(node) + ';' +vec+ '\n')
 
 
     def save_users_influence(self, network_model):
@@ -100,7 +104,8 @@ class TxtSaver(Saver):
 
         with open(filename, "w") as f:
             for node in network_model.users_influence.keys():
-                f.write(str(node) + ' ' +str(list(network_model.users_influence[node])) + '\n')
+                if node != -1: #god node
+                    f.write(str(node) + ';' +str(list(network_model.users_influence[node])) + '\n')
 
 
     def save_mapping(self, network_model):

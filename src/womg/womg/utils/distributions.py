@@ -10,7 +10,7 @@ def set_seed(seed):
     if seed != None:
         random.seed(seed)
         np.random.seed(seed)
-        tf.set_random_seed(seed)
+        tf.random.set_seed(seed)
 
 def random_powerlaw_vec(gamma, dimensions):
     '''

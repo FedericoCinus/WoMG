@@ -37,7 +37,8 @@ class LDA(TLTTopicModel):
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
-        self._training_path = pathlib.Path.cwd().parent / "womgdata" / "docs" / "training_corpus2"
+        self._training_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21]) / "womgdata" / "docs" / "training_corpus2"
+        print(self._training_path)
 
 
     def fit(self):
@@ -49,7 +50,7 @@ class LDA(TLTTopicModel):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
-        print('\n In fit method there are ', self.numb_docs, self._docs_path, self._items_descr_path)
+        print('\n In fit method there are ', self.numb_docs, 'docs, in', self._docs_path, ' with description ', self._items_descr_path)
         mode = self.set_lda_mode()
         if mode == 'load':
             self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
@@ -124,17 +125,17 @@ class LDA(TLTTopicModel):
         return mode
 
 
-    def set_docs_viralities(self, virality):
+    def set_docs_viralities(self, virality_exp):
         '''
         Sets the documents viralities to the given scalar/vector
 
         Parameters
         ----------
         viralitiy : float
-            Exponent of the powerlaw distribution for documents
-            viralities. P(x; a) = x^{-a}, 0 <= x <=1
+            Exponent of the pareto distribution for documents
+            viralities.
         '''
-        viralities = random_powerlaw_vec(gamma=virality, dimensions=self.numb_docs)
+        viralities = random_powerlaw_vec(gamma=virality_exp, dimensions=self.numb_docs)
 
         if np.size(viralities) == self.numb_docs:
             for item in range(self.numb_docs):

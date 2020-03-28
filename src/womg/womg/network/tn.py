@@ -9,6 +9,7 @@ import networkx as nx
 import numpy as np
 from scipy import sparse
 from tqdm import tqdm, tqdm_notebook
+from scipy.spatial import distance
 from sklearn.decomposition import NMF
 from womg.n2i.__main__ import n2i_nx_graph
 from womg.network.tlt_network_model import TLTNetworkModel
@@ -70,7 +71,7 @@ class TN(TLTNetworkModel):
 
     def __init__(self, numb_topics, homophily,
                  weighted, directed,
-                 graph_path,
+                 graph,
                  interests_path,
                  gn_strength,
                  infl_strength,
@@ -84,13 +85,13 @@ class TN(TLTNetworkModel):
                  seed=None
                  ):
         super().__init__()
+        self._graph = graph
+        self._weighted = weighted
+        self._directed = directed
         self.users_interests = {}
         self.users_influence = {}
         self._numb_topics = numb_topics
         self._homophily = homophily
-        self._weighted = weighted
-        self._directed = directed
-        self._graph_path = graph_path
         self._interests_path = interests_path
         self.godNode_links = {}
         assert gn_strength is None or np.isfinite(gn_strength)
@@ -130,13 +131,18 @@ class TN(TLTNetworkModel):
         -----
         See each method docstring for details
         '''
-        if self._graph_path == None:
+        if isinstance(self._graph, nx.classes.graph.Graph):
+            self._nx_obj = self._graph
+            self._directed = self._nx_obj.is_directed()
+            self._weighted = nx.is_weighted(self._nx_obj)
+            self.mapping = None
+        elif self._graph == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self._graph_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21]) / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
-            self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
+            self._graph = pathlib.Path(os.path.abspath(womg.__file__)[:-21]) / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+            self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph, weighted=False, directed=False)
         else:
-            self._graph_path = pathlib.Path(self._graph_path)
-            self._nx_obj, self.mapping = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
+            self._graph = pathlib.Path(self._graph)
+            self._nx_obj, self.mapping = read_edgelist(self, path=self._graph, weighted=self._weighted, directed=self._directed)
         self.set_graph()
         if self._godNode_strength is not None:
             self.set_godNode_links()
@@ -149,6 +155,7 @@ class TN(TLTNetworkModel):
         self.set_influence()
         #print('updating weights')
         self.graph_weights_vecs_generation()
+        print('Macroscopic homophily level: ', self.homophily(), ' with H=', self._homophily)
 
 
     def set_graph(self):
@@ -411,6 +418,7 @@ class TN(TLTNetworkModel):
         S = eta*S_0 + A + self._rand*R
         model = NMF(n_components=self._numb_topics, init='nndsvd', random_state=self._seed)
         W = model.fit_transform(S)
+        print('Doing nmf with random coeff ', self._rand, ' and homophily ', self._homophily)
         if not np.all(np.isfinite(W)):
             print('ATTENTION W contains infinites')
 
@@ -482,3 +490,34 @@ class TN(TLTNetworkModel):
             for _ in f.readlines():
                 node, interests = _.split(' ', 1)[0], _.split(' ', 1)[1]
                 self.users_interests[int(node)] = np.array(eval(interests[:-1]))
+
+
+
+
+    ################# Analysis
+
+    def sim_in(self):
+        sims = []
+        for i in self._nx_obj.nodes:
+            for j in list(self._nx_obj.neighbors(i)):
+                sims.append(1 - distance.cosine(self.users_interests[i], self.users_interests[j]))
+        return np.mean(sims)
+
+    def select_notedge(self):
+        v1 = np.random.choice(self._nx_obj.nodes())
+        v2 = np.random.choice(self._nx_obj.nodes())
+
+        while (v1,v2) in self._nx_obj.edges or v1==v2:
+            v1 = np.random.choice(self._nx_obj.nodes())
+            v2 = np.random.choice(self._nx_obj.nodes())
+        return v1, v2
+
+    def sim_out(self, samples):
+        sims_out = []
+        for c in range(samples):
+            i, j = self.select_notedge()
+            sims_out.append(1 - distance.cosine(self.users_interests[i], self.users_interests[j]))
+        return np.mean(sims_out)
+
+    def homophily(self, numb_not_edges_tested=10000):
+        return self.sim_in() / self.sim_out(numb_not_edges_tested)
