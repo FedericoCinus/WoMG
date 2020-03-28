@@ -37,7 +37,7 @@ class LDA(TLTTopicModel):
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
-        self._training_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21]) / "womgdata" / "docs" / "training_corpus2"
+        self._training_path = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', '')) / "womgdata" / "docs" / "training_corpus2"
         print(self._training_path)
 
 
