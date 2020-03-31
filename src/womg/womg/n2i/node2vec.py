@@ -9,11 +9,11 @@ Aditya Grover and Jure Leskovec
 Knowledge Discovery and Data Mining (KDD), 2016
 '''
 
-from n2i.tfoptimizer import Word2vec as TfWord2vec
+from womg.n2i.tfoptimizer import Word2vec as TfWord2vec
 
 import pathlib
 import networkx as nx
-from n2i.graph import Graph
+from womg.n2i.graph import Graph
 import numpy as np
 from gensim.models import Word2Vec as GensimWord2Vec
 

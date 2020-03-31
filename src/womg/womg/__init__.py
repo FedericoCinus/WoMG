@@ -1,2 +1,2 @@
 #init
-from __main__ import *
+from womg.__main__ import womg_main as womg

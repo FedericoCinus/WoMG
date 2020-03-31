@@ -16,7 +16,7 @@ import numpy as np
 import networkx as nx
 from tqdm import tqdm
 import tensorflow as tf
-from n2i.node2vec import node2vec, read_graph, save_emb
+from womg.n2i.node2vec import node2vec, read_graph, save_emb
 
 curr_path = str(pathlib.Path.cwd())
 

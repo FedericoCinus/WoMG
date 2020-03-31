@@ -1,3 +1,5 @@
+import numpy as np
+
 class Propagation:
     def __init__(self, network_model, topic_model, diffusion_model):
         self.diffusion_model = diffusion_model
@@ -12,6 +14,9 @@ class Propagation:
 
     @property
     def propagations(self):
+        '''
+        una lista di M tuple (tempo, nodo)
+        '''
         self.propagations = self.diffusion_model.all_propagations
         return self._propagations
 
@@ -21,7 +26,7 @@ class Propagation:
 
     @property
     def docs(self):
-        self.docs = self.topic_model.items_keyw
+        self.docs = [v for k, v in self.topic_model.items_keyw.items()]
         return self._docs
 
     @docs.setter
@@ -32,9 +37,10 @@ class Propagation:
     @property
     def topic_distributions(self):
         '''
-        When propagations is called for save it is set to the current config
+        KxM matrix
         '''
-        self.topic_distributions = self.topic_model.items_descript
+        vectors = [v for v in self.topic_model.items_descript.values()]
+        self.topic_distributions = np.column_stack(vectors)
         return self._topic_distributions
 
     @topic_distributions.setter
@@ -44,9 +50,10 @@ class Propagation:
     @property
     def interests(self):
         '''
-        When propagations is called for save it is set to the current config
+        kxN matrix
         '''
-        self.interests = self.network_model.users_interests
+        interests = [v for v in self.network_model.users_interests.values()]
+        self.interests = np.column_stack(interests)
         return self._interests
 
     @interests.setter

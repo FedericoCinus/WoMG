@@ -39,12 +39,6 @@ class DiffusionModel(abc.ABC):
         self.topic_model = {}
 
 
-    def validate_config(self):
-        '''
-        Concrete method for validate the tlt components
-        '''
-        print('I am validating')
-
     def run(self, numb_steps):
         '''
         Simulates by running iteration method numb_steps times
@@ -54,17 +48,18 @@ class DiffusionModel(abc.ABC):
         numb_steps : int
             number of simulation steps, i.e. number of times to call iteration()
         '''
-        print("Computing cascades: ")
+        print("Computing cascades.. ")
         for t in self._progress_bar(range(numb_steps)):
+            #print(t)
             if t==0:
                 self.iteration(step=0)
             else:
                 if not self.stop_criterior():
-                    self.iteration(step=t+1)
+                    self.iteration(step=t)
                 else:
                     #print('\n stop_criterior: ', self.stop_criterior(), '\n')
-                    print('\n Simulation stopped at timestep ', str(t-1) ,
-                            '\n Diffusion has been completed.'  )
+                    #print('\n Simulation stopped at timestep ', str(t) ,
+                    print('WoMG diffusion has been completed.'  )
                     break
 
 

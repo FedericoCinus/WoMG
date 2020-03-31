@@ -3,7 +3,6 @@
 import pathlib
 import json
 import pickle
-from tqdm import tqdm
 from abc import ABC
 import networkx as nx
 
@@ -54,13 +53,13 @@ class NetworkModel(ABC):
         '''
         #graph_adj = nx.adjacency_matrix(nx_obj).toarray()
         G = {}
-        print('Formatting graph:')
+        print('Formatting graph..')
         if directed:
-            for edge in tqdm(nx_obj.edges()):
+            for edge in (nx_obj.edges()):
                 G[(edge[0],edge[1])] = 1
         else:
             #print(nx_obj.edges())
-            for edge in tqdm(nx_obj.edges()):
+            for edge in (nx_obj.edges()):
                 #print(edge)
                 G[(edge[0],edge[1])] = 1
                 G[(edge[1],edge[0])] = 1
