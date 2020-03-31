@@ -13,6 +13,7 @@
 ##################################################
 
 import click
+from propagation import Propagation
 from womg.network.tn import TN
 from womg.topic.lda import LDA
 from womg.diffusion.tlt import TLT
@@ -237,7 +238,9 @@ def womg_main(graph=None,
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
         #diffusion_model.save_threshold_values(path_out)
-
+        propagation = Propagation(network_model,
+                                  topic_model,
+                                  diffusion_model)
     finally:
         save(network_model=network_model,
              topic_model=topic_model,
@@ -247,7 +250,8 @@ def womg_main(graph=None,
              save_int=save_int,
              save_infl=save_infl,
              save_keyw=save_keyw)
-
+    print('hello')
+    return propagation
 
 @click.command()
 @click.option('--topics', metavar='K', default=15,

@@ -74,6 +74,7 @@ class TLT(DiffusionModel):
             self._progress_bar = tqdm
         self._thresholds_values = []
         self._virality_resistance = virality_resistance
+        self.all_propagations = []
 
 
     def save_threshold_values(self, path_out):
@@ -102,6 +103,7 @@ class TLT(DiffusionModel):
         3. Save results contained in public attributes: new activated nodes
         '''
         self.saver.save_propagation(self.propagations, step)
+        self.all_propagations.append((step, self.propagations))
 
         if step == 0:
             for item in range(self._numb_docs):
@@ -258,7 +260,7 @@ class TLT(DiffusionModel):
             curr_weight = self.network_model.graph[(u, v)]
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
             self._thresholds_values.append((z_sum, self.topic_model.viralities[item]))
-            print('z_sum: ', z_sum, '  virality: ', self._virality_resistance *self.topic_model.viralities[item])
+            #print('z_sum: ', z_sum, '  virality: ', self._virality_resistance *self.topic_model.viralities[item])
             if z_sum > self._virality_resistance * self.topic_model.viralities[item]:
                 if self._single_activator:
                     if max_interested < z_sum:

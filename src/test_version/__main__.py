@@ -1,18 +1,18 @@
 #dealing with path (WoMG is not a library for now)
-
 import os
 import pathlib
 if not str(pathlib.Path.cwd()).endswith('src'):
-  src_path = pathlib.Path.cwd() / "src" / "womg"
-  os.sys.path.insert(0, str(src_path))
+   src_path = pathlib.Path.cwd() / "src" / "womg"
+   os.sys.path.insert(0, str(src_path))
 if str(pathlib.Path.cwd()).endswith('examples'):
-  src_path = pathlib.Path.cwd().parent / "src" / "womg"
-  os.sys.path.insert(0, str(src_path))
+   src_path = pathlib.Path.cwd().parent / "src" / "womg"
+   os.sys.path.insert(0, str(src_path))
 print(pathlib.Path.cwd())
 
 ##################################################
 
 import click
+from propagation import Propagation
 from network.tn import TN
 from topic.lda import LDA
 from diffusion.tlt import TLT
@@ -225,19 +225,21 @@ def womg_main(graph=None,
                           docs_path=docs_path,
                           items_descr_path=items_descr_path)
         topic_model.fit()
-        print(virality_exp)
+        #print(virality_exp)
         topic_model.set_docs_viralities(virality_exp=virality_exp)
 
         diffusion_model = TLT(network_model=network_model,
                               topic_model=topic_model,
                               path_out=path_out,
                               progress_bar=progress_bar,
-                              single_activator=single_activator, 
+                              single_activator=single_activator,
                               virality_resistance=virality_resistance)
         diffusion_model.diffusion_setup()
         diffusion_model.run(numb_steps=numb_steps)
         #diffusion_model.save_threshold_values(path_out)
-
+        propagation = Propagation(network_model,
+                                  topic_model,
+                                  diffusion_model)
     finally:
         save(network_model=network_model,
              topic_model=topic_model,
@@ -247,7 +249,7 @@ def womg_main(graph=None,
              save_int=save_int,
              save_infl=save_infl,
              save_keyw=save_keyw)
-
+    return propagation
 
 @click.command()
 @click.option('--topics', metavar='K', default=15,
@@ -323,7 +325,7 @@ def womg_main(graph=None,
                     help='manually set DFS parameter; else: it is set by H')
 @click.option('--progress_bar', is_flag=True,
                     help='boolean for specifying the progress bar related to the environment if True progress_bar=tqdm_notebook -> Jupyter progress_bar; if False progress_bar=tqdm. Default False ',
-                    default=False)
+                    default=True)
 @click.option('--beta', type=float, default=0.01,
                     help='beta cost parameter for Beta-VAE loss term. Default  0.01')
 @click.option('--norm_prior', is_flag=True, default=False,

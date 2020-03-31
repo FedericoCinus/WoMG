@@ -2,6 +2,7 @@
 # Implementation of LDA topic-model
 import re
 import os
+import womg
 import pathlib
 import gensim
 import numpy as np
@@ -36,8 +37,9 @@ class LDA(TLTTopicModel):
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
-        self._training_path = pathlib.Path.cwd().parent / "womg"/ "womgdata" / "docs" / "training_corpus2"
-        print(self._training_path)
+        #self._training_path = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', '')) / "womgdata" / "docs" / "training_corpus_ap"
+        self._training_path = '../womg/womgdata/docs/training_corpus_ap'
+        #print(self._training_path)
 
 
     def fit(self):
@@ -49,7 +51,7 @@ class LDA(TLTTopicModel):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
-        print('\n In fit method there are ', self.numb_docs, 'docs, in', self._docs_path, ' with description ', self._items_descr_path)
+        #print('\n In fit method there are ', self.numb_docs, 'docs, in', self._docs_path, ' with description ', self._items_descr_path)
         mode = self.set_lda_mode()
         if mode == 'load':
             self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
@@ -83,7 +85,7 @@ class LDA(TLTTopicModel):
             if False: it will use lda for generating docs
 
         '''
-        print(self.numb_docs, self._docs_path, self._items_descr_path, flush=True)
+        #print(self.numb_docs, self._docs_path, self._items_descr_path, flush=True)
         # setting mode
         if self.numb_docs == None and self._docs_path == None:
             mode = 'load'
@@ -103,6 +105,7 @@ class LDA(TLTTopicModel):
             numb_docs = count_files(path)
             if numb_docs != 0:
                 self.numb_docs = numb_docs
+                #print('NUMB docs: ', self.numb_docs)
                 print('Extracting topic distribution from docs in ', path)
             else:
                 print('No txt file in: ', path)
@@ -168,7 +171,7 @@ class LDA(TLTTopicModel):
         model : Gensim obj
             trained Gensim lda model
         '''
-        docs = read_docs(path)
+        docs = read_docs(path, verbose=False)
         corpus = self.preprocess_texts(docs)
         gammas = {}
         item = 0
@@ -177,7 +180,8 @@ class LDA(TLTTopicModel):
             gammas[item] = np.array([i[1] for i in item_descript])
             item += 1
         if self.numb_docs == len(gammas.keys()):
-            print("Items' distribution over topics is stored")
+            #print("Items' distribution over topics is stored")
+            pass
         self.items_descript = gammas
 
 
@@ -199,6 +203,7 @@ class LDA(TLTTopicModel):
         Get the items keyword in a bow format
         '''
         docs = read_docs(path)
+        #print(docs)
         data_words = self.sent_to_words(docs)
         for item in range(self.numb_docs):
             self.items_keyw[item] = self.to_bow(data_words[item])
@@ -290,32 +295,34 @@ class LDA(TLTTopicModel):
         '''
         Preprocessing input texts: divides docs into words, bow format
         '''
+        #print('HEYyyyyyyyy')
+        #print('len docs:', len(docs), docs)
         # Remove new line characters
-        data = [re.sub(r'\s+', ' ', str(sent[0])) for sent in docs]
+        data = [re.sub(r'\s+', ' ', str(sent)) for sent in docs]
 
         # Remove distracting single quotes
-        data = [re.sub(r"\'", "", str(sent[0])) for sent in docs]
+        data = [re.sub(r"\'", "", str(sent)) for sent in docs]
 
         # Remove all the special characters
-        data = [re.sub(r'\W', ' ', str(sent[0])) for sent in docs]
+        data = [re.sub(r'\W', ' ', str(sent)) for sent in docs]
 
         # remove all single characters
-        data = [re.sub(r'\s+[a-zA-Z]\s+', ' ', str(sent[0])) for sent in docs]
+        data = [re.sub(r'\s+[a-zA-Z]\s+', ' ', str(sent)) for sent in docs]
 
         # Remove single characters from the start
-        data = [re.sub(r'\^[a-zA-Z]\s+', ' ', str(sent[0])) for sent in docs]
+        data = [re.sub(r'\^[a-zA-Z]\s+', ' ', str(sent)) for sent in docs]
 
         # Substituting multiple spaces with single space
-        data = [re.sub(r'\s+', ' ', str(sent[0]), flags=re.I) for sent in docs]
+        data = [re.sub(r'\s+', ' ', str(sent), flags=re.I) for sent in docs]
 
         # Removing prefixed 'b'
-        data = [re.sub(r'^b\s+', '', str(sent[0])) for sent in docs]
+        data = [re.sub(r'^b\s+', '', str(sent)) for sent in docs]
 
         # Remove article
-        data = [re.sub(r'the', '', str(sent[0])) for sent in docs]
+        data = [re.sub(r'the', '', str(sent)) for sent in docs]
 
         # Remove to
-        data = [re.sub(r'to', '', str(sent[0])) for sent in docs]
+        data = [re.sub(r'to', '', str(sent)) for sent in docs]
 
         data_words = self.sent_to_words(data)
         corpus = [self.dictionary.doc2bow(word) for word in data_words]
@@ -360,7 +367,9 @@ class LDA(TLTTopicModel):
         gensim lda model object
         '''
         docs = read_docs(self._training_path)
+        #print('len docs ', len(docs))
         data_words = self.sent_to_words(docs)
+
         self.dictionary = gensim.corpora.Dictionary(data_words)
         corpus = self.preprocess_texts(docs)
         lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,

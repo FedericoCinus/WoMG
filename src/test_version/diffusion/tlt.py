@@ -64,16 +64,17 @@ class TLT(DiffusionModel):
         self.inactive_nodes = {}
         self._propagations = []
         self._numb_nodes = 0
-        self._numb_docs = 0
-        self._numb_topics = 0
+        self._numb_docs = topic_model.numb_docs
+        self._numb_topics = topic_model.numb_topics
         self._single_activator = single_activator
-        print("single_activator:", single_activator)
+        #print("single_activator:", single_activator)
         if progress_bar:
             self._progress_bar = tqdm_notebook
         else:
             self._progress_bar = tqdm
         self._thresholds_values = []
         self._virality_resistance = virality_resistance
+        self.all_propagations = [[] for _ in range(self._numb_docs)]
 
 
     def save_threshold_values(self, path_out):
@@ -101,7 +102,11 @@ class TLT(DiffusionModel):
         2. Then it updates the sets of nodes
         3. Save results contained in public attributes: new activated nodes
         '''
+        #print('step:',step)
         self.saver.save_propagation(self.propagations, step)
+        for prop in self.propagations:
+            item, node = (prop.replace('\n', '').split(' '))
+            self.all_propagations[int(item)].append((step, int(node)))
 
         if step == 0:
             for item in range(self._numb_docs):
@@ -258,7 +263,7 @@ class TLT(DiffusionModel):
             curr_weight = self.network_model.graph[(u, v)]
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
             self._thresholds_values.append((z_sum, self.topic_model.viralities[item]))
-            print('z_sum: ', z_sum, '  virality: ', self._virality_resistance *self.topic_model.viralities[item])
+            #print('z_sum: ', z_sum, '  virality: ', self._virality_resistance *self.topic_model.viralities[item])
             if z_sum > self._virality_resistance * self.topic_model.viralities[item]:
                 if self._single_activator:
                     if max_interested < z_sum:
@@ -295,6 +300,7 @@ class TLT(DiffusionModel):
         When propagations is called for save it is set to the current config
         '''
         self.propagations = self.list_format(self.new_active_nodes)
+
         return self._propagations
 
     @propagations.setter

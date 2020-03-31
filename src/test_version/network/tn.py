@@ -1,6 +1,7 @@
 # /network/tn.py
 # Implementation of the Topic-aware Network model
 import os
+import womg
 import random
 import pathlib
 import collections
@@ -137,7 +138,7 @@ class TN(TLTNetworkModel):
             self.mapping = None
         elif self._graph == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self._graph = pathlib.Path('..') / "womg" / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+            self._graph = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', '')) / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
             self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph, weighted=False, directed=False)
         else:
             self._graph = pathlib.Path(self._graph)
@@ -154,7 +155,7 @@ class TN(TLTNetworkModel):
         self.set_influence()
         #print('updating weights')
         self.graph_weights_vecs_generation()
-        print('Macroscopic homophily level: ', self.homophily(), ' with H=', self._homophily)
+        #print('Macroscopic homophily level: ', self.homophily(), ' with H=', self._homophily)
 
 
     def set_graph(self):
@@ -209,8 +210,8 @@ class TN(TLTNetworkModel):
         all the links weights (from godNode to each node) are set to 1
         '''
         if nodes is None:
-            print('Setting god node')
-            for node in self._progress_bar(self._nx_obj.nodes()):
+            #print('Setting god node')
+            for node in (self._nx_obj.nodes()):
                 self.godNode_links[(-1, node)] = np.abs(np.random.randn())
                 self.graph.update(self.godNode_links)
         if isinstance(nodes, int):
@@ -231,11 +232,12 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
+        print('Creating interests..')
         if int_mode == 'rand':
-            print('Random generation of interests:')
+            #print('Random generation of interests:')
             self.random_interests()
         if int_mode == 'n2i':
-            print('\nGenerating interests from graph in ')
+            #print('\nGenerating interests from graph in ')
             self._q = np.exp(4.60517*self._homophily)
             self._p = np.exp(-4.60517*self._homophily)
             prior = 'half_norm' if self._norm_prior else 'beta'
@@ -417,7 +419,7 @@ class TN(TLTNetworkModel):
         S = eta*S_0 + A + self._rand*R
         model = NMF(n_components=self._numb_topics, init='nndsvd', random_state=self._seed)
         W = model.fit_transform(S)
-        print('Doing nmf with random coeff ', self._rand, ' and homophily ', self._homophily)
+        #print('Doing nmf with random coeff ', self._rand, ' and homophily ', self._homophily)
         if not np.all(np.isfinite(W)):
             print('ATTENTION W contains infinites')
 
