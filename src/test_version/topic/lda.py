@@ -206,7 +206,10 @@ class LDA(TLTTopicModel):
         '''
         docs = read_docs(path)
         #print(docs)
-        data_words = self.sent_to_words(docs)
+        preproc_docs = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) !=0]
+        #print(preproc_docs)
+        data_words = self.sent_to_words(preproc_docs)
+        #print(data_words)
         for item in range(self.numb_docs):
             self.items_keyw[item] = self.to_bow(data_words[item])
 
@@ -297,34 +300,43 @@ class LDA(TLTTopicModel):
         '''
         Preprocessing input texts: divides docs into words, bow format
         '''
+        #print(docs)
+        # for i, d in enumerate(docs):
+        #     print(type(d), i, len(d))
+        #     try:
+        #         print(d[0])
+        #     except:
+        #         print('ERROR FILE')
+        #         print(d)
+        data = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) !=0]
         #print('HEYyyyyyyyy')
         #print('len docs:', len(docs), docs)
         # Remove new line characters
-        data = [re.sub(r'\s+', ' ', str(sent)) for sent in docs]
+        data = [re.sub(r'\s+', ' ', str(sent)) for sent in data]
 
         # Remove distracting single quotes
-        data = [re.sub(r"\'", "", str(sent)) for sent in docs]
+        data = [re.sub(r"\'", "", str(sent)) for sent in data]
 
         # Remove all the special characters
-        data = [re.sub(r'\W', ' ', str(sent)) for sent in docs]
+        data = [re.sub(r'\W', ' ', str(sent)) for sent in data]
 
         # remove all single characters
-        data = [re.sub(r'\s+[a-zA-Z]\s+', ' ', str(sent)) for sent in docs]
+        data = [re.sub(r'\s+[a-zA-Z]\s+', ' ', str(sent)) for sent in data]
 
         # Remove single characters from the start
-        data = [re.sub(r'\^[a-zA-Z]\s+', ' ', str(sent)) for sent in docs]
+        data = [re.sub(r'\^[a-zA-Z]\s+', ' ', str(sent)) for sent in data]
 
         # Substituting multiple spaces with single space
-        data = [re.sub(r'\s+', ' ', str(sent), flags=re.I) for sent in docs]
+        data = [re.sub(r'\s+', ' ', str(sent), flags=re.I) for sent in data]
 
         # Removing prefixed 'b'
-        data = [re.sub(r'^b\s+', '', str(sent)) for sent in docs]
+        data = [re.sub(r'^b\s+', '', str(sent)) for sent in data]
 
         # Remove article
-        data = [re.sub(r'the', '', str(sent)) for sent in docs]
+        data = [re.sub(r'the', '', str(sent)) for sent in data]
 
         # Remove to
-        data = [re.sub(r'to', '', str(sent)) for sent in docs]
+        data = [re.sub(r'to', '', str(sent)) for sent in data]
 
         data_words = self.sent_to_words(data)
         corpus = [self.dictionary.doc2bow(word) for word in data_words]
@@ -374,8 +386,9 @@ class LDA(TLTTopicModel):
 
         self.dictionary = gensim.corpora.Dictionary(data_words)
         corpus = self.preprocess_texts(docs)
-        saved_model = self.main_data_path /str('trained_lda_'+str(str(self._training_path)[-3:])+str(self.numb_topics))
-        if os.path.exists(saved_model):
+        saved_model = self.main_data_path/'topic_model'/str('trained_lda_'+str(str(self._training_path))+str(self.numb_topics))
+        saved_model_fname = str(hash(saved_model))+'.model'
+        if os.path.exists(saved_model_fname):
             #lda_model = pickle.load(os.path.abspath(saved_model))
             lda_model = gensim.models.ldamodel.LdaModel.load(os.path.abspath(saved_model))
         else:
@@ -388,8 +401,7 @@ class LDA(TLTTopicModel):
                                                     passes=10,
                                                     alpha='auto',
                                                     per_word_topics=True)
-            temp_file = self.main_data_path /str('trained_lda_'+str(str(self._training_path)[-3:])+str(self.numb_topics))
             #pickle.dump(lda_model, open(temp_file,'wb'))
-            lda_model.save(os.path.abspath(temp_file))
+            lda_model.save(os.path.abspath(saved_model_fname))
 
         return lda_model
