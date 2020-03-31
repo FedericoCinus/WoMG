@@ -390,7 +390,7 @@ class LDA(TLTTopicModel):
         saved_model_fname = str(hash(saved_model))+'.model'
         if os.path.exists(saved_model_fname):
             #lda_model = pickle.load(os.path.abspath(saved_model))
-            lda_model = gensim.models.ldamodel.LdaModel.load(os.path.abspath(saved_model))
+            lda_model = gensim.models.ldamodel.LdaModel.load(os.path.abspath(saved_model_fname))
         else:
             lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
                                                     id2word=self.dictionary,
