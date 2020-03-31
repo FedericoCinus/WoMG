@@ -5,6 +5,7 @@ import os
 import womg
 import pathlib
 import gensim
+import pickle
 import numpy as np
 from topic.tlt_topic_model import TLTTopicModel
 from utils.utility_functions import count_files, read_docs, TopicsError, DocsError
@@ -37,8 +38,9 @@ class LDA(TLTTopicModel):
         self._items_descr_path = items_descr_path
         self.items_keyw = {}
         self.dictionary = []
-        #self._training_path = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', '')) / "womgdata" / "docs" / "training_corpus_ap"
-        self._training_path = '../womg/womgdata/docs/training_corpus_ap'
+        #self.main_data_path = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', ''))/'womgdata'
+        self.main_data_path = pathlib.Path('../womg/womgdata')
+        self._training_path = self.main_data_path /'docs'/'training_corpus_ap'
         #print(self._training_path)
 
 
@@ -91,8 +93,8 @@ class LDA(TLTTopicModel):
             mode = 'load'
             if self._items_descr_path == None:
                 # pre-trained topic model with 15 topics and 50 docs
-                self._items_descr_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Items_descript.txt'
-                self._topics_descr_path = pathlib.Path(os.path.abspath(womg.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Topics_descript.txt'
+                self._items_descr_path = self.main_data_path / 'topic_model' / 'Items_descript.txt'
+                self._topics_descr_path = self.main_data_path / 'topic_model' / 'Topics_descript.txt'
                 self.topics_descript = self.load_topics_descr(self._topics_descr_path)
             else:
                 pass
@@ -372,7 +374,12 @@ class LDA(TLTTopicModel):
 
         self.dictionary = gensim.corpora.Dictionary(data_words)
         corpus = self.preprocess_texts(docs)
-        lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
+        saved_model = self.main_data_path /str('trained_lda_'+str(str(self._training_path)[-3:])+str(self.numb_topics))
+        if os.path.exists(saved_model):
+            #lda_model = pickle.load(os.path.abspath(saved_model))
+            lda_model = gensim.models.ldamodel.LdaModel.load(os.path.abspath(saved_model))
+        else:
+            lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
                                                     id2word=self.dictionary,
                                                     num_topics=self.numb_topics,
                                                     random_state=100,
@@ -381,5 +388,8 @@ class LDA(TLTTopicModel):
                                                     passes=10,
                                                     alpha='auto',
                                                     per_word_topics=True)
+            temp_file = self.main_data_path /str('trained_lda_'+str(str(self._training_path)[-3:])+str(self.numb_topics))
+            #pickle.dump(lda_model, open(temp_file,'wb'))
+            lda_model.save(os.path.abspath(temp_file))
 
         return lda_model
