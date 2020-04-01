@@ -7,6 +7,7 @@ import pathlib
 import gensim
 import pickle
 import numpy as np
+from tqdm import tqdm, tqdm_notebook
 from topic.tlt_topic_model import TLTTopicModel
 from utils.utility_functions import count_files, read_docs, TopicsError, DocsError
 from utils.distributions import random_powerlaw_vec
@@ -29,7 +30,11 @@ class LDA(TLTTopicModel):
         sets the lda mode: reading or generating mode
     '''
 
-    def __init__(self, numb_topics, numb_docs, docs_path, items_descr_path):
+    def __init__(self, numb_topics,
+                numb_docs,
+                docs_path,
+                items_descr_path,
+                progress_bar):
         super().__init__()
         self.numb_topics = numb_topics
         self.numb_docs = numb_docs
@@ -42,6 +47,11 @@ class LDA(TLTTopicModel):
         self.main_data_path = pathlib.Path('../womg/womgdata')
         self._training_path = self.main_data_path /'docs'/'training_corpus_ap'
         #print(self._training_path)
+        if progress_bar:
+            self._progress_bar = tqdm_notebook
+        else:
+            self._progress_bar = tqdm
+
 
 
     def fit(self):
@@ -108,7 +118,7 @@ class LDA(TLTTopicModel):
             if numb_docs != 0:
                 self.numb_docs = numb_docs
                 #print('NUMB docs: ', self.numb_docs)
-                print('Extracting topic distribution from docs in ', path)
+                #print('Extracting topic distribution from docs in ', path)
             else:
                 print('No txt file in: ', path)
 
@@ -119,7 +129,8 @@ class LDA(TLTTopicModel):
             if self.numb_docs != numb_docs:
                 raise DocsError("Please write the correct number of docs as input or do not insert it in case you give a docs_folder")
             else:
-                print('Extracting topic distribution from docs in ', path)
+                pass
+                #print('Extracting topic distribution from docs in ', path)
 
         elif self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
             mode = 'gen'
@@ -139,6 +150,7 @@ class LDA(TLTTopicModel):
             Exponent of the pareto distribution for documents
             viralities.
         '''
+        #print('vir_exp', virality_exp)
         viralities = random_powerlaw_vec(gamma=virality_exp, dimensions=self.numb_docs)
 
         if np.size(viralities) == self.numb_docs:
@@ -173,6 +185,7 @@ class LDA(TLTTopicModel):
         model : Gensim obj
             trained Gensim lda model
         '''
+        print('Extracting topic distribution from docs in ', path)
         docs = read_docs(path, verbose=False)
         corpus = self.preprocess_texts(docs)
         gammas = {}
@@ -208,7 +221,7 @@ class LDA(TLTTopicModel):
         #print(docs)
         preproc_docs = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) !=0]
         #print(preproc_docs)
-        data_words = self.sent_to_words(preproc_docs)
+        data_words = self.sent_to_words(preproc_docs, verbose=False)
         #print(data_words)
         for item in range(self.numb_docs):
             self.items_keyw[item] = self.to_bow(data_words[item])
@@ -338,12 +351,12 @@ class LDA(TLTTopicModel):
         # Remove to
         data = [re.sub(r'to', '', str(sent)) for sent in data]
 
-        data_words = self.sent_to_words(data)
+        data_words = self.sent_to_words(data, verbose=False)
         corpus = [self.dictionary.doc2bow(word) for word in data_words]
         return corpus
 
 
-    def sent_to_words(self, docs):
+    def sent_to_words(self, docs, verbose=True):
         '''
         Returns list of docs divided in words
 
@@ -358,8 +371,12 @@ class LDA(TLTTopicModel):
             list of lists: each entry is the list of words of one doc
         '''
         data_words = []
-        for sentence in docs:
-            data_words.append(gensim.utils.simple_preprocess(str(sentence), deacc=True))
+        if verbose:
+            for sentence in self._progress_bar(docs):
+                data_words.append(gensim.utils.simple_preprocess(str(sentence), deacc=True))
+        else:
+            for sentence in docs:
+                data_words.append(gensim.utils.simple_preprocess(str(sentence), deacc=True))
         return list(data_words)
 
 
@@ -380,15 +397,19 @@ class LDA(TLTTopicModel):
         -------
         gensim lda model object
         '''
+        print('Training LDA model..')
         docs = read_docs(self._training_path)
         #print('len docs ', len(docs))
-        data_words = self.sent_to_words(docs)
+        data_words = self.sent_to_words(docs, verbose=False)
 
         self.dictionary = gensim.corpora.Dictionary(data_words)
         corpus = self.preprocess_texts(docs)
-        saved_model = self.main_data_path/'topic_model'/str('trained_lda_'+str(str(self._training_path))+str(self.numb_topics))
-        saved_model_fname = str(hash(saved_model))+'.model'
-        if os.path.exists(saved_model_fname):
+
+        hash_name = 'trained_lda'+str(hash(str(self._training_path)+str(self.numb_topics)))+'.model'
+        saved_model_fname = self.main_data_path/'topic_model'/hash_name
+        #print('reading: ', saved_model_fname)
+        if os.path.exists(os.path.abspath(saved_model_fname)):
+            #print('loading pre-trained LDA')
             #lda_model = pickle.load(os.path.abspath(saved_model))
             lda_model = gensim.models.ldamodel.LdaModel.load(os.path.abspath(saved_model_fname))
         else:
@@ -402,6 +423,7 @@ class LDA(TLTTopicModel):
                                                     alpha='auto',
                                                     per_word_topics=True)
             #pickle.dump(lda_model, open(temp_file,'wb'))
+            #print('writing: ', os.path.abspath(saved_model_fname))
             lda_model.save(os.path.abspath(saved_model_fname))
 
         return lda_model

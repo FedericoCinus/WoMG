@@ -80,9 +80,9 @@ class TN(TLTNetworkModel):
                  window_size, workers, iiter,
                  beta, norm_prior,
                  alpha_value, beta_value,
+                  progress_bar,
+                  seed,
                  prop_steps=5000,
-                 progress_bar=False,
-                 seed=None
                  ):
         super().__init__()
         self._graph = graph
@@ -115,6 +115,9 @@ class TN(TLTNetworkModel):
             self._progress_bar = tqdm
         self._prop_steps = prop_steps
         self._seed = seed
+        # print('H', self._homophily)
+        # print('gn', self._godNode_strength)
+        # print('infl', self._infl_strength)
 
 
 
@@ -131,6 +134,7 @@ class TN(TLTNetworkModel):
         -----
         See each method docstring for details
         '''
+        #print('int', int_mode)
         if isinstance(self._graph, nx.classes.graph.Graph):
             self._nx_obj = self._graph
             self._directed = self._nx_obj.is_directed()
@@ -211,14 +215,14 @@ class TN(TLTNetworkModel):
         '''
         if nodes is None:
             #print('Setting god node')
-            for node in (self._nx_obj.nodes()):
+            for node in self._progress_bar(self._nx_obj.nodes()):
                 self.godNode_links[(-1, node)] = np.abs(np.random.randn())
                 self.graph.update(self.godNode_links)
         if isinstance(nodes, int):
             self.godNode_links[(-1, nodes)] = weight
             self.graph.update(self.godNode_links)
         if isinstance(nodes, collections.Iterable):
-            for node in nodes:
+            for node in self._progress_bar(nodes):
                 self.godNode_links[(-1, node)] = weight
                 self.graph.update(self.godNode_links)
 

@@ -21,6 +21,7 @@ from womg.utils.saver import TxtSaver
 
 
 
+
 def save(network_model, topic_model, diffusion_model,
          path, save_all,
          save_int, save_infl, save_keyw):
@@ -46,14 +47,14 @@ def womg_main(graph=None,
               items_descr_path=None,
               numb_topics=15,
               numb_docs=None,
-              numb_steps=100,
+              numb_steps=6,
               homophily=.5,
-              gn_strength=0,
-              infl_strength=None,
-              virality_exp=1.5,
-              virality_resistance=1.,
+              gn_strength=13.,
+              infl_strength=12.,
+              virality_exp=8.,
+              virality_resistance=13.,
               interests_path=None,
-              int_mode='rand',
+              int_mode='nmf',
               weighted=False, directed=False,
               path_out=None,
               seed=None,
@@ -66,7 +67,7 @@ def womg_main(graph=None,
               alpha_value=2.,
               beta_value=2.,
               prop_steps=1000,
-              progress_bar=False,
+              progress_bar=True,
               save_all=False,
               save_int=False,
               save_infl=False,
@@ -101,14 +102,11 @@ def womg_main(graph=None,
         Default 0.5
 
     gn_strength : float
-        god node influence stength. Default 1
+        god node influence stength. Default 13
 
     infl_strength : float
-        [0, 1]
-        relative strength of influence with respect to the interests avg norm.
-        If it is 1 then the influence vectors have the same norm as the interests.
-        If 0 the influence vectors take no part in the propagation formula.
-        Default: infl_strength = 1-H
+        relative strength of influence with respect to the interests
+        Default: 12.
 
     virality : float
         exponent of the powerlaw distribution for documents viralities.
@@ -118,7 +116,7 @@ def womg_main(graph=None,
     int_mode : str
         defines the method for generating nodes' interests.
         4 choices: 'n2i', 'rand', 'prop_int', 'nmf'
-        Default setting is rand
+        Default setting is 'nmf'
 
 
     graph : str or nx obj
@@ -223,7 +221,8 @@ def womg_main(graph=None,
         topic_model = LDA(numb_topics=numb_topics,
                           numb_docs=numb_docs,
                           docs_path=docs_path,
-                          items_descr_path=items_descr_path)
+                          items_descr_path=items_descr_path,
+                          progress_bar=progress_bar)
         topic_model.fit()
         #print(virality_exp)
         topic_model.set_docs_viralities(virality_exp=virality_exp)
@@ -258,22 +257,22 @@ def womg_main(graph=None,
 @click.option('--docs', metavar='D', default=None,
                     help='Number of docs to be generated. Default 100',
                     type=int)
-@click.option('--steps', metavar='T', default=100,
+@click.option('--steps', metavar='T', default=6,
                     help='Number of time steps for diffusion',
                     type=int)
 @click.option('--homophily', metavar='H', default=0.5,
                     help='0<=H<=1 :degree of homophily decoded from the given network. Default 0.5',
                     type=click.FloatRange(0, 1, clamp=True))
-@click.option('--gn_strength', default=0,
-                    help='Influence strength of the god node for initial configuration. Default 0',
+@click.option('--gn_strength', default=13.,
+                    help='Influence strength of the god node for initial configuration. Default 13.',
                     type=float)
 @click.option('--infl_strength', type=float, default=None,
-                    help='Percentage of strength of the influence vecs with respect to interests vecs. Default 1')
-@click.option('--virality_exp', metavar='V', default=1.5,
-                    help='Exponent of the pareto distribution for documents viralities.',
+                    help='Influence strength of nodes with respect to interests vecs. Default 12.')
+@click.option('--virality_exp', metavar='V', default=8.,
+                    help='Exponent of the pareto distribution for documents viralities. Default 8.',
                     type=float)
-@click.option('--virality_resistance', metavar='V', default=1.,
-                    help='Virality resistance factor r',
+@click.option('--virality_resistance', metavar='V', default=13.,
+                    help='Virality resistance factor r. Default 13.',
                     type=float)
 
 @click.option('--graph', default=None,
@@ -282,8 +281,8 @@ def womg_main(graph=None,
                     help='Input path of the ginterests table', type=str)
 
 @click.option('--int_mode', type=str,
-                    help="defines the method for generating nodes' interests. 3 choices: 'n2i', 'rand', 'prop_int'. Default 'rand' ",
-                    default='rand')
+                    help="defines the method for generating nodes' interests. 3 choices: 'n2i', 'rand', 'prop_int'. Default 'nmf' ",
+                    default='nmf')
 
 @click.option('--weighted', is_flag=True,
                     help='boolean specifying (un)weighted. Default  unweighted', default=False)

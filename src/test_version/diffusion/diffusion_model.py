@@ -49,7 +49,7 @@ class DiffusionModel(abc.ABC):
             number of simulation steps, i.e. number of times to call iteration()
         '''
         print("Computing cascades.. ")
-        for t in self._progress_bar(range(numb_steps)):
+        for t in range(numb_steps):
             #print(t)
             if t==0:
                 self.iteration(step=0)

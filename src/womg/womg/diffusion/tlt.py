@@ -53,8 +53,9 @@ class TLT(DiffusionModel):
 
     def __init__(self, network_model, topic_model,
                  path_out,
-                 progress_bar, single_activator,
-                 virality_resistance):
+                 single_activator,
+                 virality_resistance,
+                 progress_bar):
         super().__init__()
         self.network_model = network_model
         self.topic_model = topic_model
@@ -75,6 +76,7 @@ class TLT(DiffusionModel):
         self._thresholds_values = []
         self._virality_resistance = virality_resistance
         self.all_propagations = [[] for _ in range(self._numb_docs)]
+        #print('vir_res', self._virality_resistance)
 
 
     def save_threshold_values(self, path_out):
@@ -112,7 +114,8 @@ class TLT(DiffusionModel):
             for item in range(self._numb_docs):
                 new_active_nodes = self.active_nodes[item]
                 self.update_sets(item, new_active_nodes)
-        for item in self._progress_bar(range(self._numb_docs)):
+        #for item in self._progress_barrange(self._numb_docs)):
+        for item in range(self._numb_docs):
             new_active_nodes = set()
             if self.active_nodes[item] != set() or None:
                 for node in self.inactive_nodes[item]:
