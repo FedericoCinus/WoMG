@@ -56,11 +56,11 @@ You can check out the other options available to use with *WoMG* using:<br/>
 ?womg
 ```
 
-``numb_topics`` defines the dimension of topic space where documents and nodes are described
-``homophily`` modifies the interests similarity between connected nodes
-``gn_strength`` modifies the strength of influence exerted on each node at the initial time step
-``infl_strength``  increments the strength of influence exerted on each node with the interests of 
-``virality_resistance`` determines the global resistance to propagation of the documents
+``numb_topics`` defines the dimension of topic space where documents and nodes are described <br />
+``homophily`` modifies the interests similarity between connected nodes <br />
+``gn_strength`` modifies the strength of influence exerted on each node at the initial time step <br />
+``infl_strength``  increments the strength of influence exerted on each node with the interests of <br />
+``virality_resistance`` determines the global resistance to propagation of the documents <br />
 
 
 ## Authors
