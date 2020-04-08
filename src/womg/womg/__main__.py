@@ -1,16 +1,3 @@
-#dealing with path (WoMG is not a library for now)
-import os
-import pathlib
-# if not str(pathlib.Path.cwd()).endswith('src'):
-#    src_path = pathlib.Path.cwd() / "src" / "womg"
-#    os.sys.path.insert(0, str(src_path))
-# if str(pathlib.Path.cwd()).endswith('examples'):
-#    src_path = pathlib.Path.cwd().parent / "src" / "womg"
-#    os.sys.path.insert(0, str(src_path))
-# print(pathlib.Path.cwd())
-
-##################################################
-
 import click
 from womg.propagation import Propagation
 from womg.network.tn import TN
