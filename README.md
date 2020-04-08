@@ -2,7 +2,7 @@
 
 *WoMG* is a Python library for **Word-of-Mouth** Cascades **Generation** which combines  topic  modeling  and  a  topic-aware  propagation model  to  create  realistic  information-rich  cascades,  whose shape depends on many factors, including the topic of theitem and its virality,  the homophily of the social network, the interests of its users and their social influence.
 
-*WoMG* starts with any (un)directed, (un)weighted graph and a collection of documents, generates interests of each node and the topic distribution of each document, and finally outputs the propagation DAGs (Directed-Acyclic graph) of the documents through the network.
+*WoMG* starts with any (un)directed, (un)weighted graph and a collection of documents, generates interests of each node, extracts the topic distribution of each document, and finally outputs the propagation DAGs (Directed-Acyclic graph) of the documents through the network.
 
 <img src="data/images/womg.png" height="480px" />
 
@@ -10,16 +10,15 @@
 ## Installation
 
 ### Dependencies
-Click==7.0
-decorator==4.4.1
-joblib==0.14.0
-networkx==2.3
-numpy==1.17.3
-scikit-learn==0.21.3
-scipy==1.3.1
-sklearn==0.0
-tqdm==4.32.1
-gensim=3.8.0
+- Click==7.0
+- decorator==4.4.1
+- joblib==0.14.0
+- networkx==2.3
+- numpy==1.17.3
+- scikit-learn==0.21.3
+- scipy==1.3.1
+- tqdm==4.32.1
+- gensim=3.8.0
 
 ### User installation
 Install using ``pip``: <br>
