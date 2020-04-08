@@ -51,7 +51,6 @@ class NetworkModel(ABC):
           key <- tuple which describes the link (node_1, node_2)
           value <- int weight of the link
         '''
-        #graph_adj = nx.adjacency_matrix(nx_obj).toarray()
         G = {}
         print('Formatting graph..')
         if directed:

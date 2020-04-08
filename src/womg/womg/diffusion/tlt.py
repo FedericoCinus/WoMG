@@ -104,7 +104,6 @@ class TLT(DiffusionModel):
         2. Then it updates the sets of nodes
         3. Save results contained in public attributes: new activated nodes
         '''
-        #print('step:',step)
         self.saver.save_propagation(self.propagations, step)
         for prop in self.propagations:
             item, node = (prop.replace('\n', '').split(' '))

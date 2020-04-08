@@ -1,8 +1,6 @@
 # /diffusion/diffusion_model.py
 # Abstract class defining Diffusion models
 import abc
-import pickle
-import pathlib
 
 
 class DiffusionModel(abc.ABC):
@@ -50,15 +48,12 @@ class DiffusionModel(abc.ABC):
         '''
         print("Computing cascades.. ")
         for t in range(numb_steps):
-            #print(t)
             if t==0:
                 self.iteration(step=0)
             else:
                 if not self.stop_criterior():
                     self.iteration(step=t)
                 else:
-                    #print('\n stop_criterior: ', self.stop_criterior(), '\n')
-                    #print('\n Simulation stopped at timestep ', str(t) ,
                     print('WoMG diffusion has been completed.'  )
                     break
 

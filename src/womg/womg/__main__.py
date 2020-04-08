@@ -76,7 +76,7 @@ def womg_main(graph=None,
     Parameters
     ----------
     numb_topics : int
-        number of topics in the topic model. Default 15. K<d
+        number of topics for documents' topic model and nodes' interests. Default 15.
 
     numb_docs : int
         number of docs to be generated. Default 100
@@ -89,15 +89,14 @@ def womg_main(graph=None,
         Default 0.5
 
     gn_strength : float
-        god node influence stength. Default 13
+        god node influence stength at intial time step. Default 13
 
     infl_strength : float
         relative strength of influence with respect to the interests
         Default: 12.
 
     virality : float
-        exponent of the powerlaw distribution for documents viralities.
-        P(x; a) = x^{-a}, 0 <= x <=1. Deafault a=1
+        exponent of the powerlaw distribution for documents viralities. Default=8
 
 
     int_mode : str

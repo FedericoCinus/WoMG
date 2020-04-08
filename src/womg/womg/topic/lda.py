@@ -61,7 +61,6 @@ class LDA(TLTTopicModel):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
-        #print('\n In fit method there are ', self.numb_docs, 'docs, in', self._docs_path, ' with description ', self._items_descr_path)
         mode = self.set_lda_mode()
         if mode == 'load':
             self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
@@ -95,7 +94,6 @@ class LDA(TLTTopicModel):
             if False: it will use lda for generating docs
 
         '''
-        #print(self.numb_docs, self._docs_path, self._items_descr_path, flush=True)
         # setting mode
         if self.numb_docs == None and self._docs_path == None:
             mode = 'load'
@@ -115,8 +113,6 @@ class LDA(TLTTopicModel):
             numb_docs = count_files(path)
             if numb_docs != 0:
                 self.numb_docs = numb_docs
-                #print('NUMB docs: ', self.numb_docs)
-                #print('Extracting topic distribution from docs in ', path)
             else:
                 print('No txt file in: ', path)
 
@@ -128,7 +124,6 @@ class LDA(TLTTopicModel):
                 raise DocsError("Please write the correct number of docs as input or do not insert it in case you give a docs_folder")
             else:
                 pass
-                #print('Extracting topic distribution from docs in ', path)
 
         elif self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
             mode = 'gen'
@@ -148,7 +143,6 @@ class LDA(TLTTopicModel):
             Exponent of the pareto distribution for documents
             viralities.
         '''
-        #print('vir_exp', virality_exp)
         viralities = random_powerlaw_vec(gamma=virality_exp, dimensions=self.numb_docs)
 
         if np.size(viralities) == self.numb_docs:
@@ -157,14 +151,12 @@ class LDA(TLTTopicModel):
         if np.size(viralities) == 1:
             for item in range(self.numb_docs):
                 self.viralities[item] = viralities[0]
-        #print(viralities)
 
     def gen_items_descript(self):
         '''
         Generates the topic distribution for each item
         and stores it in the items_descript attribute
         '''
-        #print('Genereting items descriptions')
         alpha =  [1.0 / self.numb_topics for i in range(self.numb_topics)]
         gammas = {}
         for item in range(self.numb_docs):
@@ -197,18 +189,6 @@ class LDA(TLTTopicModel):
             pass
         self.items_descript = gammas
 
-
-    # def gen_items_descript(self, model):
-    #     '''
-    #     Generates the topic distribution for each item
-    #     and stores it in the items_descript attribute
-    #     '''
-    #     alpha = model.alpha
-    #     #alpha = [0.01120081, 0.04134526, 0.5296952,  0.00861911, 0.00862031, 0.01053169, 0.01223436, 0.1643439,  0.00871354, 0.00967268, 0.01102241, 0.01131404, 0.0118466,  0.02180933, 0.0123167]
-    #     gammas = {}
-    #     for item in range(self.numb_docs):
-    #         gammas[item] = np.random.dirichlet(alpha)
-    #     self.items_descript = gammas
 
 
     def get_items_keyw(self, path):
@@ -311,17 +291,8 @@ class LDA(TLTTopicModel):
         '''
         Preprocessing input texts: divides docs into words, bow format
         '''
-        #print(docs)
-        # for i, d in enumerate(docs):
-        #     print(type(d), i, len(d))
-        #     try:
-        #         print(d[0])
-        #     except:
-        #         print('ERROR FILE')
-        #         print(d)
+
         data = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) !=0]
-        #print('HEYyyyyyyyy')
-        #print('len docs:', len(docs), docs)
         # Remove new line characters
         data = [re.sub(r'\s+', ' ', str(sent)) for sent in data]
 
@@ -397,7 +368,6 @@ class LDA(TLTTopicModel):
         '''
         print('Training LDA model..')
         docs = read_docs(self._training_path)
-        #print('len docs ', len(docs))
         data_words = self.sent_to_words(docs, verbose=False)
 
         self.dictionary = gensim.corpora.Dictionary(data_words)
@@ -405,10 +375,7 @@ class LDA(TLTTopicModel):
 
         hash_name = 'trained_lda'+str(hash(str(self._training_path)+str(self.numb_topics)))+'.model'
         saved_model_fname = self.main_data_path/'topic_model'/hash_name
-        #print('reading: ', saved_model_fname)
         if os.path.exists(os.path.abspath(saved_model_fname)):
-            #print('loading pre-trained LDA')
-            #lda_model = pickle.load(os.path.abspath(saved_model))
             lda_model = gensim.models.ldamodel.LdaModel.load(os.path.abspath(saved_model_fname))
         else:
             lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
@@ -420,8 +387,6 @@ class LDA(TLTTopicModel):
                                                     passes=10,
                                                     alpha='auto',
                                                     per_word_topics=True)
-            #pickle.dump(lda_model, open(temp_file,'wb'))
-            #print('writing: ', os.path.abspath(saved_model_fname))
             lda_model.save(os.path.abspath(saved_model_fname))
 
         return lda_model
