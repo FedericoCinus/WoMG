@@ -1,15 +1,19 @@
 # WoMG: Word of Mouth Generator
 *WoMG* is a Python library for **Word-of-Mouth** Cascades **Generation**.
 
-We propose a model for the synthetic generation of information cascades in social media. In our model the information “memes” propagating in the social network are characterized by a probability distribution in a topic space, accompanied by a textual description, i.e., a bag of keywords coherent with the topic distribution. Similarly, every person is described by a vector of interests defined over the same topic space. Information cascades are governed by the topic of the meme, its level of virality, the interests of each person, community pressure, and social influence.
+WoMG is a syntectic data generator which combines  topic  modeling  and  a  topic-aware  propagation model  to  create  realistic  information-rich  cascades,  whose shape depends on many factors, including the topic of theitem and its virality,  the homophily of the social network, the interests of its users and their social influence.
 
 This repository provides a reference implementation of *WoMG* as described in:<br>
+> WoMG: a Library for Word-of-Mouth Cascades Generation.<br>
+> Federico Cinus, Francesco Bonchi, Corrado Monti, André Panisson.<br>
+> <Insert paper link>
+and: <br>
 > Generating realistic interest-driven information cascades.<br>
-> Federico Cinus, Francesco Bonchi, André Panisson, Corrado Monti.<br>
+> Federico Cinus, Francesco Bonchi, Corrado Monti, André Panisson.<br>
 > <Insert paper link>
 
 *WoMG* generates synthetic datasets of documents cascades on network.
-It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs of the docs through the network.
+It starts with any (un)directed, (un)weighted graph and a collection of documents and it outputs the propagation DAGs (Directed-Acyclic graph) of the documents through the network.
 
 <img src="./womg.png" height="480px" />
 
@@ -18,7 +22,7 @@ It starts with any (un)directed, (un)weighted graph and a collection of document
 Install using ``pip``: <br>
 
 ```bash
-$ pip install womg-core
+$ pip install womg
 ```
 
 You can also download or clone the GitHub repository: <br>
@@ -30,34 +34,31 @@ $ git clone https://github.com/FedericoCinus/WoMG.git
 
 
 ## Quickstart
-The WoMG package provides a Python module and a command-line method. To run *WoMG-core* on a **demo** mode, execute the following command from Terminal:<br/>
+The WoMG package provides a Python module and a command-line method. To import the womg function type:<br/>
 
-```bash
-$ womgc
+```python
+from womg import womg
 ```
+The **demo.ipynb** provides a tutorial.
 
-It loads 50 documents and their topic distributions located in ``/womgdata`` and it spreads them over the default network (*Les Miserables* http://konect.uni-koblenz.de/networks/moreno_lesmis).
 
 #### Options
 You can check out the other options available to use with *WoMG* using:<br/>
 
-```bash
-$ womg --help
+```python
+?womg
 ```
 
 #### Input
-[Network] The supported input format is an edgelist (txt extension):
+[Network] The supported input format are: NetworkX instance and edgelist (txt extension):
 
 		node1_id_int node2_id_int <weight_float, optional>
 
 You can specify the edgelist path using the *graph* argument:
 
 ```bash
-$ womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt
+womg(graph='/this/is/an/example/path/Graph_Folder/edgelist.txt')
 ```
-
-If no path is given the default network is *Les Miserables* network.
-
 
 #### Output (default)
 1. [Propagations] The output format is:
@@ -71,84 +72,18 @@ If no path is given the default network is *Les Miserables* network.
 
 		(topic_index, linear combination of words)
 
-You can specify the output folder path:
+All outputs are returned by the **womg** function and saved in the current directory.
 
-```bash
-$ womg --output /this/is/an/example/path/Output_Folder
+You can also specify the output folder path:
+
+```python
+womg(path_out='/this/is/an/example/path/Output_Folder')
 ```
 
 
 
 -----------------------------------------------------------------------------------------------
 
-
-## WoMG extended (TBD)
-*WoMG* is an open source reasearch project. More details of the software are reported below:
-
-### Input
-1. [Network] The supported input format is an edgelist (txt extension):
-
-		node1_id_int node2_id_int <weight_float, optional>
-
-The graph is assumed to be undirected and unweighted by default. These options can be changed by setting the appropriate flags. You can specify the edgelist path using the *graph* argument):
-
-``python womg --graph /this/is/an/example/path/Graph_Folder/edgelist.txt``
-
-If no path is given the default network is *Les Miserables* network.
-
-2. [Documents] The supported input format for documents collection (corpus) is txt. You have to specify the folder path containing them using the *docs_folder* argument:
-
-```bash
-$ womg --docs_folder /this/is/an/example/path/Corpus_Folder
-```
-
-If no documents folder path is given, *WoMG* will be set to generative mode.
-
-### Output
-There are outputs for each class (or model)
-
-1. [Diffusion] file could be in two formats:
-
-  list (default):
-
-	time doc activating_node
-  dict :
-
-  	{ time: { doc: [activating nodes] } }
-
-2. [Network] files:
-  [info] dict:
-
-	{'type': 'Graph', 'numb_nodes': '77', 'numb_edges': '254', 'aver_degree': '6.5974', 'directed': 'False'}
-
-  [graph] dict:
-
-      {(u, v): [1.3, 0.2, 0.8, ... , 0.91], ...}
-
-  Key: link-tuple. Value: weight vector
-
-  [interests and influence vectors] dict:
-
-	{(node, 'int'): [interest vector], (node, 'inlf'): [influence vector]}
-
-3. [Topic] files:
-
-  [topic distributions] dict:
-
-      {doc: [topic distribution]}
-
-  [viralities] dict:
-
-      {doc: virality}
-
-One can modify the outputs formats extension with the *format* argument:
-
-  ``python womg --format pickle``
-  ``python womg --format txt``
-
-and specify the output folder path:
-
-  ``python womg --output /this/is/an/example/path/Output_Folder``
 
 
 ### Options
@@ -195,7 +130,7 @@ and specify the output folder path:
 	author = {},
 	 title = {},
 	 booktitle = {Proceedings},
-	 year = {2019}
+	 year = {2020}
 	}
 
 
