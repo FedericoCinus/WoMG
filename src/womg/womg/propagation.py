@@ -15,7 +15,7 @@ class Propagation:
     @property
     def propagations(self):
         '''
-        una lista di M tuple (tempo, nodo)
+        list of M tuples (time, node)
         '''
         self.propagations = self.diffusion_model.all_propagations
         return self._propagations
