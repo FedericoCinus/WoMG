@@ -46,11 +46,11 @@ docs_path = '/this/is/an/example/documents_folder/'
 prop = womg(graph=graph, docs_path=docs_path)
 
 ```
-The **demo.ipynb** provides a tutorial.
+The [demo notebook]: http://www.reddit.com<https://github.com/FedericoCinus/WoMG/blob/master/demo.ipynb  provides a tutorial.
 
 
 #### Options
-You can check out the other options available to use with *WoMG* using:<br/>
+You can check out the other options available to use with *WoMG* from jupyter notebook using:<br/>
 
 ```python
 ?womg
