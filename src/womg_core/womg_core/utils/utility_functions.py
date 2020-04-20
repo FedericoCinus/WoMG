@@ -3,6 +3,8 @@ import pathlib
 import pickle
 import networkx as nx
 
+
+
 class TopicsError(Exception):
     pass
 
@@ -103,7 +105,7 @@ def read_graph(file_path):
         rfile = pickle.load(f)
     return rfile
 
-def read_docs(path):
+def read_docs(path, verbose=False):
     '''
     Returns the list of items, each row is the doc list
 
@@ -117,11 +119,16 @@ def read_docs(path):
     docs in a list format : each entry of the list is a file in a list of words
     '''
     onlyfiles = [f for f in pathlib.os.listdir(path) if pathlib.os.path.isfile(pathlib.os.path.join(path, f))]
+    onlyfiles = [f for f in onlyfiles if not f.startswith('.')]
     docs = []
+    if verbose:
+        print(onlyfiles)
     for file in onlyfiles:
         f_path = pathlib.Path(path) / str(file)
         with open(f_path, 'rb') as f:
             doc_list = [j for j in f]
+            if verbose:
+                print(doc_list)
             docs.append(doc_list)
     return docs
 

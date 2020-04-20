@@ -1,11 +1,13 @@
 # /Topic/lda.py
 # Implementation of LDA topic-model
+import re
 import os
 import womg_core
 import pathlib
+from tqdm import tqdm, tqdm_notebook
 import numpy as np
 from womg_core.topic.tlt_topic_model import TLTTopicModel
-from womg_core.utils.utility_functions import read_docs, TopicsError
+from womg_core.utils.utility_functions import count_files, read_docs, TopicsError, DocsError
 from womg_core.utils.distributions import random_powerlaw_vec
 
 class LDA(TLTTopicModel):
@@ -25,14 +27,26 @@ class LDA(TLTTopicModel):
     set_lda_mode : concrete
         sets the lda mode: reading or generating mode
     '''
-
-    def __init__(self, numb_topics, numb_docs, docs_path, items_descr_path):
+    def __init__(self, numb_topics,
+                numb_docs,
+                items_descr,
+                progress_bar):
         super().__init__()
         self.numb_topics = numb_topics
         self.numb_docs = numb_docs
-        self._docs_path = docs_path
-        self._items_descr_path = items_descr_path
-        self._training_path = pathlib.Path.cwd().parent / "womgdata" / "docs" / "training_corpus2"
+        self.numb_words = 20
+        self._docs_path = None
+        self._items_descr = items_descr
+        self.items_keyw = {}
+        self.dictionary = []
+        #self.main_data_path = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', ''))/'womgdata'
+        self.main_data_path = pathlib.Path(os.path.abspath(womg_core.__file__).replace('/womg_core/__init__.py', ''))/'womgdata'
+        self._training_path = self.main_data_path /'docs'/'training_corpus_ap'
+        #print(self._training_path)
+        if progress_bar:
+            self._progress_bar = tqdm_notebook
+        else:
+            self._progress_bar = tqdm
 
 
     def fit(self):
@@ -44,10 +58,13 @@ class LDA(TLTTopicModel):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
-        print('\n In fit method there are ', self.numb_docs, self._docs_path, self._items_descr_path)
         mode = self.set_lda_mode()
         if mode == 'load':
-            self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
+            if isinstance(self._items_descr, dict):
+                self.items_descript = self._items_descr
+                self.numb_docs = len(self._items_descr.keys())
+            else:
+                self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr)
         if mode == 'gen':
             self.gen_items_descript()
 
@@ -71,39 +88,46 @@ class LDA(TLTTopicModel):
             if False: it will use lda for generating docs
 
         '''
-        print(self.numb_docs, self._docs_path, self._items_descr_path, flush=True)
         # setting mode
         if self.numb_docs == None and self._docs_path == None:
             mode = 'load'
-            if self._items_descr_path == None:
+            if self._items_descr == None:
                 # pre-trained topic model with 15 topics and 50 docs
-                self._items_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Items_descript.txt'
-                self._topics_descr_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21])  / 'womgdata' / 'topic_model' / 'Topics_descript.txt'
+                self._items_descr = self.main_data_path / 'topic_model' / 'Items_descript.txt'
+                self._topics_descr_path = self.main_data_path / 'topic_model' / 'Topics_descript.txt'
                 self.topics_descript = self.load_topics_descr(self._topics_descr_path)
+            else:
+                pass
+            if isinstance(self._items_descr, dict):
+                print('Loading items descriptions (topic distrib for each doc)')
+            else:
+                print('Loading items descriptions (topic distrib for each doc) in: ', self._items_descr)
 
-            print('Loading items descriptions (topic distrib for each doc) in: ', self._items_descr_path)
+        elif self.numb_docs == None and self._docs_path != None and self._items_descr == None:
+            print('Please install the womg extended version')
 
-        elif self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
+        elif self.numb_docs != None and self._docs_path != None and self._items_descr == None:
+            print('Please install the womg extended version')
+
+        elif self.numb_docs != None and self._docs_path == None and self._items_descr == None:
             mode = 'gen'
-            #print('Setting LDA in generative mode: ', self.numb_docs, ' documents, with ', self.numb_topics, ' topics.')
-
-        else:
-            print('Error: ', 'number of docs ', self.numb_docs, ', docs path ', self._docs_path, ', items descriptions ', self._items_descr_path)
+            print('Setting LDA in generative mode: ', self.numb_docs, ' documents, with ', self.numb_topics, ' topics.')
+            print('Training the LDA model ..')
 
         return mode
 
 
-    def set_docs_viralities(self, virality):
+    def set_docs_viralities(self, virality_exp):
         '''
         Sets the documents viralities to the given scalar/vector
 
         Parameters
         ----------
         viralitiy : float
-            Exponent of the powerlaw distribution for documents
-            viralities. P(x; a) = x^{-a}, 0 <= x <=1
+            Exponent of the pareto distribution for documents
+            viralities.
         '''
-        viralities = random_powerlaw_vec(gamma=virality, dimensions=self.numb_docs)
+        viralities = random_powerlaw_vec(gamma=virality_exp, dimensions=self.numb_docs)
 
         if np.size(viralities) == self.numb_docs:
             for item in range(self.numb_docs):
@@ -111,42 +135,16 @@ class LDA(TLTTopicModel):
         if np.size(viralities) == 1:
             for item in range(self.numb_docs):
                 self.viralities[item] = viralities[0]
-        #print(viralities)
 
     def gen_items_descript(self):
         '''
         Generates the topic distribution for each item
         and stores it in the items_descript attribute
         '''
-        #print('Genereting items descriptions')
         alpha =  [1.0 / self.numb_topics for i in range(self.numb_topics)]
         gammas = {}
         for item in range(self.numb_docs):
             gammas[item] = np.random.dirichlet(alpha)
-        self.items_descript = gammas
-
-    def get_items_descript(self, path, model):
-        '''
-        Gets the topic distribution and puts it as attribute of the superclass
-        reading documents from the docs folder path given as parameter
-
-        Parameters
-        ----------
-        path : str
-            path of the of the docs folder
-        model : Gensim obj
-            trained Gensim lda model
-        '''
-        docs = read_docs(path)
-        corpus = self.preprocess_texts(docs)
-        gammas = {}
-        item = 0
-        for item in range(self.numb_docs):
-            item_descript = model.get_document_topics(corpus[item], minimum_probability=0.)
-            gammas[item] = np.array([i[1] for i in item_descript])
-            item += 1
-        if self.numb_docs == len(gammas.keys()):
-            print("Items' distribution over topics is stored")
         self.items_descript = gammas
 
 

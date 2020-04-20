@@ -10,7 +10,6 @@ def set_seed(seed):
         random.seed(seed)
         np.random.seed(seed)
 
-# todo
 def random_powerlaw_vec(gamma, dimensions):
     '''
     Returns the virality vector, which is a numb_docs dimension vector of integers

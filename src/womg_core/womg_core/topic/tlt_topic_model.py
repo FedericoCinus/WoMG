@@ -17,8 +17,6 @@ class TLTTopicModel(TopicModel):
     -------
     topic_distrib_extraction : absract
         inferes topic distribution for each document
-    validate_topic_config : concrete
-        validate the configuration of the class model for the tlt class
     '''
 
     def __init__(self):
@@ -26,20 +24,8 @@ class TLTTopicModel(TopicModel):
         self.viralities = {}
 
     @abc.abstractmethod
-    def get_items_descript(self):
+    def fit(self):
         '''
         Methods for infering topic distributions of the given documents
-        '''
-        pass
-
-    def validate_topic_config(self):
-        '''
-        Checks the topic model structure for the tlt model
-
-        topic_distrib attribute must be a dictionary in which:
-        - key : int
-          index of the item
-        - value : array
-          numb_topics dim array that is the topic distribution of the key-item
         '''
         pass

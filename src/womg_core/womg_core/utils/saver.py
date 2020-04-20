@@ -31,7 +31,7 @@ class Saver():
         - in case path is given -> it check that parent folders exist
         '''
         if path in (None, ''):
-            output_dir = pathlib.Path.cwd() / "Output"
+            output_dir = pathlib.Path.cwd().parent / "Output"
         else:
             output_dir = pathlib.Path(path)
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -87,7 +87,11 @@ class TxtSaver(Saver):
 
         with open(filename, "w") as f:
             for node in network_model.users_influence.keys():
-                f.write(str(node) + ' ' +str(list(network_model.users_interests[node])) + '\n')
+                if node != -1: #god node
+                    vec = ''
+                    for entry in list(network_model.users_interests[node]):
+                        vec += (str(entry)+', ')
+                    f.write(str(node) + ';' +vec+ '\n')
 
 
     def save_users_influence(self, network_model):
@@ -100,7 +104,8 @@ class TxtSaver(Saver):
 
         with open(filename, "w") as f:
             for node in network_model.users_influence.keys():
-                f.write(str(node) + ' ' +str(list(network_model.users_influence[node])) + '\n')
+                if node != -1: #god node
+                    f.write(str(node) + ';' +str(list(network_model.users_influence[node])) + '\n')
 
 
     def save_mapping(self, network_model):
@@ -128,7 +133,7 @@ class TxtSaver(Saver):
 
         with open(filename, "w") as f:
             for item in topic_model.items_descript.keys():
-                f.write(str(item) + '; ' +str(list(topic_model.items_descript[item])) + '\n')
+                f.write(str(item) + ' ' +str(list(topic_model.items_descript[item])) + '\n')
 
     def save_topics_descript(self, topic_model):
         '''

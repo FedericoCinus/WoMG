@@ -1,8 +1,6 @@
 # /topic/topic_model.py
 # Abstract class defining Topic model
 import abc
-import pathlib
-import pickle
 
 
 class TopicModel(abc.ABC):

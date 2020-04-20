@@ -24,15 +24,3 @@ class TLTNetworkModel(NetworkModel):
         value of the graph dict attribute of the class
         '''
         pass
-
-    def validate_network_config(self):
-        '''
-        Checks the graph structure for the tlt model
-
-        graph attribute must be a dictionary in which:
-        - key : tuple
-          tuple of the link
-        - value : array
-          numb_topics dim array of weights
-        '''
-        pass

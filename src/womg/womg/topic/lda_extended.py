@@ -2,17 +2,17 @@
 # Implementation of LDA topic-model
 import re
 import os
-import womg
 import pathlib
 import gensim
 import pickle
 from tqdm import tqdm, tqdm_notebook
 import numpy as np
-from womg.topic.tlt_topic_model import TLTTopicModel
-from womg.utils.utility_functions import count_files, read_docs, TopicsError, DocsError
-from womg.utils.distributions import random_powerlaw_vec
+import womg_core
+from womg_core.topic.lda import LDA
+from womg_core.utils.utility_functions import count_files, read_docs, TopicsError, DocsError
+from womg_core.utils.distributions import random_powerlaw_vec
 
-class LDA(TLTTopicModel):
+class LDA_extended(LDA):
     '''
     Class implementing Latent Dirichlet Allocation as topic model
     for topic distribution involved in tlt class model
@@ -29,27 +29,19 @@ class LDA(TLTTopicModel):
     set_lda_mode : concrete
         sets the lda mode: reading or generating mode
     '''
+
     def __init__(self, numb_topics,
-                numb_docs,
-                docs_path,
-                items_descr_path,
-                progress_bar):
-        super().__init__()
-        self.numb_topics = numb_topics
-        self.numb_docs = numb_docs
-        self.numb_words = 20
+                 numb_docs,
+                 docs_path,
+                 items_descr,
+                 progress_bar):
+        super().__init__(numb_topics,
+                         numb_docs,
+                         items_descr,
+                         progress_bar)
         self._docs_path = docs_path
-        self._items_descr_path = items_descr_path
-        self.items_keyw = {}
-        self.dictionary = []
-        #self.main_data_path = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', ''))/'womgdata'
-        self.main_data_path = pathlib.Path(os.path.abspath(womg.__file__).replace('/womg/__init__.py', ''))/'womgdata'
-        self._training_path = self.main_data_path /'docs'/'training_corpus_ap'
-        #print(self._training_path)
-        if progress_bar:
-            self._progress_bar = tqdm_notebook
-        else:
-            self._progress_bar = tqdm
+
+
 
 
     def fit(self):
@@ -61,17 +53,20 @@ class LDA(TLTTopicModel):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
+        #print('\n In fit method there are ', self.numb_docs, 'docs, in', self._docs_path, ' with description ', self._items_descr)
         mode = self.set_lda_mode()
         if mode == 'load':
-            self.items_descript, self.numb_docs = self.load_items_descr(self._items_descr_path)
-        lda_model = self.train_lda()
+            super().fit()
+
         if mode == 'get':
+            lda_model = self.train_lda()
             self.topics_descript = self.get_topics_descript(lda_model)
             self.get_items_descript(path=self._docs_path, model=lda_model)
             self.get_items_keyw(path=self._docs_path)
         if mode == 'gen':
+            lda_model = self.train_lda()
             self.topics_descript = self.get_topics_descript(lda_model)
-            self.gen_items_descript()
+            super().gen_items_descript()
             self.gen_items_keyw(model=lda_model)
 
 
@@ -94,20 +89,9 @@ class LDA(TLTTopicModel):
             if False: it will use lda for generating docs
 
         '''
-        # setting mode
-        if self.numb_docs == None and self._docs_path == None:
-            mode = 'load'
-            if self._items_descr_path == None:
-                # pre-trained topic model with 15 topics and 50 docs
-                self._items_descr_path = self.main_data_path / 'topic_model' / 'Items_descript.txt'
-                self._topics_descr_path = self.main_data_path / 'topic_model' / 'Topics_descript.txt'
-                self.topics_descript = self.load_topics_descr(self._topics_descr_path)
-            else:
-                pass
-            print('Loading items descriptions (topic distrib for each doc) in: ', self._items_descr_path)
 
 
-        elif self.numb_docs == None and self._docs_path != None and self._items_descr_path == None:
+        if self.numb_docs is None and self._docs_path is not None and self._items_descr is None:
             mode = 'get'
             path = pathlib.Path(self._docs_path)
             numb_docs = count_files(path)
@@ -115,53 +99,15 @@ class LDA(TLTTopicModel):
                 self.numb_docs = numb_docs
             else:
                 print('No txt file in: ', path)
-
-        elif self.numb_docs != None and self._docs_path != None and self._items_descr_path == None:
+        elif self.numb_docs is not None and self._docs_path is not None and self._items_descr is None:
             mode = 'get'
-            path = pathlib.Path(self._docs_path)
-            numb_docs = count_files(path)
-            if self.numb_docs != numb_docs:
-                raise DocsError("Please write the correct number of docs as input or do not insert it in case you give a docs_folder")
-            else:
-                pass
-
-        elif self.numb_docs != None and self._docs_path == None and self._items_descr_path == None:
+        elif self.numb_docs is not None and self._docs_path is None and self._items_descr is None:
             mode = 'gen'
-            print('Setting LDA in generative mode: ', self.numb_docs, ' documents, with ', self.numb_topics, ' topics.')
-            print('Training the LDA model ..')
+        else:
+            mode = super().set_lda_mode()
 
         return mode
 
-
-    def set_docs_viralities(self, virality_exp):
-        '''
-        Sets the documents viralities to the given scalar/vector
-
-        Parameters
-        ----------
-        viralitiy : float
-            Exponent of the pareto distribution for documents
-            viralities.
-        '''
-        viralities = random_powerlaw_vec(gamma=virality_exp, dimensions=self.numb_docs)
-
-        if np.size(viralities) == self.numb_docs:
-            for item in range(self.numb_docs):
-                self.viralities[item] = viralities[item]
-        if np.size(viralities) == 1:
-            for item in range(self.numb_docs):
-                self.viralities[item] = viralities[0]
-
-    def gen_items_descript(self):
-        '''
-        Generates the topic distribution for each item
-        and stores it in the items_descript attribute
-        '''
-        alpha =  [1.0 / self.numb_topics for i in range(self.numb_topics)]
-        gammas = {}
-        for item in range(self.numb_docs):
-            gammas[item] = np.random.dirichlet(alpha)
-        self.items_descript = gammas
 
     def get_items_descript(self, path, model):
         '''
@@ -214,11 +160,11 @@ class LDA(TLTTopicModel):
 
         for item in range(self.numb_docs):
             item_keyw = []
-            for word in range(self.numb_words):
+            for _ in range(self.numb_words):
                 multi_items = np.random.multinomial(1, items_descript[item], size=1)
-                topic_index = np.where(multi_items==1)[1]
+                topic_index = np.where(multi_items == 1)[1]
                 multi_topics = np.random.multinomial(1, topics_descript[topic_index][0], size=1)
-                word_index = np.where(multi_topics==1)[1]
+                word_index = np.where(multi_topics == 1)[1]
                 item_keyw.append(self.dictionary[word_index[0]])
             self.items_keyw[item] = self.to_bow(item_keyw)
 
@@ -241,42 +187,6 @@ class LDA(TLTTopicModel):
             return model.print_topics()
 
 
-    def load_items_descr(self, path):
-        '''
-        Returns the items_descript loaded from a file in path
-
-        Parameters
-        ----------
-        path : int
-            path of the items_descript file
-
-        Returns
-        -------
-        tuple of items_descript loaded from path and numb_docs
-        '''
-        items_descr_dict = {}
-        with open(path, 'r') as f:
-            numb_docs = 0
-            for line in f:
-                line = line.replace(',','').replace(']','').replace('[','')
-                values = line.split()
-                node = int(values[0])
-                interests_vec = [float(i) for i in values[1:]]
-                if self.numb_topics != len(interests_vec):
-                    raise TopicsError("Please write the correct number of topics as input or in case you give the items_descr_path you can omit it")
-                items_descr_dict[node] = interests_vec
-                numb_docs += 1
-        return items_descr_dict, numb_docs
-
-    def load_topics_descr(self, path):
-        '''
-        Loads a topic description file (for each topic word distribution)
-        '''
-        with open(path, 'r') as f:
-            topics_descript = f.readlines()
-            #topics_descript[0].replace("\\",'').replace(']','')
-        return str(topics_descript[0])
-
     def to_bow(self, text):
         '''
         Returns the give doc in a bow format
@@ -291,8 +201,8 @@ class LDA(TLTTopicModel):
         '''
         Preprocessing input texts: divides docs into words, bow format
         '''
-
         data = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) !=0]
+
         # Remove new line characters
         data = [re.sub(r'\s+', ' ', str(sent)) for sent in data]
 
@@ -368,6 +278,7 @@ class LDA(TLTTopicModel):
         '''
         print('Training LDA model..')
         docs = read_docs(self._training_path)
+        #print('len docs ', len(docs))
         data_words = self.sent_to_words(docs, verbose=False)
 
         self.dictionary = gensim.corpora.Dictionary(data_words)
@@ -379,14 +290,15 @@ class LDA(TLTTopicModel):
             lda_model = gensim.models.ldamodel.LdaModel.load(os.path.abspath(saved_model_fname))
         else:
             lda_model = gensim.models.ldamodel.LdaModel(corpus=corpus,
-                                                    id2word=self.dictionary,
-                                                    num_topics=self.numb_topics,
-                                                    random_state=100,
-                                                    update_every=1,
-                                                    chunksize=100,
-                                                    passes=10,
-                                                    alpha='auto',
-                                                    per_word_topics=True)
+                                                        id2word=self.dictionary,
+                                                        num_topics=self.numb_topics,
+                                                        random_state=100,
+                                                        update_every=1,
+                                                        chunksize=100,
+                                                        passes=10,
+                                                        alpha='auto',
+                                                        per_word_topics=True)
+
             lda_model.save(os.path.abspath(saved_model_fname))
 
         return lda_model

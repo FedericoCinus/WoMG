@@ -7,14 +7,13 @@ import pathlib
 import collections
 import networkx as nx
 import numpy as np
-from sklearn.decomposition import NMF
 from scipy import sparse
 from tqdm import tqdm, tqdm_notebook
+from scipy.spatial import distance
+from sklearn.decomposition import NMF
 from womg_core.network.tlt_network_model import TLTNetworkModel
 from womg_core.utils.utility_functions import read_edgelist
 from womg_core.utils.distributions import random_powerlaw_vec
-
-
 
 
 
@@ -71,51 +70,33 @@ class TN(TLTNetworkModel):
 
     def __init__(self, numb_topics, homophily,
                  weighted, directed,
-                 graph_path,
-                 interests_path,
+                 graph,
+                 interests,
                  gn_strength,
                  infl_strength,
-                 p, q, num_walks,
-                 walk_length,
-                 window_size, workers, iiter,
-                 beta, norm_prior,
-                 alpha_value, beta_value,
-                 prop_steps=5000,
-                 progress_bar=False,
-                 seed=None
+                  progress_bar,
+                  seed,
                  ):
         super().__init__()
+        self._graph = graph
+        self._weighted = weighted
+        self._directed = directed
         self.users_interests = {}
         self.users_influence = {}
         self._numb_topics = numb_topics
         self._homophily = homophily
-        self._weighted = weighted
-        self._directed = directed
-        self._graph_path = graph_path
-        self._interests_path = interests_path
+        self._interests = interests
         self.godNode_links = {}
         assert gn_strength is None or np.isfinite(gn_strength)
         self._godNode_strength = gn_strength
         self._infl_strength = infl_strength
-        self._rand = 16 - 15.875*self._homophily
-        #self.node2vec = Node2VecWrapper(p, q, num_walks, ...)
-        self._p = p
-        self._q = q
-        self._num_walks = num_walks
-        self._walk_length = walk_length
-        self._window_size = window_size
-        self._workers = workers
-        self._iiter = iiter
-        self._beta = beta
-        self._norm_prior = norm_prior
-        self._alpha_value = alpha_value
-        self._beta_value = beta_value
+        self._rand = 16 - 15.875 * self._homophily
         if progress_bar:
             self._progress_bar = tqdm_notebook
         else:
             self._progress_bar = tqdm
-        self._prop_steps = prop_steps
         self._seed = seed
+
 
 
 
@@ -125,22 +106,29 @@ class TN(TLTNetworkModel):
         - Sets the info attribute using set_info() method
         - Sets the godNode_links attribute using set_godNode_links() method
         - Sets the interests vectors using set_interests() method
-        - Sets the influnce vecotrs using set_influence() mehtod
+        - Sets the influence vectors using set_influence() mehtod
         - Sets the new graph weights using update_weights() method
 
         Notes
         -----
         See each method docstring for details
         '''
-        if self._graph_path == None:
+        #print('int', int_mode)
+        if isinstance(self._graph, nx.classes.graph.Graph):
+            self._nx_obj = self._graph
+            self._directed = self._nx_obj.is_directed()
+            self._weighted = nx.is_weighted(self._nx_obj)
+            self.mapping = None
+        elif self._graph == None:
             print('No graph path provided \n DEMO Mode: generating cascades in les miserables network')
-            self._graph_path = pathlib.Path(os.path.abspath(womg_core.__file__)[:-21]) / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
-            self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph_path, weighted=False, directed=False)
+            self._graph = pathlib.Path(os.path.abspath(womg_core.__file__).replace('/womg/__init__.py', '')) / "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
+            self._nx_obj, self.mapping  = read_edgelist(self,path=self._graph, weighted=False, directed=False)
         else:
-            self._graph_path = pathlib.Path(self._graph_path)
-            self._nx_obj, self.mapping = read_edgelist(self, path=self._graph_path, weighted=self._weighted, directed=self._directed)
+            self._graph = pathlib.Path(self._graph)
+            self._nx_obj, self.mapping = read_edgelist(self, path=self._graph, weighted=self._weighted, directed=self._directed)
         self.set_graph()
-        self.set_godNode_links()
+        if self._godNode_strength is not None:
+            self.set_godNode_links()
         self.set_interests(int_mode)
         ##### check inf ##########################################
         for node, interests in self.users_interests.items():
@@ -150,6 +138,7 @@ class TN(TLTNetworkModel):
         self.set_influence()
         #print('updating weights')
         self.graph_weights_vecs_generation()
+        #print('Macroscopic homophily level: ', self.homophily(), ' with H=', self._homophily)
 
 
     def set_graph(self):
@@ -204,15 +193,15 @@ class TN(TLTNetworkModel):
         all the links weights (from godNode to each node) are set to 1
         '''
         if nodes is None:
-            print('Setting god node')
+            #print('Setting god node')
             for node in self._progress_bar(self._nx_obj.nodes()):
-                self.godNode_links[(-1, node)] = weight
+                self.godNode_links[(-1, node)] = np.abs(np.random.randn())
                 self.graph.update(self.godNode_links)
         if isinstance(nodes, int):
             self.godNode_links[(-1, nodes)] = weight
             self.graph.update(self.godNode_links)
         if isinstance(nodes, collections.Iterable):
-            for node in nodes:
+            for node in self._progress_bar(nodes):
                 self.godNode_links[(-1, node)] = weight
                 self.graph.update(self.godNode_links)
 
@@ -226,39 +215,19 @@ class TN(TLTNetworkModel):
         - method : string
           name of the method for creating interests vectors
         '''
+        print('Creating interests..')
         if int_mode == 'rand':
-            print('Random generation of interests:')
+            #print('Random generation of interests:')
             self.random_interests()
-        if int_mode == 'n2i':
-            print('\n Generating interests from graph in ')
-            self._q = np.exp(4.60517*self._homophily)
-            self._p = np.exp(-4.60517*self._homophily)
-            prior = 'half_norm' if self._norm_prior else 'beta'
-            emb = n2i_nx_graph(
-                        nx_graph=self._nx_obj,
-                        window_size=self._window_size,
-                        walk_length=self._walk_length,
-                        num_walks=self._num_walks,
-                        dimensions=self._numb_topics,
-                        p=self._p,
-                        q=self._q,
-                        beta=self._beta,
-                        prior=prior,
-                        alpha_value=self._alpha_value,
-                        beta_value=self._beta_value,
-                        seed=self._seed
-                   )
-            for node in self._nx_obj.nodes():
-                self.users_interests[node] = emb[node]
-
-        if int_mode == 'prop_int':
-            self.propag_interests()
 
         if int_mode == 'nmf':
             self.nmf_interests()
 
-        if int_mode == 'load' or self._interests_path != None:
-            print('Loading interests from: ', self._interests_path)
+        if int_mode == 'load' or self._interests != None:
+            if isinstance(self._interests, dict):
+                print('Loading interests')
+            else:
+                print('Loading interests from: ', self._interests)
             self.load_interests()
 
 
@@ -318,54 +287,6 @@ class TN(TLTNetworkModel):
                 self.users_interests[node] = np.random.rand(self._numb_topics)
 
 
-    def propag_interests(self):
-        '''
-        generates interests with the propagation method starting from "n" nodes
-        '''
-        # INITIALIZE
-        for i in list(self._nx_obj.nodes):
-            interests = np.random.dirichlet(np.ones(self._numb_topics)*1./self._numb_topics)
-            self.users_interests[i] = interests
-
-        # SELECT INFLUENCERS
-        # start with a random node
-        influencers = [np.random.choice(self._nx_obj.nodes)]
-
-        for i in range(14):
-            # calculate distances to current influencers
-            sp = {i: nx.shortest_path(self._nx_obj, i) for i in influencers}
-            distances = np.array([list(len(sp[j][i]) for j in influencers) for i in self._nx_obj.nodes()])
-            # select the node fartest from all influencers
-            influencers.append(distances.min(axis=1).argmax())
-
-        # PROPAGATION STEP
-        for c in range(self._prop_steps):
-            i = np.random.choice(self._nx_obj.nodes())
-            interests_i = self.users_interests[i]
-            lr = 0.5 if i in influencers else 0.01
-            #lr = 0.1
-            for j in list(self._nx_obj.neighbors(i)):
-                if j in influencers:
-                    continue
-                interests_j = self.users_interests[j]
-                interests_j += interests_i * lr
-                interests_j /= interests_j.sum()
-                self.users_interests[j] = interests_j
-
-
-
-    # def overlap_generator(self):
-    #     """
-    #     Function to generate a neighbourhood overlap matrix (second-order proximity matrix).
-    #     :param G: Graph object.
-    #     :return laps: Overlap matrix.
-    #     """
-    #     G = self._nx_obj
-    #     degrees = nx.degree(G)
-    #     sets = {node:set(G.neighbors(node)) for node in nx.nodes(G)}
-    #     laps = np.array([[float(len(sets[node_1].intersection(sets[node_2])))/(float(degrees[node_1]*degrees[node_2])**0.5) if node_1 != node_2 else 0.0 for node_1 in nx.nodes(G)] for node_2 in nx.nodes(G)],dtype = np.float64)
-    #     return laps
-
     def overlap_generator(self, A):
         """
         Generate the second order overlap from a sparse adjacency matrix A.
@@ -378,29 +299,6 @@ class TN(TLTNetworkModel):
         return aat.multiply(n) #- sparse.identity(aat.shape[0])
 
 
-    # def nmf_interests(self, eta=64.):
-    #     '''
-    #     Generates interests according to non-negative matrix factorization
-    #     method
-    #
-    #     Parameters
-    #     ----------
-    #
-    #     Returns
-    #     -------
-    #
-    #     '''
-    #     print('\n Generating interests with nmf ..')
-    #     A = nx.to_numpy_matrix(self._nx_obj)
-    #     S_0 = self.overlap_generator()
-    #     R = np.random.rand(self._nx_obj.number_of_nodes(), self._nx_obj.number_of_nodes())
-    #
-    #     S = eta*S_0 + A + self._rand*R
-    #     model = NMF(n_components=self._numb_topics, init='random', random_state=self._seed)
-    #     W = model.fit_transform(S)
-    #
-    #     for node in self._nx_obj.nodes():
-    #         self.users_interests[node] = W[node]
 
     def nmf_interests(self, eta=64.):
         #beta = self._homophily
@@ -412,6 +310,7 @@ class TN(TLTNetworkModel):
         S = eta*S_0 + A + self._rand*R
         model = NMF(n_components=self._numb_topics, init='nndsvd', random_state=self._seed)
         W = model.fit_transform(S)
+        #print('Doing nmf with random coeff ', self._rand, ' and homophily ', self._homophily)
         if not np.all(np.isfinite(W)):
             print('ATTENTION W contains infinites')
 
@@ -451,7 +350,7 @@ class TN(TLTNetworkModel):
             if link[0] == -1:
                 out_influence_vec = self.users_influence[-1]
                 in_interest_vec = self.users_interests[link[1]]
-                self.set_link_weight(link, self._godNode_strength * (out_influence_vec) + in_interest_vec)
+                self.set_link_weight(link, in_interest_vec + self._godNode_strength * out_influence_vec)
             else:
                 out_influence_vec = self.users_influence[link[0]]
                 in_interest_vec = self.users_interests[link[1]]
@@ -479,7 +378,41 @@ class TN(TLTNetworkModel):
         '''
         Loads interests vector from path
         '''
-        with open(self._interests_path, 'r') as f:
-            for _ in f.readlines():
-                node, interests = _.split(' ', 1)[0], _.split(' ', 1)[1]
-                self.users_interests[int(node)] = np.array(eval(interests[:-1]))
+        if isinstance(self._interests, dict):
+            self.users_interests = self._interests
+        else:
+            with open(self._interests, 'r') as f:
+                for _ in f.readlines():
+                    node, interests = _.split(' ', 1)[0], _.split(' ', 1)[1]
+                    self.users_interests[int(node)] = np.array(eval(interests[:-1]))
+
+
+
+
+    ################# Analysis
+
+    def sim_in(self):
+        sims = []
+        for i in self._nx_obj.nodes:
+            for j in list(self._nx_obj.neighbors(i)):
+                sims.append(1 - distance.cosine(self.users_interests[i], self.users_interests[j]))
+        return np.mean(sims)
+
+    def select_notedge(self):
+        v1 = np.random.choice(self._nx_obj.nodes())
+        v2 = np.random.choice(self._nx_obj.nodes())
+
+        while (v1,v2) in self._nx_obj.edges or v1==v2:
+            v1 = np.random.choice(self._nx_obj.nodes())
+            v2 = np.random.choice(self._nx_obj.nodes())
+        return v1, v2
+
+    def sim_out(self, samples):
+        sims_out = []
+        for c in range(samples):
+            i, j = self.select_notedge()
+            sims_out.append(1 - distance.cosine(self.users_interests[i], self.users_interests[j]))
+        return np.mean(sims_out)
+
+    def homophily(self, numb_not_edges_tested=10000):
+        return self.sim_in() / self.sim_out(numb_not_edges_tested)
