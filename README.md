@@ -35,7 +35,7 @@ $ git clone https://github.com/FedericoCinus/WoMG.git
 
 ## Usage
 The WoMG package provides a Python module and a command-line executable.<br/>
-
+1.
 ```python
 from womg import womg
 import networkx as nx
@@ -46,9 +46,9 @@ docs_path = '/this/is/an/example/documents_folder/'
 prop = womg(graph=graph, docs_path=docs_path)
 
 ```
-
+2.
 ```bash
-womg --docs_folder 'example/documents_folder/' --graph 'example/graph_folder/graph_edgelist.txt'
+~womg --docs_folder 'example/documents_folder/' --graph 'example/graph_folder/graph_edgelist.txt'
 
 ```
 
