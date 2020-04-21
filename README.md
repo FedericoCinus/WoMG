@@ -34,7 +34,7 @@ $ git clone https://github.com/FedericoCinus/WoMG.git
 
 
 ## Usage
-The WoMG package provides a Python module and a command-line method.<br/>
+The WoMG package provides a Python module and a command-line executable.<br/>
 
 ```python
 from womg import womg
@@ -46,6 +46,12 @@ docs_path = '/this/is/an/example/documents_folder/'
 prop = womg(graph=graph, docs_path=docs_path)
 
 ```
+
+```bash
+womg --docs_folder 'example/documents_folder/' --graph 'example/graph_folder/graph_edgelist.txt'
+
+```
+
 The [demo notebook](https://github.com/FedericoCinus/WoMG/blob/master/demo.ipynb)  provides a tutorial.
 
 
@@ -55,6 +61,11 @@ You can check out the other options available to use with *WoMG* from jupyter no
 
 ```python
 ?womg
+```
+
+or in the command-line typing:
+```bash
+womg --help
 ```
 
 ``numb_topics`` defines the dimension of topic space where documents and nodes are described <br />
