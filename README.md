@@ -48,7 +48,7 @@ prop = womg(graph=graph, docs_path=docs_path)
 ```
 2.
 ```bash
-~womg --docs_folder 'example/documents_folder/' --graph 'example/graph_folder/graph_edgelist.txt'
+$ womg --docs_folder 'example/documents_folder/' --graph 'example/graph_folder/graph_edgelist.txt'
 
 ```
 
@@ -65,7 +65,7 @@ You can check out the other options available to use with *WoMG* from jupyter no
 
 or in the command-line typing:
 ```bash
-womg --help
+$ womg --help
 ```
 
 ``numb_topics`` defines the dimension of topic space where documents and nodes are described <br />
