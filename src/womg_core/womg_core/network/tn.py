@@ -17,7 +17,7 @@ from womg_core.network.tlt_network_model import TLTNetworkModel
 from womg_core.utils.utility_functions import read_edgelist
 
 
-DEFAULT_GRAPH = pathlib.Path(os.path.abspath(womg_core.__file__).replace('/womg/__init__.py',
+DEFAULT_GRAPH = pathlib.Path(os.path.abspath(womg_core.__file__).replace('/womg_core/__init__.py',
                              ''))/ "womgdata" / "graph" / "lesmiserables" / "lesmiserables_edgelist.txt"
 
 class TN(TLTNetworkModel):
@@ -125,6 +125,11 @@ class TN(TLTNetworkModel):
             self.nx_obj, self.mapping = read_edgelist(path=self._graph,
                                                       weighted=self._weighted,
                                                       directed=self.directed)
+        ##### check coherence of parameters ###
+        if self._numb_topics > self.nx_obj.number_of_nodes():
+            raise ValueError("Number of nodes must be >= number of topics.")
+
+
         if self._godnode_strength is not None:
             self.set_godnode_links()
         self.set_interests(int_mode)

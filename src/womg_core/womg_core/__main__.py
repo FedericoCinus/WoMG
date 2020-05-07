@@ -96,7 +96,8 @@ def womg_main(graph=None, #pylint: disable=too-many-arguments, too-many-locals
 
 
     graph : str or nx obj
-        input path of the graph edgelist or nx object
+        input path of the graph edgelist or nx object. If nx obj, womg creates a
+        copy of the input graph.
 
     weighted : bool
         boolean specifying (un)weighted. Default  unweighted
