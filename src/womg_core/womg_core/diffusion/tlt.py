@@ -1,8 +1,11 @@
+'''
  # /Diffusion/tlt.py
 # Implementation of TLT model
+'''
 import pathlib
 import pickle
 import numpy as np
+import networkx as nx
 from tqdm import tqdm, tqdm_notebook
 
 from womg_core.diffusion.diffusion_model import DiffusionModel
@@ -15,10 +18,8 @@ class TLT(DiffusionModel):
 
     Attributes
     ----------
-    _numb_steps : int
-    _numb_nodes : int
-    _numb_docs : int
-    _numb_topics : int
+    numb_docs : int
+    numb_topics : int
     new_active_nodes : dict
     active_nodes : dict
     inactive_nodes : dict
@@ -64,34 +65,35 @@ class TLT(DiffusionModel):
         self.active_nodes = {}
         self.inactive_nodes = {}
         self._propagations = []
-        self._numb_nodes = 0
-        self._numb_docs = topic_model.numb_docs
-        self._numb_topics = topic_model.numb_topics
+        self.numb_nodes = None
+        self.numb_docs = None
+        self.numb_topics = None
         self._single_activator = single_activator
-        #print("single_activator:", single_activator)
         if progress_bar:
             self._progress_bar = tqdm_notebook
         else:
             self._progress_bar = tqdm
         self._thresholds_values = []
         self._virality_resistance = virality_resistance
-        self.all_propagations = [[] for _ in range(self._numb_docs)]
-        #print('vir_res', self._virality_resistance)
+        self.all_propagations = None
+        self._stall_count = {}
 
 
     def save_threshold_values(self, path_out):
-        with open(path_out+'/threshold_values.pickle', 'wb') as f:
-            pickle.dump(self._thresholds_values, f)
+        '''Saves all items' threshold
+        '''
+        with open(path_out+'/threshold_values.pickle', 'wb') as file:
+            pickle.dump(self._thresholds_values, file)
 
     def diffusion_setup(self):
         '''
         Sets all the attributes of the current and super class
         '''
-        self._numb_nodes = int(self.network_model.info['numb_nodes'])
-        self._numb_docs = int(self.topic_model.numb_docs)
-        self._numb_topics = int(self.topic_model.numb_topics)
-        self._stall_count = {}
-        for i in range(self._numb_docs):
+        self.numb_nodes = int(self.network_model.nx_obj.number_of_nodes())
+        self.numb_docs = int(self.topic_model.numb_docs)
+        self.numb_topics = int(self.topic_model.numb_topics)
+        self.all_propagations = [[] for _ in range(self.numb_docs)]
+        for i in range(self.numb_docs):
             self._stall_count[i] = 0
         self.set_sets()
 
@@ -104,22 +106,22 @@ class TLT(DiffusionModel):
         2. Then it updates the sets of nodes
         3. Save results contained in public attributes: new activated nodes
         '''
-        self.saver.save_propagation(self.propagations, step)
+        #self.saver.save_propagation(self.propagations, step)
         for prop in self.propagations:
             item, node = (prop.replace('\n', '').split(' '))
             self.all_propagations[int(item)].append((step, int(node)))
 
         if step == 0:
-            for item in range(self._numb_docs):
+            for item in range(self.numb_docs):
                 new_active_nodes = self.active_nodes[item]
                 self.update_sets(item, new_active_nodes)
-        #for item in self._progress_barrange(self._numb_docs)):
-        for item in range(self._numb_docs):
+        for item in range(self.numb_docs):
             new_active_nodes = set()
             if self.active_nodes[item] != set() or None:
                 for node in self.inactive_nodes[item]:
-                    if self.parameter(item=item, node=node):
-                        new_active_nodes.add(node)
+                    if node != -1:
+                        if self.parameter(item=item, node=node):
+                            new_active_nodes.add(node)
                 self.update_sets(item, new_active_nodes)
 
 
@@ -147,23 +149,22 @@ class TLT(DiffusionModel):
             True if parameter is greater or equal to threshold, which means node
             is activating on that given item. Else False.
         '''
-        #print(self.topic_model.viralities[item])
-        # threshold = 1/ #+ self._threshold_bias)
         # calculating the sum over active nodes on item linked with user
-
-        v_sum = np.zeros(self._numb_topics)
+        v_sum = np.zeros(self.numb_topics)
         node_check = False
 
-        if self.network_model._directed:
-            neighbors = [u for u, _v in list(self.network_model._nx_obj.in_edges(node))]
+        if nx.is_directed(self.network_model.nx_obj):
+            neighbors = [u for u, _v in list(self.network_model.nx_obj.in_edges(node)) if u != -1]
         else:
-            neighbors = [v for _u, v in list(self.network_model._nx_obj.edges(node))]
+            neighbors = [v for _u, v in list(self.network_model.nx_obj.edges(node)) if v != -1]
 
         for v in neighbors:
-            if v != node and  v in self.active_nodes[item]:
-                v_sum += np.array(self.network_model.graph[(v, node)])
+            if v != node and v in self.active_nodes[item]:
+                v_sum += self.network_model.nx_obj.get_edge_data(v, node)['weight']
                 if not all(np.isfinite(v_sum)):
-                    print('ATTENTION v_sum: ', v_sum, ' weight: ', self.network_model.graph[(v, node)], ' v: ', v, ' node: ', node)
+                    print('ATTENTION v_sum: ', v_sum, ' weight: ',
+                          self.network_model.nx_obj.get_edge_data(v, node)['weight'],
+                          ' v: ', v, ' node: ', node)
                 node_check = True
         if node_check:
             z_sum = np.dot(self.topic_model.items_descript[item], v_sum)
@@ -171,8 +172,7 @@ class TLT(DiffusionModel):
             if not np.isfinite(z_sum):
                 print('ATTENTION node: ', node, 'z_sum: ', z_sum)
             return z_sum > self._virality_resistance * self.topic_model.viralities[item]
-        else:
-            return False
+        return False
 
 
 
@@ -206,7 +206,6 @@ class TLT(DiffusionModel):
         self.new_active_nodes[item] = new_active_nodes
 
         if self.new_active_nodes[item] == set():
-            #print('item ', item)
             self._stall_count[item] += 1
 
         removing_list = new_active_nodes.union(self.active_nodes[item])  ### needs improvement
@@ -226,11 +225,11 @@ class TLT(DiffusionModel):
 
             current new activated nodes set is equal to the active one
         '''
-        for item in range(self._numb_docs):
-            self.active_nodes[item] = self.godNode_influence_config(item)
+        for item in range(self.numb_docs):
+            self.active_nodes[item] = self.godnode_influence_config(item)
             if self.active_nodes[item] == set():
                 self._stall_count[item] += 1
-            self.inactive_nodes[item] = set(self.network_model._nx_obj.nodes())
+            self.inactive_nodes[item] = set(self.network_model.nx_obj.nodes())
 
             self.new_active_nodes[item] = self.active_nodes[item]
 
@@ -240,12 +239,12 @@ class TLT(DiffusionModel):
         Stops the run if there are not new active nodes for given time step seq
         '''
         stall_factor = True
-        for item in self._stall_count.keys():
+        for item, _value in self._stall_count.items():
             stall_factor *= (self._stall_count[item] >= 1)
         return stall_factor
 
 
-    def godNode_influence_config(self, item):
+    def godnode_influence_config(self, item):
         '''
         Returns the activated nodes for the initial configuration for a given item;
         the god node (connected with all nodes) influences all the others for the
@@ -261,11 +260,14 @@ class TLT(DiffusionModel):
         actives_config = []
         max_interested = -np.inf
         max_v = None
-        for u, v in self.network_model.godNode_links:
-            curr_weight = self.network_model.graph[(u, v)]
+        if self.network_model.nx_obj.is_directed():
+            god_node_edges = list(self.network_model.nx_obj.out_edges(-1))
+        else:
+            god_node_edges = list(self.network_model.nx_obj.edges(-1))
+        for u, v in god_node_edges:
+            curr_weight = self.network_model.nx_obj.get_edge_data(u, v)['weight']
             z_sum = np.dot(self.topic_model.items_descript[item], curr_weight)
             self._thresholds_values.append((z_sum, self.topic_model.viralities[item]))
-            #print('z_sum: ', z_sum, '  virality: ', self._virality_resistance *self.topic_model.viralities[item])
             if z_sum > self._virality_resistance * self.topic_model.viralities[item]:
                 if self._single_activator:
                     if max_interested < z_sum:
@@ -273,7 +275,8 @@ class TLT(DiffusionModel):
                         max_v = v
                 else:
                     if all(v == 0 for v in curr_weight):
-                        print('ATTENTION nodes: ', u, v, '  curr_weight:', curr_weight, ' z_sum:', z_sum)
+                        print('ATTENTION nodes: ', u, v, '  curr_weight:',
+                              curr_weight, ' z_sum:', z_sum)
                     actives_config.append(v)
 
         if self._single_activator:
@@ -309,8 +312,8 @@ class TLT(DiffusionModel):
     def propagations(self, value):
         self._propagations = value
 
-
-    def read_class_pickle(self, model):
+    @staticmethod
+    def read_class_pickle(model):
         '''
         Read the pickle file containing a class model instance
         Parameters
@@ -321,7 +324,7 @@ class TLT(DiffusionModel):
         -------
         Loaded object of the correspondent class: TLTNetworkModel or TLTTopicModel
         '''
-        file = pathlib.Path.cwd() / str('__'+model+'_model')
-        with open(file, 'rb') as f:
-            rfile = pickle.load(f)
+        filename = pathlib.Path.cwd() / str('__'+model+'_model')
+        with open(filename, 'rb') as file:
+            rfile = pickle.load(file)
         return rfile

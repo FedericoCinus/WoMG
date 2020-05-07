@@ -1,5 +1,6 @@
-# /diffusion/diffusion_model.py
-# Abstract class defining Diffusion models
+'''/diffusion/diffusion_model.py
+Abstract class defining Diffusion models
+'''
 import abc
 
 
@@ -47,14 +48,14 @@ class DiffusionModel(abc.ABC):
             number of simulation steps, i.e. number of times to call iteration()
         '''
         print("Computing cascades.. ")
-        for t in range(numb_steps):
-            if t==0:
+        for time in range(numb_steps):
+            if time == 0:
                 self.iteration(step=0)
             else:
                 if not self.stop_criterior():
-                    self.iteration(step=t)
+                    self.iteration(step=time)
                 else:
-                    print('WoMG diffusion has been completed.'  )
+                    print('WoMG diffusion has been completed.')
                     break
 
 

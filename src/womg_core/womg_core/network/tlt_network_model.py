@@ -1,7 +1,10 @@
-# /network/tlt_network_model.py
-# Abstract class defining the Network models
+'''/network/tlt_network_model.py
+Abstract class defining the Network models
+'''
+
 import abc
 from womg_core.network.network_model import NetworkModel
+
 
 class TLTNetworkModel(NetworkModel):
     '''
@@ -19,8 +22,13 @@ class TLTNetworkModel(NetworkModel):
 
     @abc.abstractmethod
     def graph_weights_vecs_generation(self):
-        '''
-        Generates numb_topics dim vectors for each link and put them as
+        '''Generates numb_topics dim vectors for each link and put them as
         value of the graph dict attribute of the class
+        '''
+        pass
+
+    @abc.abstractmethod
+    def set_godnode_links(self, weight, nodes):
+        '''Creates the god node links for initial configurations
         '''
         pass

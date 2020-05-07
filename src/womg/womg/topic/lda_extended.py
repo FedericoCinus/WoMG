@@ -1,18 +1,17 @@
-# /Topic/lda.py
-# Implementation of LDA topic-model
+'''
+/Topic/lda.py
+Implementation of LDA topic-model
+'''
 import re
 import os
 import pathlib
 import gensim
-import pickle
-from tqdm import tqdm, tqdm_notebook
 import numpy as np
-import womg_core
 from womg_core.topic.lda import LDA
-from womg_core.utils.utility_functions import count_files, read_docs, TopicsError, DocsError
+from womg_core.utils.utility_functions import count_files, read_docs
 from womg_core.utils.distributions import random_powerlaw_vec
 
-class LDA_extended(LDA):
+class LDAExtended(LDA):
     '''
     Class implementing Latent Dirichlet Allocation as topic model
     for topic distribution involved in tlt class model
@@ -53,7 +52,6 @@ class LDA_extended(LDA):
         3. get the items descriptions (topic distribution for each item)
         4. get the items keywords (bow list for each item)
         '''
-        #print('\n In fit method there are ', self.numb_docs, 'docs, in', self._docs_path, ' with description ', self._items_descr)
         mode = self.set_lda_mode()
         if mode == 'load':
             super().fit()
@@ -87,10 +85,7 @@ class LDA_extended(LDA):
         reading : bool
             if True: it will read docs inside the given folder path or input folder
             if False: it will use lda for generating docs
-
         '''
-
-
         if self.numb_docs is None and self._docs_path is not None and self._items_descr is None:
             mode = 'get'
             path = pathlib.Path(self._docs_path)
@@ -131,7 +126,6 @@ class LDA_extended(LDA):
             gammas[item] = np.array([i[1] for i in item_descript])
             item += 1
         if self.numb_docs == len(gammas.keys()):
-            #print("Items' distribution over topics is stored")
             pass
         self.items_descript = gammas
 
@@ -142,11 +136,8 @@ class LDA_extended(LDA):
         Get the items keyword in a bow format
         '''
         docs = read_docs(path)
-        #print(docs)
-        preproc_docs = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) !=0]
-        #print(preproc_docs)
+        preproc_docs = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) != 0]
         data_words = self.sent_to_words(preproc_docs, verbose=False)
-        #print(data_words)
         for item in range(self.numb_docs):
             self.items_keyw[item] = self.to_bow(data_words[item])
 
@@ -168,7 +159,8 @@ class LDA_extended(LDA):
                 item_keyw.append(self.dictionary[word_index[0]])
             self.items_keyw[item] = self.to_bow(item_keyw)
 
-    def get_topics_descript(self, model, mtrx_form=False):
+    @staticmethod
+    def get_topics_descript(model, mtrx_form=False):
         '''
         Getting the word distribution for each topic
 
@@ -183,8 +175,7 @@ class LDA_extended(LDA):
         '''
         if mtrx_form:
             return model.get_topics()
-        else:
-            return model.print_topics()
+        return model.print_topics()
 
 
     def to_bow(self, text):
@@ -201,7 +192,7 @@ class LDA_extended(LDA):
         '''
         Preprocessing input texts: divides docs into words, bow format
         '''
-        data = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) !=0]
+        data = [gensim.parsing.preprocessing.remove_stopwords((sent[0].lower())) for sent in docs if len(sent) != 0]
 
         # Remove new line characters
         data = [re.sub(r'\s+', ' ', str(sent)) for sent in data]
@@ -259,7 +250,7 @@ class LDA_extended(LDA):
         return list(data_words)
 
 
-    def train_lda(self, path=None):
+    def train_lda(self):
         '''
         Pre-train lda model on a saved corpus for infering the prior weights of
         the distributions given a number of topics, which correpsonds to the
@@ -278,7 +269,6 @@ class LDA_extended(LDA):
         '''
         print('Training LDA model..')
         docs = read_docs(self._training_path)
-        #print('len docs ', len(docs))
         data_words = self.sent_to_words(docs, verbose=False)
 
         self.dictionary = gensim.corpora.Dictionary(data_words)

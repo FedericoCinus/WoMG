@@ -1,5 +1,6 @@
-# /topic/topic_model.py
-# Abstract class defining Topic model
+'''/topic/topic_model.py
+Abstract class defining Topic model
+'''
 import abc
 
 
@@ -30,4 +31,16 @@ class TopicModel(abc.ABC):
 
     def __init__(self):
         self.items_descript = {}
-        self.topics_descript = {}
+        self.dictionary = []
+
+    @abc.abstractmethod
+    def load_items_descr(self, path):
+        '''Method for loading the items topic distributions
+        '''
+        pass
+
+    @abc.abstractmethod
+    def gen_items_descript(self):
+        '''Method for generating the items topic distributions
+        '''
+        pass

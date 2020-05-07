@@ -1,4 +1,6 @@
-# Class for random distributions definition
+'''
+Class for random distributions definition
+'''
 import random
 import numpy as np
 
@@ -6,7 +8,7 @@ def set_seed(seed):
     '''
     Sets the given seed for each distribution extraction
     '''
-    if seed != None:
+    if seed is not None:
         random.seed(seed)
         np.random.seed(seed)
 

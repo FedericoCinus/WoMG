@@ -1,5 +1,6 @@
-# /Topic/TopicModel.py
-# Abstract class defining Topic model
+'''/Topic/TopicModel.py
+Abstract class defining Topic model
+'''
 import abc
 from womg_core.topic.topic_model import TopicModel
 
@@ -15,8 +16,11 @@ class TLTTopicModel(TopicModel):
 
     Methods
     -------
-    topic_distrib_extraction : absract
-        inferes topic distribution for each document
+    fit : abstract
+        inferes/generates topic distribution for each document
+
+    set_docs_viralities : abstract
+        sets the documents viralities
     '''
 
     def __init__(self):
@@ -25,7 +29,11 @@ class TLTTopicModel(TopicModel):
 
     @abc.abstractmethod
     def fit(self):
-        '''
-        Methods for infering topic distributions of the given documents
+        '''Methods for infering/generating topic distributions of the given documents
         '''
         pass
+
+    @abc.abstractmethod
+    def set_docs_viralities(self, virality_exp):
+        '''Method for setting the documents viralities
+        '''

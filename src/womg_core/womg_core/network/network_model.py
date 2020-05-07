@@ -1,13 +1,11 @@
-# /network/network_model.py
-# Abstract class defining the Network models
-import pathlib
-import json
-import pickle
-from abc import ABC
-import networkx as nx
+'''
+/network/network_model.py
+Abstract class defining the Network models
+'''
+import abc
 
 
-class NetworkModel(ABC):
+class NetworkModel(abc.ABC):
     '''
     Abstract class for network models
 
@@ -51,16 +49,21 @@ class NetworkModel(ABC):
           key <- tuple which describes the link (node_1, node_2)
           value <- int weight of the link
         '''
-        G = {}
+        graph = {}
         print('Formatting graph..')
         if directed:
-            for edge in (nx_obj.edges()):
-                G[(edge[0],edge[1])] = 1
+            for edge in nx_obj.edges():
+                graph[(edge[0], edge[1])] = 1
         else:
-            #print(nx_obj.edges())
-            for edge in (nx_obj.edges()):
-                #print(edge)
-                G[(edge[0],edge[1])] = 1
-                G[(edge[1],edge[0])] = 1
+            for edge in nx_obj.edges():
+                graph[(edge[0], edge[1])] = 1
+                graph[(edge[1], edge[0])] = 1
 
-        return G
+        return graph
+
+
+    @abc.abstractmethod
+    def network_setup(self, int_mode):
+        '''Setting up the network environment for diffusion
+        '''
+        pass

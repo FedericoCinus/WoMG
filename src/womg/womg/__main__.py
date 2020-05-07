@@ -1,12 +1,15 @@
+'''
+Main of the extended version of womg
+'''
 import click
 from womg_core import womgc
-from womg.topic.lda_extended import LDA_extended
+from womg_core.__main__ import save
 from womg_core.utils.distributions import set_seed
-#from womg.utils.saver import TxtSaver
+from womg.topic.lda_extended import LDAExtended
 
 
 
-def womg_main(graph=None,
+def womg_main(graph=None, #pylint: disable=too-many-arguments, too-many-locals
               docs_path=None,
               items_descr=None,
               numb_topics=15,
@@ -98,11 +101,11 @@ def womg_main(graph=None,
     '''
 
     set_seed(seed)
-    topic_model = LDA_extended(numb_topics=numb_topics,
-                      numb_docs=numb_docs,
-                      docs_path=docs_path,
-                      items_descr=items_descr,
-                      progress_bar=progress_bar)
+    topic_model = LDAExtended(numb_topics=numb_topics,
+                              numb_docs=numb_docs,
+                              docs_path=docs_path,
+                              items_descr=items_descr,
+                              progress_bar=progress_bar)
     topic_model.fit()
     prop = womgc(graph=graph,
                  numb_topics=numb_topics,
@@ -113,6 +116,7 @@ def womg_main(graph=None,
                  interests=interests,
                  gn_strength=gn_strength,
                  infl_strength=infl_strength,
+                 int_mode=int_mode,
                  seed=seed,
                  items_descr=topic_model.items_descript,
                  virality_exp=virality_exp,
@@ -122,75 +126,76 @@ def womg_main(graph=None,
                  progress_bar=progress_bar,
                  path_out=path_out)
     prop.topic_model.items_keyw = topic_model.items_keyw
+
     return prop
 
 @click.command()
 @click.option('--topics', metavar='K', default=15,
-                    help='Number of topics in the topic model. Default 15. K<d ',
-                    type=int)
+              help='Number of topics in the topic model. Default 15. K<d ',
+              type=int)
 @click.option('--docs', metavar='D', default=None,
-                    help='Number of docs to be generated. Default 100',
-                    type=int)
+              help='Number of docs to be generated. Default 100',
+              type=int)
 @click.option('--steps', metavar='T', default=6,
-                    help='Number of time steps for diffusion',
-                    type=int)
+              help='Number of time steps for diffusion',
+              type=int)
 @click.option('--homophily', metavar='H', default=0.5,
-                    help='0<=H<=1 :degree of homophily decoded from the given network. Default 0.5',
-                    type=click.FloatRange(0, 1, clamp=True))
+              help='0<=H<=1 :degree of homophily decoded from the given network. Default 0.5',
+              type=click.FloatRange(0, 1, clamp=True))
 @click.option('--gn_strength', default=13.,
-                    help='Influence strength of the god node for initial configuration. Default 13.',
-                    type=float)
+              help='Influence strength of the god node for initial configuration. Default 13.',
+              type=float)
 @click.option('--infl_strength', type=float, default=None,
-                    help='Influence strength of nodes with respect to interests vecs. Default 12.')
+              help='Influence strength of nodes with respect to interests vecs. Default 12.')
 @click.option('--virality_exp', metavar='V', default=8.,
-                    help='Exponent of the pareto distribution for documents viralities. Default 8.',
-                    type=float)
+              help='Exponent of the pareto distribution for documents viralities. Default 8.',
+              type=float)
 @click.option('--virality_resistance', metavar='V', default=13.,
-                    help='Virality resistance factor r. Default 13.',
-                    type=float)
+              help='Virality resistance factor r. Default 13.',
+              type=float)
 
 @click.option('--graph', default=None,
-                    help='Input path of the graph edgelist or nx object', type=str)
+              help='Input path of the graph edgelist or nx object', type=str)
 @click.option('--interests', default=None,
-                    help='Input path of the ginterests table', type=str)
+              help='Input path of the ginterests table', type=str)
 
 @click.option('--int_mode', type=str,
-                    help="defines the method for generating nodes' interests. 2 choices: 'rand', 'nmf'. Default 'nmf' ",
-                    default='nmf')
+              help="defines the method for generating nodes' interests. 2 choices: 'rand', 'nmf'. Default 'nmf' ",
+              default='nmf')
 
 @click.option('--weighted', is_flag=True,
-                    help='boolean specifying (un)weighted. Default  unweighted', default=False)
+              help='boolean specifying (un)weighted. Default  unweighted', default=False)
 
 @click.option('--directed', is_flag=True,
-                    help='graph is (un)directed. Default  undirected',
-                    default=False)
+              help='graph is (un)directed. Default  undirected',
+              default=False)
 
 
 @click.option('--docs_folder', metavar='DOCS', default=None,
-                    help='Input  path of the documents folder', type=str)
+              help='Input  path of the documents folder', type=str)
 @click.option('--items_descr', default=None,
-                    help='Input  path items description file representing each item in the topics space. Format: topic_index [topic-dim vec]', type=str)
+              help='Input  path items description file representing each item in the topics space. Format: topic_index [topic-dim vec]', type=str)
 @click.option('--output', default=None, help='Outputs path')
 @click.option('--seed', help='Seed (int) for random distribution extractions',
-                    type=int, required=False)
+              type=int, required=False)
 
 
 @click.option('--progress_bar', is_flag=True,
-                    help='boolean for specifying the progress bar related to the environment if True progress_bar=tqdm_notebook -> Jupyter progress_bar; if False progress_bar=tqdm. Default False ',
-                    default=True)
+              help='boolean for specifying the progress bar related to the environment if True progress_bar=tqdm_notebook -> Jupyter progress_bar; if False progress_bar=tqdm. Default False ',
+              default=True)
 
 @click.option('--save_int', is_flag=True,
-                    help='if True WoMG saves the interests vector for each node',
-                    default=False)
-@click.option('--save_infl', is_flag=True,
-                    help='if True WoMG saves the influence vector for each node',
-                    default=False)
+              help='if True WoMG saves the interests vector for each node',
+              default=False)
+@click.option('--save_infl', is_flag=True, #pylint: disable=too-many-arguments, too-many-locals
+              help='if True WoMG saves the influence vector for each node',
+              default=False)
 @click.option('--save_keyw', is_flag=True,
-                    help='if True WoMG saves the keywords in a bow format for each document',
-                    default=False)
+              help='if True WoMG saves the keywords in a bow format for each document',
+              default=False)
 @click.option('--single_activator', is_flag=True,
-                    help='if True we have at most one activator per item, else god node will activate all nodes beyond threshold',
-                    default=False)
+              help='if True we have at most one activator per item, else god node will activate all nodes beyond threshold',
+              default=False)
 
 def main_cli(graph,
              items_descr,
@@ -245,4 +250,4 @@ def main_cli(graph,
          save_keyw=save_keyw)
 
 if __name__ == '__main__':
-    main_cli()
+    main_cli() # pylint: disable=no-value-for-parameter

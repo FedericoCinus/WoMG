@@ -1,3 +1,6 @@
+'''
+Class containing all womg outputs 
+'''
 import numpy as np
 
 class Propagation:
@@ -10,6 +13,7 @@ class Propagation:
         self._docs = None
         self._topic_distributions = None
         self._interests = None
+        self._topics_descriptions = None
 
 
     @property
@@ -26,6 +30,7 @@ class Propagation:
 
     @property
     def docs(self):
+        print(self.topic_model.items_keyw)
         self.docs = [v for k, v in self.topic_model.items_keyw.items()]
         return self._docs
 
@@ -39,6 +44,7 @@ class Propagation:
         '''
         KxM matrix
         '''
+        print(self.topic_model.items_descript)
         vectors = [v for v in self.topic_model.items_descript.values()]
         self.topic_distributions = np.column_stack(vectors)
         return self._topic_distributions
@@ -59,3 +65,16 @@ class Propagation:
     @interests.setter
     def interests(self, value):
         self._interests = value
+
+
+    @property
+    def topics_descriptions(self):
+        '''
+        list of linear combination of words
+        '''
+        self._topics_descriptions = self.topic_model.topics_descript
+        return self._topics_descriptions
+
+    @topics_descriptions.setter
+    def topics_descriptions(self, value):
+        self._topics_descriptions = value
