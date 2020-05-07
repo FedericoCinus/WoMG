@@ -41,14 +41,14 @@ from womg import womg
 import networkx as nx
 
 N = 100
-graph = nx.random_geometric_graph(100, .2)
+graph = nx.random_geometric_graph(N, .2)
 docs_path = '/this/is/an/example/documents_folder/'
 
 prop = womg(graph=graph, docs_path=docs_path)
 
 prop.propagations[0] # [(time, node)]
 ```
-[(0,0), (0,2), (1,5) .. ]
+>> [(0,0), (0,2), (1,5) .. ]
 
 2.
 ```bash
