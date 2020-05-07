@@ -34,8 +34,8 @@ $ git clone https://github.com/FedericoCinus/WoMG.git
 
 
 ## Usage
-The WoMG package provides a Python module and a command-line method.<br/>
-
+The WoMG package provides a Python module and a command-line executable.<br/>
+1.
 ```python
 from womg import womg
 import networkx as nx
@@ -46,14 +46,26 @@ docs_path = '/this/is/an/example/documents_folder/'
 prop = womg(graph=graph, docs_path=docs_path)
 
 ```
-The **demo.ipynb** provides a tutorial.
+2.
+```bash
+$ womg --docs_folder 'example/documents_folder/' --graph 'example/graph_folder/graph_edgelist.txt'
+
+```
+
+The [demo notebook](https://github.com/FedericoCinus/WoMG/blob/master/demo.ipynb)  provides a tutorial.
+
 
 
 #### Options
-You can check out the other options available to use with *WoMG* using:<br/>
+You can check out the other options available to use with *WoMG* from jupyter notebook using:<br/>
 
 ```python
 ?womg
+```
+
+or in the command-line typing:
+```bash
+$ womg --help
 ```
 
 ``numb_topics`` defines the dimension of topic space where documents and nodes are described <br />
@@ -74,3 +86,4 @@ This repository provides a reference implementation of *WoMG* as described in:<b
 > Generating realistic interest-driven information cascades.<br>
 > Federico Cinus, Francesco Bonchi, Corrado Monti, André Panisson.<br>
 > <Insert paper link>
+
