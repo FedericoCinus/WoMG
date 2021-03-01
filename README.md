@@ -10,15 +10,15 @@
 ## Installation
 
 ### Dependencies
-- Click==7.0
-- decorator==4.4.1
-- joblib==0.14.0
-- networkx==2.3
-- numpy==1.17.3
-- scikit-learn==0.21.3
-- scipy==1.3.1
-- tqdm==4.32.1
-- gensim=3.8.0
+- click==7.1.2
+- decorator==4.4.2
+- joblib==1.0.1
+- networkx==2.5
+- numpy==1.19.5
+- scikit-learn==0.24.1
+- scipy==1.5.4
+- tqdm==4.56.2
+- gensim==3.8.3
 
 ### User installation
 Install using ``pip``: <br>
