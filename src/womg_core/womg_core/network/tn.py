@@ -226,7 +226,8 @@ class TN(TLTNetworkModel):
                 print('Wrong parameter infl strenght')
             fitness = np.minimum(fitness, 10E20)
             for node in self.nx_obj.nodes():
-                self.users_influence[node] = fitness[node] * self.users_interests[node]
+                if node != -1:
+                    self.users_influence[node] = fitness[node] * self.users_interests[node]
 
         if self._godnode_strength is not None:
             self.users_influence[-1] = np.ones(self._numb_topics)
@@ -249,7 +250,8 @@ class TN(TLTNetworkModel):
         '''
         if norm:
             for node in self.nx_obj.nodes():
-                self.users_interests[node] = np.random.rand(self._numb_topics)
+                if node != -1: # god node does not need interest
+                    self.users_interests[node] = np.random.rand(self._numb_topics)
 
     @staticmethod
     def overlap_generator(A):
@@ -270,19 +272,28 @@ class TN(TLTNetworkModel):
         Generates nodes interests using NMF
         '''
         #beta = self._homophily
-        A = nx.adjacency_matrix(self.nx_obj)
+        all_nodes = set(self.nx_obj.nodes())
+        filtered_nodes = all_nodes - set([-1]) # removing god node
+        sub_g = self.nx_obj.subgraph(filtered_nodes)
+        A = nx.adjacency_matrix(sub_g)
         S_0 = self.overlap_generator(A)
-        R = np.random.rand(self.nx_obj.number_of_nodes(), self.nx_obj.number_of_nodes())
+        R = np.random.rand(sub_g.number_of_nodes(), sub_g.number_of_nodes()) # no god node
         #S = beta*(S_0 + A + sparse.identity(A.shape[0])) + (1-beta)*R
         eta = 64.
-        S = eta*S_0 + A + self._rand*R
-        model = NMF(n_components=self._numb_topics, init='nndsvd', random_state=self._seed)
+        S = eta*S_0 + A #+ self._rand*R
+        model = NMF(n_components=self._numb_topics, init='nndsvd',
+                    random_state=self._seed, max_iter=300)
         W = model.fit_transform(S)
+        W_mean = np.mean(W)
+        R2 = np.random.rand(sub_g.number_of_nodes(), self._numb_topics)
+        W = W_mean*(self._homophily*W/W_mean + (1-self._homophily)*R2/np.mean(R2))
+        #print('Doing nmf with random coeff ', self._rand, ' and homophily ', self._homophily)
         if not np.all(np.isfinite(W)):
             print('ATTENTION W contains infinites')
 
         for node in self.nx_obj.nodes():
-            self.users_interests[node] = W[node]
+            if node != -1:
+                self.users_interests[node] = W[node]
 
     def node2influence(self, scale_fact, alpha_max=10):
         '''
