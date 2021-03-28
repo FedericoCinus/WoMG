@@ -100,6 +100,9 @@ This repository provides a reference implementation of *WoMG* as described in:<b
   pages={107--118},
   year={2020}
 }
+
+
+
 @inproceedings{cinus2021womg,
   title={WoMG: A Library for Word-of-Mouth Cascades Generation},
   author={Cinus, Federico and Bonchi, Francesco and Monti, Corrado and Panisson, Andr{\'e}},
