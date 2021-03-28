@@ -84,10 +84,26 @@ This repository provides a reference implementation of *WoMG* as described in:<b
 
 > WoMG: a Library for Word-of-Mouth Cascades Generation.<br>
 > Federico Cinus, Francesco Bonchi, Corrado Monti, André Panisson.<br>
-> <Insert paper link>
+> <https://dl.acm.org/doi/abs/10.1145/3437963.3441693>
 	
 	
 > Generating realistic interest-driven information cascades.<br>
 > Federico Cinus, Francesco Bonchi, Corrado Monti, André Panisson.<br>
-> <Insert paper link>
+> <https://ojs.aaai.org//index.php/ICWSM/article/view/7283>
 
+## Citation
+@inproceedings{cinus2020generating,
+  title={Generating Realistic Interest-Driven Information Cascades},
+  author={Cinus, Federico and Bonchi, Francesco and Monti, Corrado and Panisson, Andr{\'e}},
+  booktitle={Proceedings of the International AAAI Conference on Web and Social Media},
+  volume={14},
+  pages={107--118},
+  year={2020}
+}
+@inproceedings{cinus2021womg,
+  title={WoMG: A Library for Word-of-Mouth Cascades Generation},
+  author={Cinus, Federico and Bonchi, Francesco and Monti, Corrado and Panisson, Andr{\'e}},
+  booktitle={Proceedings of the 14th ACM International Conference on Web Search and Data Mining},
+  pages={1065--1068},
+  year={2021}
+}
